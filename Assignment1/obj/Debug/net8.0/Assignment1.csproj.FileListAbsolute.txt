@@ -1,0 +1,15 @@
+D:\CureMD-Tasks\Assignment1\bin\Debug\net8.0\Assignment1.exe
+D:\CureMD-Tasks\Assignment1\bin\Debug\net8.0\Assignment1.deps.json
+D:\CureMD-Tasks\Assignment1\bin\Debug\net8.0\Assignment1.runtimeconfig.json
+D:\CureMD-Tasks\Assignment1\bin\Debug\net8.0\Assignment1.dll
+D:\CureMD-Tasks\Assignment1\bin\Debug\net8.0\Assignment1.pdb
+D:\CureMD-Tasks\Assignment1\obj\Debug\net8.0\Assignment1.GeneratedMSBuildEditorConfig.editorconfig
+D:\CureMD-Tasks\Assignment1\obj\Debug\net8.0\Assignment1.AssemblyInfoInputs.cache
+D:\CureMD-Tasks\Assignment1\obj\Debug\net8.0\Assignment1.AssemblyInfo.cs
+D:\CureMD-Tasks\Assignment1\obj\Debug\net8.0\Assignment1.csproj.CoreCompileInputs.cache
+D:\CureMD-Tasks\Assignment1\obj\Debug\net8.0\Assignment1.sourcelink.json
+D:\CureMD-Tasks\Assignment1\obj\Debug\net8.0\Assignment1.dll
+D:\CureMD-Tasks\Assignment1\obj\Debug\net8.0\refint\Assignment1.dll
+D:\CureMD-Tasks\Assignment1\obj\Debug\net8.0\Assignment1.pdb
+D:\CureMD-Tasks\Assignment1\obj\Debug\net8.0\Assignment1.genruntimeconfig.cache
+D:\CureMD-Tasks\Assignment1\obj\Debug\net8.0\ref\Assignment1.dll
