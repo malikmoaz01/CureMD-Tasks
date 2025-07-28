@@ -1,0 +1,11 @@
+1. WriteLine for Output
+2. Readline for Input(C Sharp is by default support string)
+3. So we haver to Convert these into Specified Variable (Convert.ToInt32)
+4. ? is used kyuke null ki warning ko handle krne keliye Kisi input me null b huskta javascript wala concept use huta ha 
+Agr question mark ni lgana tu bar bar null ke checks lgane prege 
+5. string.IsNullOrWhiteSpace string is null or contain white space 
+6. String.join for joining the strings 
+7. for casting we use same like C++ or java (int)
+8. int.TryParse for checking number is valid or not then it will store otherwise it will return error 
+9. out keyword is used function ke andar se koi value return karwane ke liye use hota hai without using return.
+10. get	Value ko read karta hai (get value) or set	Value ko change karta hai (assign value)
