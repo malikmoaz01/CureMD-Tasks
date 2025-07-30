@@ -35,37 +35,32 @@ public class Assignment2
     {
         Stack<int> stack = new Stack<int>();
 
-        // Step 1: Queue ke saare elements Stack mein daal do
         while (q.Count > 0)
         {
             stack.Push(q.Dequeue());
         }
-        // Step 2: Stack ke saare elements wapas Queue mein daal do (reverse ho gaya)
         while (stack.Count > 0)
         {
             q.Enqueue(stack.Pop());
         }
 
-        return q; // reversed queue
+        return q;
     }
 
     static Stack<int> ReverseStack(Stack<int> stack)
     {
         Queue<int> queue = new Queue<int>();
 
-        // Step 1: Stack ke sab elements Queue mein daal do
         while (stack.Count > 0)
         {
             queue.Enqueue(stack.Pop());
         }
-
-        // Step 2: Queue ke elements wapas Stack mein daal do (reverse ho gaya)
         while (queue.Count > 0)
         {
             stack.Push(queue.Dequeue());
         }
 
-        return stack; // reversed stack
+        return stack;
     }
 
     static int[] rotateLeft(int[] arr, int k)
