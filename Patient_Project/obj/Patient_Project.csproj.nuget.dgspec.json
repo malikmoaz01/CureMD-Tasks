@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\CureMD-Tasks\\Assignments\\Assignment1\\Assignment1.csproj": {}
+    "D:\\CureMD-Tasks\\Patient_Project\\Patient_Project.csproj": {}
   },
   "projects": {
-    "D:\\CureMD-Tasks\\Assignments\\Assignment1\\Assignment1.csproj": {
+    "D:\\CureMD-Tasks\\Patient_Project\\Patient_Project.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\CureMD-Tasks\\Assignments\\Assignment1\\Assignment1.csproj",
-        "projectName": "Assignment1",
-        "projectPath": "D:\\CureMD-Tasks\\Assignments\\Assignment1\\Assignment1.csproj",
+        "projectUniqueName": "D:\\CureMD-Tasks\\Patient_Project\\Patient_Project.csproj",
+        "projectName": "Patient_Project",
+        "projectPath": "D:\\CureMD-Tasks\\Patient_Project\\Patient_Project.csproj",
         "packagesPath": "C:\\Users\\Malik Moaz\\.nuget\\packages\\",
-        "outputPath": "D:\\CureMD-Tasks\\Assignments\\Assignment1\\obj\\",
+        "outputPath": "D:\\CureMD-Tasks\\Patient_Project\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Malik Moaz\\AppData\\Roaming\\NuGet\\NuGet.Config"
