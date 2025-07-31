@@ -1,0 +1,4 @@
+1. Cat And& Dog-are Animals ==> CatAndDogAreAnimal
+2. "35152" ==> 3-5+1+3-2  will be zero return expression -++-
+3. LCS {4,3,5,2,100,20,19,25} ==> {2,3,4,5} & {19,20} 
+length longest will be 4 so return 4
