@@ -1,0 +1,10 @@
+Consultation|500
+Follow-up|300
+Emergency|1000
+Checkup|400
+Surgery|5000
+Lab Test|200
+X-Ray|350
+Vaccination|150
+Physical Therapy|800
+Dental|600

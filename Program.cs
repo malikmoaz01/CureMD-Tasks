@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
 
 public enum UserRole
 {
@@ -92,25 +93,14 @@ public class PatientVisitManager
     private void loadFeeRates()
     {
         feeRates = new Dictionary<string, decimal>();
-        string feeFilePath = "fees.txt";
+        string feeFilePath = "fees.json";
         
         try
         {
             if (File.Exists(feeFilePath))
             {
-                string[] lines = File.ReadAllLines(feeFilePath);
-                for (int i = 0; i < lines.Length; i++)
-                {
-                    string line = lines[i];
-                    if (!string.IsNullOrEmpty(line))
-                    {
-                        string[] parts = line.Split('|');
-                        if (parts.Length == 2)
-                        {
-                            feeRates[parts[0]] = decimal.Parse(parts[1]);
-                        }
-                    }
-                }
+                string json = File.ReadAllText(feeFilePath);
+                feeRates = JsonConvert.DeserializeObject<Dictionary<string, decimal>>(json);
             }
             else
             {
@@ -125,7 +115,8 @@ public class PatientVisitManager
                 feeRates["Physical Therapy"] = 800;
                 feeRates["Dental"] = 600;
                 
-                saveFeeRates();
+                string json = JsonConvert.SerializeObject(feeRates, Formatting.Indented);
+                File.WriteAllText(feeFilePath, json);
             }
         }
         catch (Exception)
@@ -140,23 +131,6 @@ public class PatientVisitManager
             feeRates["Vaccination"] = 150;
             feeRates["Physical Therapy"] = 800;
             feeRates["Dental"] = 600;
-        }
-    }
-
-    private void saveFeeRates()
-    {
-        try
-        {
-            StreamWriter writer = new StreamWriter("fees.txt");
-            foreach (var pair in feeRates)
-            {
-                writer.WriteLine(pair.Key + "|" + pair.Value);
-            }
-            writer.Close();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Error saving fee rates: " + ex.Message);
         }
     }
 
@@ -848,95 +822,137 @@ public class Program
 
         manager.showFilteredAndSortedRecords(filteredVisits);
     }
-private static void addNewVisit(PatientVisitManager obj)
-{
-    Console.Write("Patient Name: ");
-    string patientName = Console.ReadLine();
 
-    Console.Write("Visit Date (yyyy-mm-dd) or Enter for today: ");
-    string dateStr = Console.ReadLine();
-    DateTime visitDate;
+    private static void addNewVisit(PatientVisitManager obj)
+    {
+        Console.Write("Patient Name: ");
+        string patientName = Console.ReadLine();
 
-    if (string.IsNullOrEmpty(dateStr))
-        visitDate = DateTime.Now;
-    else
-        visitDate = DateTime.Parse(dateStr);
+        Console.Write("Visit Date (yyyy-mm-dd) or Enter for today: ");
+        string dateStr = Console.ReadLine();
+        DateTime visitDate;
 
-    Console.Write("Visit Type: ");
-    string visitType = Console.ReadLine();
+        if (string.IsNullOrEmpty(dateStr))
+            visitDate = DateTime.Now;
+        else
+            visitDate = DateTime.Parse(dateStr);
 
-    Console.Write("Note/Notes: ");
-    string Note = Console.ReadLine();
+        Console.Write("Visit Type: ");
+        string visitType = Console.ReadLine();
 
-    Console.Write("Doctor Name (optional): ");
-    string doctorName = Console.ReadLine();
+        Console.Write("Note/Notes: ");
+        string Note = Console.ReadLine();
 
-    Console.Write("Duration in minutes (default 30): ");
-    string durationStr = Console.ReadLine();
-    int duration = string.IsNullOrEmpty(durationStr) ? 30 : int.Parse(durationStr);
+        Console.Write("Doctor Name (optional): ");
+        string doctorName = Console.ReadLine();
 
-    obj.AddVisit(patientName, visitDate, visitType, Note, doctorName, duration);
-}
+        Console.Write("Duration in minutes (default 30): ");
+        string durationStr = Console.ReadLine();
+        int duration = string.IsNullOrEmpty(durationStr) ? 30 : int.Parse(durationStr);
 
+        obj.AddVisit(patientName, visitDate, visitType, Note, doctorName, duration);
+    }
 private static void updateVisit(PatientVisitManager manager)
-{
-    Console.Write("Enter Visit ID to update: ");
-    int id = int.Parse(Console.ReadLine());
+    {
+        Console.Write("Enter Visit ID: ");
+        int id = int.Parse(Console.ReadLine());
 
-    Console.Write("New Patient Name (Enter to skip): ");
-    string patientName = Console.ReadLine();
-    if (string.IsNullOrEmpty(patientName)) patientName = null;
+        Console.Write("New Patient Name (Enter to skip): ");
+        string patientName = Console.ReadLine();
 
-    Console.Write("New Visit Date (yyyy-mm-dd) (Enter to skip): ");
-    string dateStr = Console.ReadLine();
-    DateTime? visitDate = string.IsNullOrEmpty(dateStr) ? null : DateTime.Parse(dateStr);
+        Console.Write("New Date (yyyy-mm-dd) (Enter to skip): ");
+        string dateStr = Console.ReadLine();
 
-    Console.Write("New Visit Type (Enter to skip): ");
-    string visitType = Console.ReadLine();
-    if (string.IsNullOrEmpty(visitType)) visitType = null;
+        DateTime? visitDate = null;
 
-    Console.Write("New Note (Enter to skip): ");
-    string note = Console.ReadLine();
-    if (string.IsNullOrEmpty(note)) note = null;
+        if (!string.IsNullOrEmpty(dateStr))
+            visitDate = DateTime.Parse(dateStr);
 
-    Console.Write("New Doctor Name (Enter to skip): ");
-    string doctorName = Console.ReadLine();
-    if (string.IsNullOrEmpty(doctorName)) doctorName = null;
+        Console.Write("New Visit Type (Enter to skip): ");
+        string visitType = Console.ReadLine();
 
-    Console.Write("New Duration in minutes (Enter to skip): ");
-    string durationStr = Console.ReadLine();
-    int? duration = string.IsNullOrEmpty(durationStr) ? null : int.Parse(durationStr);
+        Console.Write("New Note (Enter to skip): ");
+        string note = Console.ReadLine();
 
-    manager.UpdateVisit(id, patientName, visitDate, visitType, note, doctorName, duration);
-}
+        Console.Write("New Doctor Name (Enter to skip): ");
+        string doctorName = Console.ReadLine();
 
-private static void deleteVisit(PatientVisitManager manager)
-{
-    Console.Write("Enter Visit ID to delete: ");
-    int id = int.Parse(Console.ReadLine());
-    manager.DeleteVisit(id);
-}
+        Console.Write("New Duration in minutes (Enter to skip): ");
+        string durationStr = Console.ReadLine();
+        int? duration = null;
 
-private static void searchById(PatientVisitManager manager)
-{
-    Console.Write("Enter Visit ID: ");
-    int id = int.Parse(Console.ReadLine());
-    PatientVisit visit = manager.findById(id);
-    manager.showVisit(visit);
-}
+        if (!string.IsNullOrEmpty(durationStr))
+            duration = int.Parse(durationStr);
 
-private static void generateIndividualSummary(PatientVisitManager manager)
-{
-    Console.Write("Enter Visit ID for summary: ");
-    int id = int.Parse(Console.ReadLine());
-    manager.generateVisitSummary(id);
-}
+        manager.UpdateVisit(id, 
+            string.IsNullOrEmpty(patientName) ? null : patientName,
+            visitDate,
+            string.IsNullOrEmpty(visitType) ? null : visitType,
+            string.IsNullOrEmpty(note) ? null : note,
+            string.IsNullOrEmpty(doctorName) ? null : doctorName,
+            duration);
+    }
 
-private static void generateMockData(PatientVisitManager manager)
-{
-    Console.Write("Enter number of mock records to generate (default 350): ");
-    string countStr = Console.ReadLine();
-    int count = string.IsNullOrEmpty(countStr) ? 350 : int.Parse(countStr);
-    manager.generateMockData(count);
-}
-}
+    private static void deleteVisit(PatientVisitManager manager)
+    {
+        Console.Write("Enter Visit ID to delete: ");
+        int id = int.Parse(Console.ReadLine());
+
+        PatientVisit visit = manager.findById(id);
+        if (visit != null)
+        {
+            Console.WriteLine("Visit Details:");
+            manager.showVisit(visit);
+            Console.Write("Are you sure you want to delete this visit? (Y/N): ");
+            string confirmation = Console.ReadLine();
+            
+            if (confirmation.ToUpper() == "Y")
+            {
+                manager.DeleteVisit(id);
+            }
+            else
+            {
+                Console.WriteLine("Delete operation cancelled.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Visit with ID " + id + " not found.");
+        }
+    }
+
+    private static void searchById(PatientVisitManager manager)
+    {
+        Console.Write("Enter Visit ID: ");
+        int id = int.Parse(Console.ReadLine());
+
+        PatientVisit visit = manager.findById(id);
+        manager.showVisit(visit);
+    }
+
+    private static void generateIndividualSummary(PatientVisitManager manager)
+    {
+        Console.Write("Enter Visit ID for summary: ");
+        int id = int.Parse(Console.ReadLine());
+
+        manager.generateVisitSummary(id);
+    }
+
+    private static void generateMockData(PatientVisitManager manager)
+    {
+        Console.Write("Enter number of mock records to generate (default 350): ");
+        string countStr = Console.ReadLine();
+        int count = string.IsNullOrEmpty(countStr) ? 350 : int.Parse(countStr);
+
+        Console.Write("Are you sure you want to generate " + count + " mock records? (Y/N): ");
+        string confirmation = Console.ReadLine();
+
+        if (confirmation.ToUpper() == "Y")
+        {
+            manager.generateMockData(count);
+        }
+        else
+        {
+            Console.WriteLine("Mock data generation cancelled.");
+        }
+    }
