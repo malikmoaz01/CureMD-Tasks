@@ -27,7 +27,7 @@ public interface PatientCommand
     void Undo();
 }
 
-public class AddVisitCommand : PatientCommand 
+public class AddVisitCommand : PatientCommand
 {
     private PatientVisitManager patientvisitmanageobj;
     private PatientVisit patientvisitobj;
@@ -46,6 +46,12 @@ public class AddVisitCommand : PatientCommand
     }
 }
 
+
+
+
+
+
+
 public class ActivityLogger
 {
     private string logFilePath = "activity_log.txt";
@@ -54,10 +60,10 @@ public class ActivityLogger
     {
         try
         {
-            string logEntry = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " | " + 
-                             action + " | " + (success ? "SUCCESS" : "FAILURE") + 
+            string logEntry = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " | " +
+                             action + " | " + (success ? "SUCCESS" : "FAILURE") +
                              " | " + details;
-            
+
             File.AppendAllText(logFilePath, logEntry + Environment.NewLine);
         }
         catch (Exception ex)
@@ -66,6 +72,18 @@ public class ActivityLogger
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 public class PatientVisitManager
 {
@@ -79,6 +97,15 @@ public class PatientVisitManager
     private string[] patientNames = { "Ahmed Ali", "Sara Khan", "Muhammad Hassan", "Fatima Sheikh", "Ali Raza", "Ayesha Malik", "Usman Ahmed", "Zainab Hussain", "Hassan Ali", "Mariam Qureshi", "Bilal Shah", "Sana Tariq", "Imran Khan", "Nida Zahra", "Farhan Malik" };
     private string[] doctorNames = { "Dr. Ahmad", "Dr. Fatima", "Dr. Hassan", "Dr. Ayesha", "Dr. Ali", "Dr. Sara", "Dr. Usman", "Dr. Zainab", "Dr. Bilal", "Dr. Mariam" };
 
+
+
+
+
+
+
+
+
+
     public PatientVisitManager(string fileName = "patient_visits.txt")
     {
         visits = new List<PatientVisit>();
@@ -89,11 +116,28 @@ public class PatientVisitManager
         loadData();
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     private void loadFeeRates()
     {
         feeRates = new Dictionary<string, decimal>();
         string feeFilePath = "fees.txt";
-        
+
         try
         {
             if (File.Exists(feeFilePath))
@@ -124,7 +168,7 @@ public class PatientVisitManager
                 feeRates["Vaccination"] = 150;
                 feeRates["Physical Therapy"] = 800;
                 feeRates["Dental"] = 600;
-                
+
                 saveFeeRates();
             }
         }
@@ -141,6 +185,14 @@ public class PatientVisitManager
             feeRates["Physical Therapy"] = 800;
             feeRates["Dental"] = 600;
         }
+
+
+
+
+
+
+
+
     }
 
     private void saveFeeRates()
@@ -160,6 +212,10 @@ public class PatientVisitManager
         }
     }
 
+
+
+
+
     private decimal calculateFee(string visitType, int duration)
     {
         if (feeRates.ContainsKey(visitType))
@@ -175,15 +231,18 @@ public class PatientVisitManager
         return 500;
     }
 
+
+
+
     private bool checkTimeSlotConflict(string patientName, DateTime visitDate)
     {
         for (int i = 0; i < visits.Count; i++)
         {
             if (visits[i].PatientName.ToLower() == patientName.ToLower())
             {
-                TimeSpan timeDiff = Math.Abs((visits[i].VisitDate - visitDate).TotalMinutes) < 30 ? 
+                TimeSpan timeDiff = Math.Abs((visits[i].VisitDate - visitDate).TotalMinutes) < 30 ?
                                    visits[i].VisitDate - visitDate : TimeSpan.Zero;
-                
+
                 if (Math.Abs(timeDiff.TotalMinutes) < 30)
                 {
                     return true;
@@ -192,6 +251,11 @@ public class PatientVisitManager
         }
         return false;
     }
+    
+
+
+
+
 
     public void AddVisit(string patientName, DateTime visitDate, string visitType, string Note, string doctorName = "", int duration = 30)
     {
@@ -223,10 +287,22 @@ public class PatientVisitManager
         Console.WriteLine("Visit Added -> Visit id & Name for this visit are  " + visit.Id + " -> " + visit.PatientName);
     }
 
+
+
+
+
+
     public void AddVisit_nosave(PatientVisit visit)
     {
         visits.Add(visit);
     }
+
+
+
+
+
+
+
 
     public void UpdateVisit(int id, string patientName = null, DateTime? visitDate = null, string visitType = null, string Note = null, string doctorName = null, int? duration = null)
     {
@@ -253,7 +329,8 @@ public class PatientVisitManager
         if (visitType != null) updatevisitobj.VisitType = visitType;
         if (Note != null) updatevisitobj.Note = Note;
         if (doctorName != null) updatevisitobj.DoctorName = doctorName;
-        if (duration.HasValue) 
+       
+        if (duration.HasValue)
         {
             updatevisitobj.DurationInMinutes = duration.Value;
             updatevisitobj.Fee = calculateFee(updatevisitobj.VisitType, duration.Value);
@@ -263,6 +340,11 @@ public class PatientVisitManager
         logger.LogActivity("Update Visit", true, "Visit ID " + id + " updated");
         Console.WriteLine("Updated successfully!");
     }
+
+
+
+
+
 
     public void DeleteVisit(int id)
     {
@@ -290,6 +372,13 @@ public class PatientVisitManager
         Console.WriteLine("Visit deleted ");
     }
 
+
+
+
+
+
+
+
     public PatientVisit findById(int id)
     {
         for (int i = 0; i < visits.Count; i++)
@@ -300,15 +389,24 @@ public class PatientVisitManager
         return null;
     }
 
+
+
+
+
     public List<PatientVisit> getAllVisits()
     {
         return visits;
     }
 
+
+
+
+
+
     public List<PatientVisit> getVisitsByType(string visitType)
     {
         List<PatientVisit> result = new List<PatientVisit>();
-        
+
         for (int i = 0; i < visits.Count; i++)
         {
             if (visits[i].VisitType.ToLower().Contains(visitType.ToLower()))
@@ -320,10 +418,13 @@ public class PatientVisitManager
         return result;
     }
 
+
+
+
     public List<PatientVisit> getVisitsByDoctor(string doctorName)
     {
         List<PatientVisit> result = new List<PatientVisit>();
-        
+
         for (int i = 0; i < visits.Count; i++)
         {
             if (visits[i].DoctorName.ToLower().Contains(doctorName.ToLower()))
@@ -335,10 +436,13 @@ public class PatientVisitManager
         return result;
     }
 
+
+
+
     public List<PatientVisit> getVisitsByDateRange(DateTime startDate, DateTime endDate)
     {
         List<PatientVisit> result = new List<PatientVisit>();
-        
+
         for (int i = 0; i < visits.Count; i++)
         {
             if (visits[i].VisitDate >= startDate && visits[i].VisitDate <= endDate)
@@ -350,29 +454,44 @@ public class PatientVisitManager
         return result;
     }
 
-    public List<PatientVisit> getSortedVisits(string sortBy)
+
+
+
+    public List<PatientVisit> GetSortedVisits(string sortBy)
     {
         List<PatientVisit> sortedList = new List<PatientVisit>(visits);
-        
-        if (sortBy.ToLower() == "date")
+
+        switch (sortBy.ToLower())
         {
-            sortedList.Sort((x, y) => x.VisitDate.CompareTo(y.VisitDate));
-        }
-        else if (sortBy.ToLower() == "name")
-        {
-            sortedList.Sort((x, y) => x.PatientName.CompareTo(y.PatientName));
-        }
-        else if (sortBy.ToLower() == "type")
-        {
-            sortedList.Sort((x, y) => x.VisitType.CompareTo(y.VisitType));
-        }
-        else if (sortBy.ToLower() == "fee")
-        {
-            sortedList.Sort((x, y) => x.Fee.CompareTo(y.Fee));
+            case "date":
+                sortedList = sortedList.OrderBy(visit => visit.VisitDate).ToList();
+                break;
+
+            case "name":
+                sortedList = sortedList.OrderBy(visit => visit.PatientName).ToList();
+                break;
+
+            case "type":
+                sortedList = sortedList.OrderBy(visit => visit.VisitType).ToList();
+                break;
+
+            case "fee":
+                sortedList = sortedList.OrderBy(visit => visit.Fee).ToList();
+                break;
+
+            default: 
+                sortedList = sortedList.OrderBy(visit => visit.VisitDate).ToList();
+                break;
         }
 
         return sortedList;
     }
+
+
+
+
+
+
 
     public void showVisit(PatientVisit visit)
     {
@@ -394,6 +513,12 @@ public class PatientVisitManager
         Console.WriteLine("\n=======================================================\n");
     }
 
+
+
+
+
+
+
     public void showAllRecords()
     {
         if (visits.Count == 0)
@@ -407,11 +532,16 @@ public class PatientVisitManager
         for (int i = 0; i < visits.Count; i++)
         {
             PatientVisit v = visits[i];
-            Console.WriteLine($"{v.Id} | {v.PatientName} | {v.VisitDate:yyyy-MM-dd} | {v.VisitType} | {v.Note} | {v.DoctorName} | {v.DurationInMinutes}min | Rs.{v.Fee}");
+            Console.WriteLine($"{v.Id} | {v.PatientName} | {v.VisitDate:yyyy-MM-dd HH:mm:ss} | {v.VisitType} | {v.Note} | {v.DoctorName} | {v.DurationInMinutes}min | Rs.{v.Fee}");
         }
 
         Console.WriteLine("\n===============================\n");
     }
+
+
+
+
+
 
     public void showFilteredAndSortedRecords(List<PatientVisit> visitList)
     {
@@ -432,10 +562,14 @@ public class PatientVisitManager
         Console.WriteLine("\n===============================\n");
     }
 
+
+
+
+
     public void showvisitsbytype()
     {
         Dictionary<string, int> counts = new Dictionary<string, int>();
-        
+
         for (int i = 0; i < visits.Count; i++)
         {
             string type = visits[i].VisitType;
@@ -454,6 +588,11 @@ public class PatientVisitManager
 
         Console.WriteLine("\n=================================\n");
     }
+
+
+
+
+
 
     public void generateVisitSummary(int visitId)
     {
@@ -475,9 +614,14 @@ public class PatientVisitManager
         Console.WriteLine("Attending Doctor: " + (string.IsNullOrEmpty(generatevisitobj.DoctorName) ? "Not assigned" : generatevisitobj.DoctorName));
         Console.WriteLine("Duration: " + generatevisitobj.DurationInMinutes + " minutes");
         Console.WriteLine("Fee: Rs. " + generatevisitobj.Fee);
-        
+
         Console.WriteLine("\n=================================\n");
     }
+
+
+
+
+
 
     public void getTotalVisitsByType()
     {
@@ -493,7 +637,7 @@ public class PatientVisitManager
         }
 
         Console.WriteLine("\n*** Total Visits by Type ***");
-        
+
         int totalVisits = 0;
 
         foreach (var pair in typeCounts)
@@ -505,6 +649,12 @@ public class PatientVisitManager
 
         Console.WriteLine("\n=================================\n");
     }
+
+
+
+
+
+
 
     public void getWeeklySummary()
     {
@@ -523,9 +673,9 @@ public class PatientVisitManager
         }
 
         Console.WriteLine("\n*** Weekly Visit Summary ***");
-        
+
         Console.WriteLine("Week: " + weekStart.ToString("MMM dd") + " - " + weekEnd.AddDays(-1).ToString("MMM dd, yyyy"));
-        
+
         Console.WriteLine("Total visits this week: " + weeklyVisits.Count);
 
         Dictionary<string, int> dailyCounts = new Dictionary<string, int>();
@@ -551,6 +701,12 @@ public class PatientVisitManager
 
         Console.WriteLine("****************************");
     }
+
+
+
+
+
+
 
     public void generateMockData(int count = 350)
     {
@@ -599,6 +755,13 @@ public class PatientVisitManager
         Console.WriteLine("Mock data generated successfully! Total records: " + visits.Count);
     }
 
+
+
+
+
+
+
+
     private void saveData()
     {
         try
@@ -620,6 +783,11 @@ public class PatientVisitManager
             Console.WriteLine("Error saving file: " + ex.Message);
         }
     }
+
+
+
+
+
 
     private void loadData()
     {
@@ -741,12 +909,12 @@ public class Program
         Console.WriteLine("1. Admin");
         Console.WriteLine("2. Receptionist");
         Console.Write("Select role: ");
-        
+
         string roleChoice = Console.ReadLine();
-        
+
         Console.Write("Username: ");
         string username = Console.ReadLine();
-        
+
         Console.Write("Password: ");
         string password = Console.ReadLine();
 
@@ -766,29 +934,34 @@ public class Program
         return false;
     }
 
+
+
+
+
+
     private static void showMenu()
     {
         Console.WriteLine("\n ==== Welcome to PVMS Curemd(6606) ====");
         Console.WriteLine("1. Add New Visit");
-        
+
         if (currentUserRole == UserRole.Admin)
         {
             Console.WriteLine("2. Update Visit");
             Console.WriteLine("3. Delete Visit");
         }
-        
+
         Console.WriteLine("4. Search by ID");
         Console.WriteLine("5. Show All Records");
         Console.WriteLine("6. Show Visits by Category");
         Console.WriteLine("7. Individual Visit Summary");
         Console.WriteLine("8. Total Visits by Type");
         Console.WriteLine("9. Weekly Visit Summary");
-        
+
         if (currentUserRole == UserRole.Admin)
         {
             Console.WriteLine("10. Generate Mock Data");
         }
-        
+
         Console.WriteLine("11. Filter & Sort Records");
         Console.WriteLine("12. Exit");
         Console.Write("Choose option: ");
@@ -848,95 +1021,122 @@ public class Program
 
         manager.showFilteredAndSortedRecords(filteredVisits);
     }
-private static void addNewVisit(PatientVisitManager obj)
-{
-    Console.Write("Patient Name: ");
-    string patientName = Console.ReadLine();
 
-    Console.Write("Visit Date (yyyy-mm-dd) or Enter for today: ");
-    string dateStr = Console.ReadLine();
-    DateTime visitDate;
 
-    if (string.IsNullOrEmpty(dateStr))
-        visitDate = DateTime.Now;
-    else
-        visitDate = DateTime.Parse(dateStr);
 
-    Console.Write("Visit Type: ");
-    string visitType = Console.ReadLine();
 
-    Console.Write("Note/Notes: ");
-    string Note = Console.ReadLine();
+    private static void addNewVisit(PatientVisitManager obj)
+    {
+        Console.Write("Patient Name: ");
+        string patientName = Console.ReadLine();
 
-    Console.Write("Doctor Name (optional): ");
-    string doctorName = Console.ReadLine();
+        Console.Write("Visit Date (yyyy-mm-dd) or Enter for today: ");
+        string dateStr = Console.ReadLine();
+        DateTime visitDate;
 
-    Console.Write("Duration in minutes (default 30): ");
-    string durationStr = Console.ReadLine();
-    int duration = string.IsNullOrEmpty(durationStr) ? 30 : int.Parse(durationStr);
+        if (string.IsNullOrEmpty(dateStr))
+            visitDate = DateTime.Now;
+        else
+            visitDate = DateTime.Parse(dateStr);
 
-    obj.AddVisit(patientName, visitDate, visitType, Note, doctorName, duration);
-}
+        Console.Write("Visit Type: ");
+        string visitType = Console.ReadLine();
 
-private static void updateVisit(PatientVisitManager manager)
-{
-    Console.Write("Enter Visit ID to update: ");
-    int id = int.Parse(Console.ReadLine());
+        Console.Write("Note/Notes: ");
+        string Note = Console.ReadLine();
 
-    Console.Write("New Patient Name (Enter to skip): ");
-    string patientName = Console.ReadLine();
-    if (string.IsNullOrEmpty(patientName)) patientName = null;
+        Console.Write("Doctor Name (optional): ");
+        string doctorName = Console.ReadLine();
 
-    Console.Write("New Visit Date (yyyy-mm-dd) (Enter to skip): ");
-    string dateStr = Console.ReadLine();
-    DateTime? visitDate = string.IsNullOrEmpty(dateStr) ? null : DateTime.Parse(dateStr);
+        Console.Write("Duration in minutes (default 30): ");
+        string durationStr = Console.ReadLine();
+        int duration = string.IsNullOrEmpty(durationStr) ? 30 : int.Parse(durationStr);
 
-    Console.Write("New Visit Type (Enter to skip): ");
-    string visitType = Console.ReadLine();
-    if (string.IsNullOrEmpty(visitType)) visitType = null;
+        obj.AddVisit(patientName, visitDate, visitType, Note, doctorName, duration);
+    }
 
-    Console.Write("New Note (Enter to skip): ");
-    string note = Console.ReadLine();
-    if (string.IsNullOrEmpty(note)) note = null;
 
-    Console.Write("New Doctor Name (Enter to skip): ");
-    string doctorName = Console.ReadLine();
-    if (string.IsNullOrEmpty(doctorName)) doctorName = null;
 
-    Console.Write("New Duration in minutes (Enter to skip): ");
-    string durationStr = Console.ReadLine();
-    int? duration = string.IsNullOrEmpty(durationStr) ? null : int.Parse(durationStr);
 
-    manager.UpdateVisit(id, patientName, visitDate, visitType, note, doctorName, duration);
-}
 
-private static void deleteVisit(PatientVisitManager manager)
-{
-    Console.Write("Enter Visit ID to delete: ");
-    int id = int.Parse(Console.ReadLine());
-    manager.DeleteVisit(id);
-}
 
-private static void searchById(PatientVisitManager manager)
-{
-    Console.Write("Enter Visit ID: ");
-    int id = int.Parse(Console.ReadLine());
-    PatientVisit visit = manager.findById(id);
-    manager.showVisit(visit);
-}
 
-private static void generateIndividualSummary(PatientVisitManager manager)
-{
-    Console.Write("Enter Visit ID for summary: ");
-    int id = int.Parse(Console.ReadLine());
-    manager.generateVisitSummary(id);
-}
 
-private static void generateMockData(PatientVisitManager manager)
-{
-    Console.Write("Enter number of mock records to generate (default 350): ");
-    string countStr = Console.ReadLine();
-    int count = string.IsNullOrEmpty(countStr) ? 350 : int.Parse(countStr);
-    manager.generateMockData(count);
-}
+
+
+    private static void updateVisit(PatientVisitManager manager)
+    {
+        Console.Write("Enter Visit ID to update: ");
+        int id = int.Parse(Console.ReadLine());
+
+        Console.Write("New Patient Name (Enter to skip): ");
+        string patientName = Console.ReadLine();
+        if (string.IsNullOrEmpty(patientName)) patientName = null;
+
+        Console.Write("New Visit Date (yyyy-mm-dd) (Enter to skip): ");
+        string dateStr = Console.ReadLine();
+        DateTime? visitDate = string.IsNullOrEmpty(dateStr) ? null : DateTime.Parse(dateStr);
+
+        Console.Write("New Visit Type (Enter to skip): ");
+        string visitType = Console.ReadLine();
+        if (string.IsNullOrEmpty(visitType)) visitType = null;
+
+        Console.Write("New Note (Enter to skip): ");
+        string note = Console.ReadLine();
+        if (string.IsNullOrEmpty(note)) note = null;
+
+        Console.Write("New Doctor Name (Enter to skip): ");
+        string doctorName = Console.ReadLine();
+        if (string.IsNullOrEmpty(doctorName)) doctorName = null;
+
+        Console.Write("New Duration in minutes (Enter to skip): ");
+        string durationStr = Console.ReadLine();
+        int? duration = string.IsNullOrEmpty(durationStr) ? null : int.Parse(durationStr);
+
+        manager.UpdateVisit(id, patientName, visitDate, visitType, note, doctorName, duration);
+    }
+
+
+
+
+
+    private static void deleteVisit(PatientVisitManager manager)
+    {
+        Console.Write("Enter Visit ID to delete: ");
+        int id = int.Parse(Console.ReadLine());
+        manager.DeleteVisit(id);
+    }
+
+
+
+
+    private static void searchById(PatientVisitManager manager)
+    {
+        Console.Write("Enter Visit ID: ");
+        int id = int.Parse(Console.ReadLine());
+        PatientVisit visit = manager.findById(id);
+        manager.showVisit(visit);
+    }
+
+
+
+
+    private static void generateIndividualSummary(PatientVisitManager manager)
+    {
+        Console.Write("Enter Visit ID for summary: ");
+        int id = int.Parse(Console.ReadLine());
+        manager.generateVisitSummary(id);
+    }
+
+
+
+
+
+    private static void generateMockData(PatientVisitManager manager)
+    {
+        Console.Write("Enter number of mock records to generate (default 350): ");
+        string countStr = Console.ReadLine();
+        int count = string.IsNullOrEmpty(countStr) ? 350 : int.Parse(countStr);
+        manager.generateMockData(count);
+    }
 }
