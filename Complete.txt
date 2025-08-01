@@ -234,23 +234,28 @@ public class PatientVisitManager
 
 
 
-    private bool checkTimeSlotConflict(string patientName, DateTime visitDate)
+  private bool checkTimeSlotConflict(string patientName, DateTime visitDate)
+{
+    for (int i = 0; i < visits.Count; i++)
     {
-        for (int i = 0; i < visits.Count; i++)
+        if (visits[i].PatientName.ToLower() == patientName.ToLower())
         {
-            if (visits[i].PatientName.ToLower() == patientName.ToLower())
-            {
-                TimeSpan timeDiff = Math.Abs((visits[i].VisitDate - visitDate).TotalMinutes) < 30 ?
-                                   visits[i].VisitDate - visitDate : TimeSpan.Zero;
+            //TimeSpan timeDiff = Math.Abs((visits[i].VisitDate - visitDate).TotalMinutes) < 30 ?
+            //                   visits[i].VisitDate - visitDate : TimeSpan.Zero;
+            double minutesDiff = Math.Abs((visits[i].VisitDate - visitDate).TotalMinutes);
 
-                if (Math.Abs(timeDiff.TotalMinutes) < 30)
-                {
-                    return true;
-                }
+            //if (Math.Abs(timeDiff.TotalMinutes) < 30)
+            //{
+            //    return true;
+            //}
+            if(minutesDiff < 30)
+            {
+                return true;
             }
         }
-        return false;
     }
+    return false;
+}
     
 
 
