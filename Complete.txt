@@ -1004,19 +1004,19 @@ public class Program
         }
         else if (choice == "4")
         {
-            filteredVisits = manager.getSortedVisits("date");
+            filteredVisits = manager.GetSortedVisits("date");
         }
         else if (choice == "5")
         {
-            filteredVisits = manager.getSortedVisits("name");
+            filteredVisits = manager.GetSortedVisits("name");
         }
         else if (choice == "6")
         {
-            filteredVisits = manager.getSortedVisits("type");
+            filteredVisits = manager.GetSortedVisits("type");
         }
         else if (choice == "7")
         {
-            filteredVisits = manager.getSortedVisits("fee");
+            filteredVisits = manager.GetSortedVisits("fee");
         }
 
         manager.showFilteredAndSortedRecords(filteredVisits);
