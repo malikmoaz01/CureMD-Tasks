@@ -1,3 +1,0 @@
-2025-07-31 23:31:51 | Add Visit | SUCCESS | Visit added for Mishal Ch (ID: 2)
-2025-07-31 23:32:11 | Delete Visit | SUCCESS | Visit ID 1 deleted
-2025-07-31 23:33:44 | Generate Mock Data | SUCCESS | 15 mock entries generated
