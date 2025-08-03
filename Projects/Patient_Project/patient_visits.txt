@@ -14,5 +14,4 @@
 15|Ali Raza|2024-11-26 23:33:44|Emergency|Vaccination administered|Dr. Fatima|34|1066.6666666666666666666666667
 16|Ahmed Ali|2024-09-27 23:33:44|Follow-up|Follow up for previous treatment|Dr. Bilal|19|300
 17|Bilal Shah|2025-05-07 23:33:44|Physical Therapy|Regular checkup completed|Dr. Ayesha|46|1013.3333333333333333333333333
-18|Ahmed|2025-08-04 00:00:00|HH|ns|sn|50|500
-18|Ahmed|2025-08-04 00:00:00|HH|ns|sn|50|500
+18|Ahmed|2025-08-04 00:00:00|HH|ns|sn|50|500 

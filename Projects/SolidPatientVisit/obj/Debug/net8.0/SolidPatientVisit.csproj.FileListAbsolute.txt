@@ -1,0 +1,15 @@
+D:\CureMD-Tasks\Projects\SolidPatientVisit\bin\Debug\net8.0\SolidPatientVisit.exe
+D:\CureMD-Tasks\Projects\SolidPatientVisit\bin\Debug\net8.0\SolidPatientVisit.deps.json
+D:\CureMD-Tasks\Projects\SolidPatientVisit\bin\Debug\net8.0\SolidPatientVisit.runtimeconfig.json
+D:\CureMD-Tasks\Projects\SolidPatientVisit\bin\Debug\net8.0\SolidPatientVisit.dll
+D:\CureMD-Tasks\Projects\SolidPatientVisit\bin\Debug\net8.0\SolidPatientVisit.pdb
+D:\CureMD-Tasks\Projects\SolidPatientVisit\obj\Debug\net8.0\SolidPatientVisit.GeneratedMSBuildEditorConfig.editorconfig
+D:\CureMD-Tasks\Projects\SolidPatientVisit\obj\Debug\net8.0\SolidPatientVisit.AssemblyInfoInputs.cache
+D:\CureMD-Tasks\Projects\SolidPatientVisit\obj\Debug\net8.0\SolidPatientVisit.AssemblyInfo.cs
+D:\CureMD-Tasks\Projects\SolidPatientVisit\obj\Debug\net8.0\SolidPatientVisit.csproj.CoreCompileInputs.cache
+D:\CureMD-Tasks\Projects\SolidPatientVisit\obj\Debug\net8.0\SolidPatientVisit.sourcelink.json
+D:\CureMD-Tasks\Projects\SolidPatientVisit\obj\Debug\net8.0\SolidPatientVisit.dll
+D:\CureMD-Tasks\Projects\SolidPatientVisit\obj\Debug\net8.0\refint\SolidPatientVisit.dll
+D:\CureMD-Tasks\Projects\SolidPatientVisit\obj\Debug\net8.0\SolidPatientVisit.pdb
+D:\CureMD-Tasks\Projects\SolidPatientVisit\obj\Debug\net8.0\SolidPatientVisit.genruntimeconfig.cache
+D:\CureMD-Tasks\Projects\SolidPatientVisit\obj\Debug\net8.0\ref\SolidPatientVisit.dll
