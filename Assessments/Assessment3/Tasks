@@ -1,0 +1,18 @@
+1. Reverse a string '10 20 30' ==> '30 20 10'
+2. return true or false as string
+The username should be between 4 & 25
+It must start with alphabet letter
+It can contain only letters , numbers & underscore
+It cant end with underscore
+
+3. 2 different as string 
+first is decimal numbers & second is binary number
+Goal is to determine how many digits to the binary number needed
+to be changes to represent to decimal no correctly(either 0 change to 1 & vice versa)
+if ["56" , "011000"] 
+program should return 1 bcz only 1 digit needs to be change in the bin number(the first zero need to be 1) to correctly represent 56 to binary
+
+4. Test case 
+"oneoneplusfour" 11 + 4 = 15
+return 
+"onefive" 
