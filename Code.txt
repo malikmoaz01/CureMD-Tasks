@@ -1,0 +1,29 @@
+1. Separate Core Responsibilities into Focused Classes
+Enhance the maintainability and scalability of your application by organizing your code into specialized classes, each responsible for a single area of functionality. For example:
+
+Create a separate class Visit Manager that handles business logic related to visits (add, update, delete, validations, etc.).
+Create a separate class for I/O operations that deals only with saving, reading, and updating visits in the file system (CSV or text file).
+Create a separate class for notifications that handles all user messages such as “Visit added!” or conflict warnings, etc.
+Create a separate class to generate various reports and summaries.
+Goal: Avoid putting too much logic into one class (especially Program.cs), which makes the system rigid and harder to test or extend in the future.
+
+2. Introduce Interfaces for Pluggable Components
+To improve flexibility and future-proof your system, define interfaces for the major components that your application relies on. Some examples include:
+
+IVisitRepository: Abstracts how visit data is stored or retrieved.
+ILogger: Represents any logging mechanism (e.g., file logger, console logger).
+INotificationService: Defines methods to inform the user (e.g., through console messages or a potential future UI).
+Task: Update your main logic classes to rely on these interfaces rather than directly on their implementations. Then, use constructor injection (just like we studied dependency inversion) to plug in the appropriate classes.
+
+Benefit: You can later replace a text file with a database, or replace console output with UI alerts, without changing the rest of the application logic.
+
+
+
+3. Make Role-Based Access Explicit via Services
+Currently, role-based access may be managed through conditional checks. Instead, structure this behavior using dedicated service classes:
+
+Create AdminService to expose all functionalities: add, update, delete, search, and reporting.
+Create ReceptionistService that limits functionality to only add, search, and generate reports.
+Each service can internally use shared logic (e.g., from VisitManager) but restrict what is accessible to the user based on their role.
+
+Why this matters: Keeping role logic separated enhances security, reduces the risk of exposing unauthorized operations, and simplifies permission management.
