@@ -4,13 +4,14 @@ using ECommerce2.Models;
 using ECommerce2.Factories;
 using ECommerce2.Singletons;
 using ECommerce2.Strategies;
+using ECommerce2.Repositories;
 
 namespace ECommerce2.Services
 {
     public class ECommerceSystem
     {
-        private List<Product> products;
-        private List<Order> orders;
+        private IProductRepository productRepository;
+        private IOrderRepository orderRepository;
         private PaymentContext paymentContext;
         private ILogger logger;
         private IConfigurationManager config;
@@ -18,8 +19,8 @@ namespace ECommerce2.Services
 
         public ECommerceSystem()
         {
-            products = new List<Product>();
-            orders = new List<Order>();
+            productRepository = new ProductRepository();
+            orderRepository = new OrderRepository();
             paymentContext = new PaymentContext();
             logger = Logger.Instance;
             config = ConfigurationManager.Instance;
@@ -29,15 +30,16 @@ namespace ECommerce2.Services
 
         private void InitializeSampleData()
         {
-            products.Add(ProductFactory.CreateProduct(ProductCategory.Electronics, "Smartphone", 599.99m, 10));
-            products.Add(ProductFactory.CreateProduct(ProductCategory.Clothing, "T-Shirt", 29.99m, 25));
-            products.Add(ProductFactory.CreateProduct(ProductCategory.Books, "Programming Guide", 49.99m, 15));
-            products.Add(ProductFactory.CreateProduct(ProductCategory.HomeGarden, "Garden Tool", 19.99m, 8));
+            productRepository.AddAsync(ProductFactory.CreateProduct(ProductCategory.Electronics, "Smartphone", 599.99m, 10));
+            productRepository.AddAsync(ProductFactory.CreateProduct(ProductCategory.Clothing, "T-Shirt", 29.99m, 25));
+            productRepository.AddAsync(ProductFactory.CreateProduct(ProductCategory.Books, "Programming Guide", 49.99m, 15));
+            productRepository.AddAsync(ProductFactory.CreateProduct(ProductCategory.HomeGarden, "Garden Tool", 19.99m, 8));
         }
 
         public void ViewProducts()
         {
             Console.WriteLine("\n=== Product Catalog ===");
+            var products = productRepository.GetAllAsync().Result;
             if (products.Count == 0)
             {
                 Console.WriteLine("No products available.");
@@ -88,7 +90,7 @@ namespace ECommerce2.Services
             try
             {
                 Product newProduct = ProductFactory.CreateProduct(category, name, price, stock);
-                products.Add(newProduct);
+                productRepository.AddAsync(newProduct);
                 logger.LogInfo($"New product added: {newProduct.Name}");
                 Console.WriteLine("Product added successfully!");
             }
@@ -130,6 +132,7 @@ namespace ECommerce2.Services
                     continue;
                 }
 
+                var products = productRepository.GetAllAsync().Result;
                 if (productChoice < 1 || productChoice > products.Count)
                 {
                     Console.WriteLine("Invalid product selection.");
@@ -159,12 +162,13 @@ namespace ECommerce2.Services
 
                 order.Items.Add(orderItem);
                 selectedProduct.Stock -= quantity;
+                productRepository.UpdateAsync(selectedProduct);
                 Console.WriteLine($"Added {quantity} x {selectedProduct.Name} to order.");
             }
 
             if (order.Items.Count > 0)
             {
-                orders.Add(order);
+                orderRepository.AddAsync(order);
                 logger.LogInfo($"Order created: {order.Id} for customer {order.CustomerId}");
                 Console.WriteLine($"Order created successfully! Order ID: {order.Id}, Total: ${order.TotalAmount:F2}");
             }
@@ -177,6 +181,7 @@ namespace ECommerce2.Services
         public void ProcessPayment()
         {
             Console.WriteLine("\n=== Process Payment ===");
+            var orders = orderRepository.GetAllAsync().Result;
             if (orders.Count == 0)
             {
                 Console.WriteLine("No orders available for payment.");
@@ -271,6 +276,7 @@ namespace ECommerce2.Services
             if (result.IsSuccessful)
             {
                 selectedOrder.Status = "Paid";
+                orderRepository.UpdateAsync(selectedOrder);
                 logger.LogInfo($"Payment processed successfully for order {selectedOrder.Id}: {result.TransactionId}");
                 Console.WriteLine($"Payment successful! Transaction ID: {result.TransactionId}");
             }
@@ -284,6 +290,7 @@ namespace ECommerce2.Services
         public void ViewOrders()
         {
             Console.WriteLine("\n=== Order History ===");
+            var orders = orderRepository.GetAllAsync().Result;
             if (orders.Count == 0)
             {
                 Console.WriteLine("No orders found.");
@@ -312,17 +319,28 @@ namespace ECommerce2.Services
         public void CheckInventory()
         {
             Console.WriteLine("\n=== Inventory Status ===");
+            var products = productRepository.GetAllAsync().Result;
             if (products.Count == 0)
             {
                 Console.WriteLine("No products in inventory.");
                 return;
             }
 
+            Console.WriteLine("\n--- Regular Inventory ---");
             for (int i = 0; i < products.Count; i++)
             {
                 Product product = products[i];
-                string stockStatus = product.Stock <= 5 ? " (LOW STOCK)" : "";
-                Console.WriteLine($"{product.Name} - Stock: {product.Stock}{stockStatus}");
+                Console.WriteLine($"{product.Name} - Stock: {product.Stock}");
+            }
+
+            var lowStockProducts = productRepository.GetLowStockProducts(5);
+            if (lowStockProducts.Count > 0)
+            {
+                Console.WriteLine("\n--- LOW STOCK ALERT ---");
+                for (int i = 0; i < lowStockProducts.Count; i++)
+                {
+                    Console.WriteLine($"{lowStockProducts[i].Name} - Stock: {lowStockProducts[i].Stock} (LOW STOCK)");
+                }
             }
         }
 
