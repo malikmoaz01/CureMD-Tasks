@@ -1,29 +1,61 @@
-1. Separate Core Responsibilities into Focused Classes
-Enhance the maintainability and scalability of your application by organizing your code into specialized classes, each responsible for a single area of functionality. For example:
-
-Create a separate class Visit Manager that handles business logic related to visits (add, update, delete, validations, etc.).
-Create a separate class for I/O operations that deals only with saving, reading, and updating visits in the file system (CSV or text file).
-Create a separate class for notifications that handles all user messages such as “Visit added!” or conflict warnings, etc.
-Create a separate class to generate various reports and summaries.
-Goal: Avoid putting too much logic into one class (especially Program.cs), which makes the system rigid and harder to test or extend in the future.
-
-2. Introduce Interfaces for Pluggable Components
-To improve flexibility and future-proof your system, define interfaces for the major components that your application relies on. Some examples include:
-
-IVisitRepository: Abstracts how visit data is stored or retrieved.
-ILogger: Represents any logging mechanism (e.g., file logger, console logger).
-INotificationService: Defines methods to inform the user (e.g., through console messages or a potential future UI).
-Task: Update your main logic classes to rely on these interfaces rather than directly on their implementations. Then, use constructor injection (just like we studied dependency inversion) to plug in the appropriate classes.
-
-Benefit: You can later replace a text file with a database, or replace console output with UI alerts, without changing the rest of the application logic.
-
-
-
-3. Make Role-Based Access Explicit via Services
-Currently, role-based access may be managed through conditional checks. Instead, structure this behavior using dedicated service classes:
-
-Create AdminService to expose all functionalities: add, update, delete, search, and reporting.
-Create ReceptionistService that limits functionality to only add, search, and generate reports.
-Each service can internally use shared logic (e.g., from VisitManager) but restrict what is accessible to the user based on their role.
-
-Why this matters: Keeping role logic separated enhances security, reduces the risk of exposing unauthorized operations, and simplifies permission management.
+SQL Assignment: Library Management
+Make a branch by the name “assignment-04” and commit a single file by the name assignment-04.sql
+Entities & Attributes
+Author:
+• AuthorID: primary key
+• AuthorName: max length (100), should not be null
+• DateOfBirth
+Publisher:
+• PublisherID: primary key
+• PublisherName: max length (100), should not be null
+• Address: max length (200)
+Book:
+• BookID: primary key
+• Title: max length (200), should not be null
+• AuthorID: foreign key → Authors(AuthorID)
+• PublisherID: foreign key → Publishers(PublisherID)
+• PublicationDate
+• Price: default should be 0, floating number up to 2 significant figures
+• Genre: max length (500), can be null
+• ISBN CHAR(13), should be unique
+Borrower:
+• BorrowerID: primary key
+• BorrowerName: max length (100), should not be null
+• Email: max length (100), should be unique
+• Phone CHAR(10)
+Loan:
+• LoanID
+• BookID → Books(BookID)
+• BorrowerID → Borrowers(BorrowerID)
+• LoanDate: default value should be current date
+• ReturnDate
+Assignment Tasks
+Write DDL statements to create all tables listed above with their specified constraints.
+Alter the Borrowers table to enforce that BorrowerName cannot be NULL.
+Alter the Books table to enforce uniqueness on the ISBN column.
+Alter the Books table to add a CHECK constraint ensuring Price > 0.
+Insert three sample records into the Authors table.
+Insert two sample records into the Publishers table.
+Insert five sample records into the Books table, ensuring each reference existing authors and publishers.
+Insert two sample records into the Borrowers table.
+Insert three sample records into the Loans table, with at least one record having ReturnDate = NULL.
+Retrieve all books with a price greater than 20.
+Retrieve the title of each book currently on loan and the name of the borrower.
+Count the number of books written by each author; display only authors with more than two books.
+List every book alongside its current borrower’s name, showing NULL for books not on loan.
+List every publisher alongside any books they publish, showing NULL where there is no match.
+List all unique genres found in the Books table.
+Retrieve all books with titles starting with “The” or containing “SQL”.
+Retrieve the five most recent loan records, ordered by LoanDate descending.
+Update the Loans table to set the ReturnDate to the current date for a specific LoanID of your choice.
+Increase the price of all books published before January 1, 2010 by 10%.
+Delete all borrowers who have never made a loan.
+Delete all books priced less than 5.
+Remove the Address column from the Publishers table.
+Drop the entire Loans table.
+Insert a new loan record without specifying LoanDate so that the default value is used.
+Create a new table named BookCategories with columns BookID and Category; use a composite primary key (BookID, Category) and a foreign key referencing Books.
+For each borrower, count how many loans they have made and order the results by that count descending.
+Update any book records with a NULL genre to set the genre to “Unknown”.
+Delete all loan records where LoanDate is more than one year old.
+Given a table LoanInfo(LoanID, BookTitle, BorrowerName, BorrowerAddress, LoanDate): identify violations of 1NF, 2NF, and 3NF, then decompose it into tables that satisfy 3NF with appropriate keys.
