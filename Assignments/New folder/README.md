@@ -1,4 +1,4 @@
-# **Patient Visit Management System 6606 CureMD – README**
+# **Patient Visit Management System 6606 CureMD**
 
 ## **1. Design Decisions**
 
@@ -60,7 +60,7 @@
 
 ## **4. How to Execute Stored Procedures (SPs)**
 
-Assuming SPs are named like `stp_AddPatient`, `stp_GetPatientVisits`, etc.:
+You have to execute by using EXEC Command like this i do in add patient 
 
 ```sql
 -- Add a new patient
