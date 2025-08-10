@@ -1,0 +1,374 @@
+USE PatientVisitMS6606;
+
+
+
+GO
+-- ===== USERS =====
+CREATE PROCEDURE stp_AddUser
+    @Username NVARCHAR(50),
+    @Password NVARCHAR(255),
+    @UserRole NVARCHAR(20)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        IF @Username IS NULL OR LTRIM(RTRIM(@Username)) = '' THROW 50001, 'Username is required', 1;
+        IF @Password IS NULL OR LTRIM(RTRIM(@Password)) = '' THROW 50002, 'Password is required', 1;
+        IF @UserRole NOT IN ('Admin', 'Receptionist') THROW 50003, 'Invalid UserRole', 1;
+        INSERT INTO Users (Username, Password, UserRole) VALUES (@Username, @Password, @UserRole);
+    END TRY BEGIN CATCH THROW; END CATCH
+END;
+GO
+
+CREATE PROCEDURE stp_UpdateUser
+    @UserId INT, @Username NVARCHAR(50), @Password NVARCHAR(255), @UserRole NVARCHAR(20)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM Users WHERE UserId = @UserId) THROW 50004, 'User not found', 1;
+        IF @UserRole NOT IN ('Admin', 'Receptionist') THROW 50005, 'Invalid UserRole', 1;
+        UPDATE Users SET Username=@Username, Password=@Password, UserRole=@UserRole WHERE UserId=@UserId;
+    END TRY BEGIN CATCH THROW; END CATCH
+END;
+GO
+
+CREATE PROCEDURE stp_DeleteUser @UserId INT
+AS
+BEGIN
+    SET NOCOUNT ON; BEGIN TRY DELETE FROM Users WHERE UserId=@UserId; END TRY BEGIN CATCH THROW; END CATCH
+END;
+GO
+
+CREATE PROCEDURE stp_GetUserById @UserId INT
+AS
+BEGIN
+    SET NOCOUNT ON; SELECT * FROM Users WHERE UserId=@UserId;
+END;
+GO
+
+CREATE PROCEDURE stp_GetAllUsers
+AS
+BEGIN
+    SET NOCOUNT ON; SELECT * FROM Users;
+END;
+GO
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- ===== DOCTORS =====
+CREATE PROCEDURE stp_AddDoctor
+    @DoctorName NVARCHAR(100), @Specialization NVARCHAR(100), @ContactNumber NVARCHAR(15), @Email NVARCHAR(100)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        IF @DoctorName IS NULL OR LTRIM(RTRIM(@DoctorName)) = '' THROW 50006, 'DoctorName is required', 1;
+        INSERT INTO Doctors (DoctorName, Specialization, ContactNumber, Email) VALUES (@DoctorName, @Specialization, @ContactNumber, @Email);
+    END TRY BEGIN CATCH THROW; END CATCH
+END;
+GO
+
+CREATE PROCEDURE stp_UpdateDoctor
+    @DoctorId INT, @DoctorName NVARCHAR(100), @Specialization NVARCHAR(100), @ContactNumber NVARCHAR(15), @Email NVARCHAR(100)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM Doctors WHERE DoctorId=@DoctorId) THROW 50007, 'Doctor not found', 1;
+        UPDATE Doctors SET DoctorName=@DoctorName, Specialization=@Specialization, ContactNumber=@ContactNumber, Email=@Email WHERE DoctorId=@DoctorId;
+    END TRY BEGIN CATCH THROW; END CATCH
+END;
+GO
+
+CREATE PROCEDURE stp_DeleteDoctor @DoctorId INT
+AS
+BEGIN
+    SET NOCOUNT ON; BEGIN TRY DELETE FROM Doctors WHERE DoctorId=@DoctorId; END TRY BEGIN CATCH THROW; END CATCH
+END;
+GO
+
+CREATE PROCEDURE stp_GetDoctorById @DoctorId INT
+AS
+BEGIN
+    SET NOCOUNT ON; SELECT * FROM Doctors WHERE DoctorId=@DoctorId;
+END;
+GO
+
+CREATE PROCEDURE stp_GetAllDoctors
+AS
+BEGIN
+    SET NOCOUNT ON; SELECT * FROM Doctors;
+END;
+GO
+
+
+
+
+
+
+-- ===== PATIENTS =====
+CREATE PROCEDURE stp_AddPatient
+    @PatientName NVARCHAR(100), @DateOfBirth DATE, @Gender NVARCHAR(10), @ContactNumber NVARCHAR(15),
+    @Email NVARCHAR(100), @Address NVARCHAR(255), @EmergencyContact NVARCHAR(15)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        IF @PatientName IS NULL OR LTRIM(RTRIM(@PatientName)) = '' THROW 50008, 'PatientName is required', 1;
+        IF @Gender NOT IN ('Male', 'Female', 'Other') THROW 50009, 'Invalid Gender', 1;
+        INSERT INTO Patients (PatientName, DateOfBirth, Gender, ContactNumber, Email, Address, EmergencyContact)
+        VALUES (@PatientName, @DateOfBirth, @Gender, @ContactNumber, @Email, @Address, @EmergencyContact);
+    END TRY BEGIN CATCH THROW; END CATCH
+END;
+GO
+
+CREATE PROCEDURE stp_UpdatePatient
+    @PatientId INT, @PatientName NVARCHAR(100), @DateOfBirth DATE, @Gender NVARCHAR(10), @ContactNumber NVARCHAR(15),
+    @Email NVARCHAR(100), @Address NVARCHAR(255), @EmergencyContact NVARCHAR(15)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM Patients WHERE PatientId=@PatientId) THROW 50010, 'Patient not found', 1;
+        UPDATE Patients SET PatientName=@PatientName, DateOfBirth=@DateOfBirth, Gender=@Gender,
+        ContactNumber=@ContactNumber, Email=@Email, Address=@Address, EmergencyContact=@EmergencyContact
+        WHERE PatientId=@PatientId;
+    END TRY BEGIN CATCH THROW; END CATCH
+END;
+GO
+
+CREATE PROCEDURE stp_DeletePatient @PatientId INT
+AS
+BEGIN
+    SET NOCOUNT ON; BEGIN TRY DELETE FROM Patients WHERE PatientId=@PatientId; END TRY BEGIN CATCH THROW; END CATCH
+END;
+GO
+
+CREATE PROCEDURE stp_GetPatientById @PatientId INT
+AS
+BEGIN
+    SET NOCOUNT ON; SELECT * FROM Patients WHERE PatientId=@PatientId;
+END;
+GO
+
+CREATE PROCEDURE stp_GetAllPatients
+AS
+BEGIN
+    SET NOCOUNT ON; SELECT * FROM Patients;
+END;
+GO
+
+
+
+
+
+
+-- ===== VISITTYPES =====
+CREATE PROCEDURE stp_AddVisitType
+    @VisitTypeName NVARCHAR(50), @BaseRate DECIMAL(10,2), @Description NVARCHAR(255)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        IF @VisitTypeName IS NULL OR LTRIM(RTRIM(@VisitTypeName))='' THROW 50011, 'VisitTypeName is required', 1;
+        INSERT INTO VisitTypes (VisitTypeName, BaseRate, Description) VALUES (@VisitTypeName, @BaseRate, @Description);
+    END TRY BEGIN CATCH THROW; END CATCH
+END;
+GO
+
+CREATE PROCEDURE stp_UpdateVisitType
+    @VisitTypeId INT, @VisitTypeName NVARCHAR(50), @BaseRate DECIMAL(10,2), @Description NVARCHAR(255)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM VisitTypes WHERE VisitTypeId=@VisitTypeId) THROW 50012, 'VisitType not found', 1;
+        UPDATE VisitTypes SET VisitTypeName=@VisitTypeName, BaseRate=@BaseRate, Description=@Description WHERE VisitTypeId=@VisitTypeId;
+    END TRY BEGIN CATCH THROW; END CATCH
+END;
+GO
+
+CREATE PROCEDURE stp_DeleteVisitType @VisitTypeId INT
+AS
+BEGIN
+    SET NOCOUNT ON; BEGIN TRY DELETE FROM VisitTypes WHERE VisitTypeId=@VisitTypeId; END TRY BEGIN CATCH THROW; END CATCH
+END;
+GO
+
+CREATE PROCEDURE stp_GetVisitTypeById @VisitTypeId INT
+AS
+BEGIN
+    SET NOCOUNT ON; SELECT * FROM VisitTypes WHERE VisitTypeId=@VisitTypeId;
+END;
+GO
+
+CREATE PROCEDURE stp_GetAllVisitTypes
+AS
+BEGIN
+    SET NOCOUNT ON; SELECT * FROM VisitTypes;
+END;
+GO
+
+
+
+
+
+
+-- ===== PATIENTVISITS =====
+CREATE PROCEDURE stp_AddPatientVisit
+    @PatientId INT, @DoctorId INT, @VisitTypeId INT, @VisitDate DATETIME2, @Note NVARCHAR(500),
+    @DurationInMinutes INT, @Fee DECIMAL(10,2), @CreatedBy INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        INSERT INTO PatientVisits (PatientId, DoctorId, VisitTypeId, VisitDate, Note, DurationInMinutes, Fee, CreatedBy)
+        VALUES (@PatientId, @DoctorId, @VisitTypeId, @VisitDate, @Note, @DurationInMinutes, @Fee, @CreatedBy);
+    END TRY BEGIN CATCH THROW; END CATCH
+END;
+GO
+
+CREATE PROCEDURE stp_UpdatePatientVisit
+    @Id INT, @PatientId INT, @DoctorId INT, @VisitTypeId INT, @VisitDate DATETIME2, @Note NVARCHAR(500),
+    @DurationInMinutes INT, @Fee DECIMAL(10,2), @ModifiedBy INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        UPDATE PatientVisits SET PatientId=@PatientId, DoctorId=@DoctorId, VisitTypeId=@VisitTypeId,
+        VisitDate=@VisitDate, Note=@Note, DurationInMinutes=@DurationInMinutes, Fee=@Fee,
+        ModifiedBy=@ModifiedBy, ModifiedDate=GETDATE()
+        WHERE Id=@Id;
+    END TRY BEGIN CATCH THROW; END CATCH
+END;
+GO
+
+CREATE PROCEDURE stp_DeletePatientVisit @Id INT
+AS
+BEGIN
+    SET NOCOUNT ON; BEGIN TRY DELETE FROM PatientVisits WHERE Id=@Id; END TRY BEGIN CATCH THROW; END CATCH
+END;
+GO
+
+CREATE PROCEDURE stp_GetPatientVisitById @Id INT
+AS
+BEGIN
+    SET NOCOUNT ON; SELECT * FROM PatientVisits WHERE Id=@Id;
+END;
+GO
+
+CREATE PROCEDURE stp_GetAllPatientVisits
+AS
+BEGIN
+    SET NOCOUNT ON; SELECT * FROM PatientVisits;
+END;
+GO
+
+
+
+
+
+
+
+-- ===== FEERATES =====
+CREATE PROCEDURE stp_AddFeeRate
+    @VisitTypeId INT, @BaseRate DECIMAL(10,2), @ExtraTimeRate DECIMAL(5,4), @ExtraTimeThreshold INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        INSERT INTO FeeRates (VisitTypeId, BaseRate, ExtraTimeRate, ExtraTimeThreshold)
+        VALUES (@VisitTypeId, @BaseRate, @ExtraTimeRate, @ExtraTimeThreshold);
+    END TRY BEGIN CATCH THROW; END CATCH
+END;
+GO
+
+CREATE PROCEDURE stp_UpdateFeeRate
+    @FeeRateId INT, @VisitTypeId INT, @BaseRate DECIMAL(10,2), @ExtraTimeRate DECIMAL(5,4), @ExtraTimeThreshold INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        UPDATE FeeRates SET VisitTypeId=@VisitTypeId, BaseRate=@BaseRate, ExtraTimeRate=@ExtraTimeRate,
+        ExtraTimeThreshold=@ExtraTimeThreshold WHERE FeeRateId=@FeeRateId;
+    END TRY BEGIN CATCH THROW; END CATCH
+END;
+GO
+
+CREATE PROCEDURE stp_DeleteFeeRate @FeeRateId INT
+AS
+BEGIN
+    SET NOCOUNT ON; BEGIN TRY DELETE FROM FeeRates WHERE FeeRateId=@FeeRateId; END TRY BEGIN CATCH THROW; END CATCH
+END;
+GO
+
+CREATE PROCEDURE stp_GetFeeRateById @FeeRateId INT
+AS
+BEGIN
+    SET NOCOUNT ON; SELECT * FROM FeeRates WHERE FeeRateId=@FeeRateId;
+END;
+GO
+
+CREATE PROCEDURE stp_GetAllFeeRates
+AS
+BEGIN
+    SET NOCOUNT ON; SELECT * FROM FeeRates;
+END;
+GO
+
+
+
+
+
+
+
+-- ===== ACTIVITYLOG =====
+CREATE PROCEDURE stp_AddActivityLog
+    @Action NVARCHAR(100), @Success BIT, @Details NVARCHAR(500), @UserId INT, @VisitId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        INSERT INTO ActivityLog (Action, Success, Details, UserId, VisitId)
+        VALUES (@Action, @Success, @Details, @UserId, @VisitId);
+    END TRY BEGIN CATCH THROW; END CATCH
+END;
+GO
+
+CREATE PROCEDURE stp_DeleteActivityLog @LogId INT
+AS
+BEGIN
+    SET NOCOUNT ON; BEGIN TRY DELETE FROM ActivityLog WHERE LogId=@LogId; END TRY BEGIN CATCH THROW; END CATCH
+END;
+GO
+
+CREATE PROCEDURE stp_GetActivityLogById @LogId INT
+AS
+BEGIN
+    SET NOCOUNT ON; SELECT * FROM ActivityLog WHERE LogId=@LogId;
+END;
+GO
+
+CREATE PROCEDURE stp_GetAllActivityLogs
+AS
+BEGIN
+    SET NOCOUNT ON; SELECT * FROM ActivityLog;
+END;
+GO
