@@ -2,7 +2,7 @@ Here’s a README you can include for your `PatientVisitMS6606` scripts:
 
 ---
 
-# **Patient Visit Management System – README**
+# **Patient Visit Management System 6606 CureMD – README**
 
 ## **1. Design Decisions**
 
