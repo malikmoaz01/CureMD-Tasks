@@ -1,138 +1,178 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Simple To-Do List</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-            padding: 20px;
-        }
-        h2 {
-            text-align: center;
-        }
-        input, button {
-            padding: 8px;
-            margin: 5px;
-        }
-        button {
-            cursor: pointer;
-        }
-        .filter-btn.active {
-            background-color: #4CAF50;
-            color: white;
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-            max-width: 400px;
-            margin: auto;
-        }
-        li {
-            background: #fff;
-            margin-bottom: 6px;
-            padding: 10px;
-            border-radius: 4px;
-            display: flex;
-            justify-content: space-between;
-            border: 1px solid #ccc;
-        }
-        .status {
-            font-size: 0.9em;
-            padding: 2px 6px;
-            border-radius: 3px;
-            color: white;
-        }
-        .complete {
-            background-color: green;
-        }
-        .incomplete {
-            background-color: red;
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AJAX Demo - Comments API</title>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f9f9f9;
+        margin: 0; padding: 20px; color: #333;
+    }
+    .heading1 {
+        text-align: center;
+        font-size: 28px;
+        color: #444;
+        margin-bottom: 30px;
+    }
+    .fetchUsers {
+        display: block;
+        margin: 0 auto;
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    .fetchUsers:hover {
+        background-color: #45a049;
+    }
+    .container div {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-bottom: 10px;
+        background-color: #fff;
+    }
+</style>
 </head>
 <body>
+    <h1 class="heading1">Comment APIs Using AJAX</h1>
+    <button class="fetchUsers">Fetch Users</button>
 
-<h2>To-Do List</h2>
+    <div class="container"></div>
 
-<div style="text-align: center;">
-    <input id="taskInput" type="text" placeholder="New task">
-    <button onclick="addTask()">Add</button>
-</div>
+ <script>
+    let fetchBtn = document.getElementsByClassName('fetchUsers')[0];
+    let container = document.getElementsByClassName('container')[0];
 
-<div style="text-align: center; margin-top: 10px;">
-    <button class="filter-btn" onclick="filterTasks('all')">All</button>
-    <button class="filter-btn" onclick="filterTasks('active')">Active</button>
-    <button class="filter-btn" onclick="filterTasks('done')">Done</button>
-</div>
+    const commenturl = 'https://jsonplaceholder.typicode.com/comments';
 
-<ul id="taskList"></ul>
+    function fetchusers() {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', commenturl, true);
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                try {
+                    const comments = JSON.parse(xhr.responseText);
+                    displayComments(comments);
+                } catch (error) {
+                    console.log("Parsing error: " + error);
+                }
+            } else {
+                console.log("XHR error: Status code " + xhr.status);
+            }
+        };
+        xhr.onerror = function () {
+            console.log("Network error.");
+        }
+        xhr.send();
+    }
 
-<script>
-    let tasks = [];
-    let filter = 'all';
-
-    function addTask() {
-        let text = document.getElementById('taskInput').value.trim();
-        if (!text) {
-            alert("Kindly add some words");
+    function displayComments(comments) {
+        if (!comments || comments.length === 0) {
+            container.innerText = "There are no comments";
             return;
         }
-        tasks.push({ text: text, done: false });
-        document.getElementById('taskInput').value = '';
-        displayonScreen();
-    }
 
-    function toggleTask(index) {
-        let task = tasks[index];
-        let message = task.done 
-            ? "Do you want to mark this task as Incomplete?" 
-            : "Do you want to mark this task as Complete?";
-        if (confirm(message)) {
-            task.done = !task.done;
-            displayonScreen();
-        }
-    }
+        container.innerHTML = '';
 
-    function filterTasks(type) {
-        filter = type;
-        updateFilterButtonStyles();
-        displayonScreen();
-    }
+        const limitedComments = comments.slice(0, 10);
 
-    function updateFilterButtonStyles() {
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.textContent.toLowerCase() === filter) {
-                btn.classList.add('active');
-            }
+        limitedComments.forEach(comment => {
+            const div = document.createElement('div');
+            div.setAttribute('data-id', comment.id); 
+            div.innerHTML = `
+                <p><strong>Post ID:</strong> ${comment.postId}</p>
+                <p><strong>Comment ID:</strong> ${comment.id}</p>
+                <p><strong>Name:</strong> ${comment.name}</p>
+                <p><strong>Email:</strong> ${comment.email}</p>
+                <p class="comment-body"><strong>Comment:</strong> <span>${comment.body}</span></p>
+
+                <div class="comments-actions">
+                    <button class="action-btn update-btn" data-id="${comment.id}">Update</button>
+                    <button class="action-btn delete-btn" data-id="${comment.id}">Delete</button>
+                </div>
+            `;
+            container.appendChild(div);
         });
     }
 
-    function displayonScreen() {
-        let list = document.getElementById('taskList');
-        list.innerHTML = '';
-        tasks
-            .filter(t => filter === 'all' || (filter === 'done' && t.done) || (filter === 'active' && !t.done))
-            .forEach((task, i) => {
-                let li = document.createElement('li');
-                
-                let textSpan = document.createElement('span');
-                textSpan.textContent = task.text;
+    fetchBtn.addEventListener('click', fetchusers);
 
-                let statusSpan = document.createElement('span');
-                statusSpan.textContent = task.done ? "Complete" : "Incomplete";
-                statusSpan.className = "status " + (task.done ? "complete" : "incomplete");
+    container.addEventListener('click', function (e) {
+        const id = e.target.getAttribute('data-id');
+        const commentDiv = e.target.closest('div[data-id]');
 
-                li.appendChild(textSpan);
-                li.appendChild(statusSpan);
+        if (e.target.classList.contains('update-btn')) {
+            updatecomments(id, commentDiv);
+        }
 
-                li.onclick = () => toggleTask(i);
-                list.appendChild(li);
-            });
+        if (e.target.classList.contains('delete-btn')) {
+            deletecomments(id);
+        }
+
+        if (e.target.classList.contains('save-btn')) {
+            const textarea = commentDiv.querySelector('textarea');
+            const newComment = textarea.value;
+            saveUpdatedComment(id, newComment, commentDiv);
+        }
+    });
+
+    function deletecomments(id) {
+        const xhr = new XMLHttpRequest();
+        xhr.open('DELETE', `https://jsonplaceholder.typicode.com/comments/${id}`, true);
+        xhr.onload = function () {
+            if (xhr.status === 200 || xhr.status === 204) {
+                alert("Comment deleted successfully.");
+                fetchusers(); 
+            } else {
+                alert("Failed to delete comment.");
+            }
+        };
+        xhr.onerror = function () {
+            alert("Network error during deletion.");
+        };
+        xhr.send();
     }
 
-    updateFilterButtonStyles();
+    function updatecomments(id, commentDiv) {
+        const commentBody = commentDiv.querySelector('.comment-body span');
+        const originalText = commentBody.textContent; 
+
+        commentDiv.querySelector('.comment-body').innerHTML = `
+            <strong>Comment:</strong> <textarea rows="3">${originalText}</textarea>
+            <br><button class="save-btn" data-id="${id}">Save</button>
+        `;
+    }
+
+    function saveUpdatedComment(id, newText, commentDiv) {
+        const xhr = new XMLHttpRequest();
+        xhr.open('PUT', `https://jsonplaceholder.typicode.com/comments/${id}`, true);
+        xhr.setRequestHeader('Content-type', 'application/json; charset=UTF-8');
+
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                const updatedData = JSON.parse(xhr.responseText);
+                alert('Comment updated successfully!');
+                commentDiv.querySelector('.comment-body').innerHTML = `
+                    <strong>Comment:</strong> <span>${updatedData.body}</span>
+                `;
+            } else {
+                alert("Error updating comment.");
+            }
+        };
+
+        xhr.onerror = function () {
+            alert("Network error while updating comment.");
+        };
+
+        const updatedPayload = JSON.stringify({ body: newText });
+        xhr.send(updatedPayload);
+    }
 </script>
 
 </body>
