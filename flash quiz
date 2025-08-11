@@ -1,0 +1,26 @@
+My question1 answer was ::: 
+-> it violates OCP in payment 
+-> Also SRP Principle 
+-> Alo voilates ISP & DIP in there 
+
+My question2 answer was :
+Usefactpry pattern 
+Use reposiutory pattern 
+Use starategy pattern  
+
+Question: You have the following C# code:
+class OrderProcessor {
+    public void ProcessOrder(int orderId) {
+        var order = Database.GetOrder(orderId);
+        if (order.PaymentType == "CreditCard") {
+            // process credit card
+        } else if (order.PaymentType == "PayPal") {
+            // process PayPal
+        }
+        Logger.Log("Order processed");
+    }
+}
+Task:
+
+Identify at least two design/code issues in this class.
+Suggest one approach to fix them.
