@@ -1,67 +1,100 @@
-CREATE DATABASE PatientVisitDB;
-USE PatientVisitDB;
+-- CREATE DATABASE PatientVisitMS6606
+-- USE PatientVisitMS6606
 
--- 1. Roles
-CREATE TABLE Roles (
-    RoleID INT PRIMARY KEY IDENTITY(1,1),
-    RoleName NVARCHAR(50) NOT NULL UNIQUE
-);
 
--- 2. Users
+-- Users table 
 CREATE TABLE Users (
-    UserID INT PRIMARY KEY IDENTITY(1,1),
+    UserId INT IDENTITY(1,1) PRIMARY KEY,
     Username NVARCHAR(50) NOT NULL UNIQUE,
-    PasswordHash NVARCHAR(255) NOT NULL,
-    RoleID INT NOT NULL,
-    FOREIGN KEY (RoleID) REFERENCES Roles(RoleID)
+    Password NVARCHAR(255) NOT NULL,
+    UserRole NVARCHAR(20) NOT NULL CHECK (UserRole IN ('Admin', 'Receptionist')),
+    CreatedDate DATETIME2 DEFAULT GETDATE()
 );
 
--- 3. Patients
-CREATE TABLE Patients (
-    PatientID INT PRIMARY KEY IDENTITY(1,1),
-    PatientName NVARCHAR(100) NOT NULL
-);
-
--- 4. Doctors
+-- Doctors table
 CREATE TABLE Doctors (
-    DoctorID INT PRIMARY KEY IDENTITY(1,1),
-    DoctorName NVARCHAR(100) NOT NULL
+    DoctorId INT IDENTITY(1,1) PRIMARY KEY,
+    DoctorName NVARCHAR(100) NOT NULL,
+    Specialization NVARCHAR(100),
+    ContactNumber NVARCHAR(15),
+    Email NVARCHAR(100),
+    CreatedDate DATETIME2 DEFAULT GETDATE()
 );
 
--- 5. VisitTypes
+-- Patients table
+CREATE TABLE Patients (
+    PatientId INT IDENTITY(1,1) PRIMARY KEY,
+    PatientName NVARCHAR(100) NOT NULL,
+    DateOfBirth DATE,
+    Gender NVARCHAR(10) CHECK (Gender IN ('Male', 'Female', 'Other')),
+    ContactNumber NVARCHAR(15),
+    Email NVARCHAR(100),
+    Address NVARCHAR(255),
+    EmergencyContact NVARCHAR(15),
+    CreatedDate DATETIME2 DEFAULT GETDATE()
+    
+);
+
+-- Visit Types table 
 CREATE TABLE VisitTypes (
-    VisitTypeID INT PRIMARY KEY IDENTITY(1,1),
-    VisitTypeName NVARCHAR(100) NOT NULL UNIQUE
+    VisitTypeId INT IDENTITY(1,1) PRIMARY KEY,
+    VisitTypeName NVARCHAR(50) NOT NULL UNIQUE,
+    BaseRate DECIMAL(10,2) NOT NULL DEFAULT 500.00,
+    Description NVARCHAR(255)
+    
 );
 
--- 6. FeeSchedule
-CREATE TABLE FeeSchedule (
-    FeeID INT PRIMARY KEY IDENTITY(1,1),
-    VisitTypeID INT NOT NULL,
-    BaseFee DECIMAL(10,2) NOT NULL,
-    FOREIGN KEY (VisitTypeID) REFERENCES VisitTypes(VisitTypeID)
-);
-
--- 7. Visits
-CREATE TABLE Visits (
-    VisitID INT PRIMARY KEY IDENTITY(1,1),
-    PatientID INT NOT NULL,
-    DoctorID INT NULL,
-    VisitTypeID INT NOT NULL,
-    VisitDate DATETIME NOT NULL,
+-- Patient Visits table 
+CREATE TABLE PatientVisits (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    PatientId INT NOT NULL,
+    DoctorId INT,
+    VisitTypeId INT NOT NULL,
+    VisitDate DATETIME2 NOT NULL,
     Note NVARCHAR(500),
     DurationInMinutes INT NOT NULL DEFAULT 30,
     Fee DECIMAL(10,2) NOT NULL,
-    FOREIGN KEY (PatientID) REFERENCES Patients(PatientID),
-    FOREIGN KEY (DoctorID) REFERENCES Doctors(DoctorID),
-    FOREIGN KEY (VisitTypeID) REFERENCES VisitTypes(VisitTypeID)
+    CreatedDate DATETIME2 DEFAULT GETDATE(),
+    CreatedBy INT,
+    ModifiedDate DATETIME2,
+    ModifiedBy INT,
+     
+    CONSTRAINT FK_PatientVisits_Patients FOREIGN KEY (PatientId) REFERENCES Patients(PatientId),
+    CONSTRAINT FK_PatientVisits_Doctors FOREIGN KEY (DoctorId) REFERENCES Doctors(DoctorId),
+    CONSTRAINT FK_PatientVisits_VisitTypes FOREIGN KEY (VisitTypeId) REFERENCES VisitTypes(VisitTypeId),
+    CONSTRAINT FK_PatientVisits_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(UserId),
+    CONSTRAINT FK_PatientVisits_ModifiedBy FOREIGN KEY (ModifiedBy) REFERENCES Users(UserId)
 );
 
--- 8. ActivityLog
+-- Activity Log table 
 CREATE TABLE ActivityLog (
-    LogID INT PRIMARY KEY IDENTITY(1,1),
-    Action NVARCHAR(50) NOT NULL,
-    Status NVARCHAR(20) NOT NULL CHECK (Status IN ('SUCCESS', 'FAILURE')),
+    LogId INT IDENTITY(1,1) PRIMARY KEY,
+    LogDateTime DATETIME2 NOT NULL DEFAULT GETDATE(),
+    Action NVARCHAR(100) NOT NULL,
+    Success BIT NOT NULL,
     Details NVARCHAR(500),
-    LogDate DATETIME NOT NULL DEFAULT GETDATE()
+    UserId INT,
+    VisitId INT,
+    CONSTRAINT FK_ActivityLog_Users FOREIGN KEY (UserId) REFERENCES Users(UserId),
+    CONSTRAINT FK_ActivityLog_PatientVisits FOREIGN KEY (VisitId) REFERENCES PatientVisits(Id)
 );
+
+-- Fee Rates table 
+CREATE TABLE FeeRates (
+    FeeRateId INT IDENTITY(1,1) PRIMARY KEY,
+    VisitTypeId INT NOT NULL,
+    BaseRate DECIMAL(10,2) NOT NULL,
+    ExtraTimeRate DECIMAL(5,4) NOT NULL DEFAULT 0.25, 
+    ExtraTimeThreshold INT NOT NULL DEFAULT 30,
+    EffectiveDate DATETIME2 NOT NULL DEFAULT GETDATE(),
+    
+    CONSTRAINT FK_FeeRates_VisitTypes FOREIGN KEY (VisitTypeId) REFERENCES VisitTypes(VisitTypeId)
+);
+
+
+CREATE INDEX IX_PatientVisits_PatientId ON PatientVisits(PatientId);
+CREATE INDEX IX_PatientVisits_DoctorId ON PatientVisits(DoctorId);
+CREATE INDEX IX_PatientVisits_VisitDate ON PatientVisits(VisitDate);
+CREATE INDEX IX_PatientVisits_VisitTypeId ON PatientVisits(VisitTypeId);
+CREATE INDEX IX_ActivityLog_LogDateTime ON ActivityLog(LogDateTime);
+CREATE INDEX IX_ActivityLog_UserId ON ActivityLog(UserId);
