@@ -24,3 +24,6 @@ Task:
 
 Identify at least two design/code issues in this class.
 Suggest one approach to fix them.
+
+
+

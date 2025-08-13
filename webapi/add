@@ -1,0 +1,884 @@
+// DoctorRepository.cs
+using System.Data;
+using Microsoft.Data.SqlClient;
+using webapi.Models;
+using webapi.Data;
+
+namespace webapi.Repositories
+{
+    public interface IDoctorRepository
+    {
+        Task<Doctor> GetByIdAsync(int doctorId);
+        Task<IEnumerable<Doctor>> GetAllAsync();
+        Task<int> AddAsync(Doctor doctor);
+        Task<bool> UpdateAsync(Doctor doctor);
+        Task<bool> DeleteAsync(int doctorId);
+    }
+
+    public class DoctorRepository : IDoctorRepository
+    {
+        private readonly IDbConnectionFactory _connectionFactory;
+
+        public DoctorRepository(IDbConnectionFactory connectionFactory)
+        {
+            _connectionFactory = connectionFactory;
+        }
+
+        public async Task<Doctor> GetByIdAsync(int doctorId)
+        {
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "stp_GetDoctorById";
+
+                command.Parameters.Add(new SqlParameter("@DoctorId", SqlDbType.Int) { Value = doctorId });
+
+                using var reader = await command.ExecuteReaderAsync();
+
+                if (await reader.ReadAsync())
+                {
+                    return new Doctor
+                    {
+                        DoctorId = reader.GetInt32("DoctorId"),
+                        DoctorName = reader.GetString("DoctorName"),
+                        Specialization = reader.IsDBNull("Specialization") ? null : reader.GetString("Specialization"),
+                        ContactNumber = reader.IsDBNull("ContactNumber") ? null : reader.GetString("ContactNumber"),
+                        Email = reader.IsDBNull("Email") ? null : reader.GetString("Email"),
+                        CreatedDate = reader.GetDateTime("CreatedDate")
+                    };
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error retrieving doctor: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<IEnumerable<Doctor>> GetAllAsync()
+        {
+            try
+            {
+                var doctors = new List<Doctor>();
+
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "stp_GetAllDoctors";
+
+                using var reader = await command.ExecuteReaderAsync();
+
+                while (await reader.ReadAsync())
+                {
+                    doctors.Add(new Doctor
+                    {
+                        DoctorId = reader.GetInt32("DoctorId"),
+                        DoctorName = reader.GetString("DoctorName"),
+                        Specialization = reader.IsDBNull("Specialization") ? null : reader.GetString("Specialization"),
+                        ContactNumber = reader.IsDBNull("ContactNumber") ? null : reader.GetString("ContactNumber"),
+                        Email = reader.IsDBNull("Email") ? null : reader.GetString("Email"),
+                        CreatedDate = reader.GetDateTime("CreatedDate")
+                    });
+                }
+
+                return doctors;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error retrieving all doctors: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<int> AddAsync(Doctor doctor)
+        {
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "stp_AddDoctor";
+
+                command.Parameters.Add(new SqlParameter("@DoctorName", SqlDbType.NVarChar, 100) { Value = doctor.DoctorName });
+                command.Parameters.Add(new SqlParameter("@Specialization", SqlDbType.NVarChar, 100) { Value = doctor.Specialization ?? (object)DBNull.Value });
+                command.Parameters.Add(new SqlParameter("@ContactNumber", SqlDbType.NVarChar, 15) { Value = doctor.ContactNumber ?? (object)DBNull.Value });
+                command.Parameters.Add(new SqlParameter("@Email", SqlDbType.NVarChar, 100) { Value = doctor.Email ?? (object)DBNull.Value });
+
+                await command.ExecuteNonQueryAsync();
+
+                command.CommandText = "SELECT SCOPE_IDENTITY()";
+                command.CommandType = CommandType.Text;
+                command.Parameters.Clear();
+
+                var result = await command.ExecuteScalarAsync();
+                return Convert.ToInt32(result);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error adding doctor: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<bool> UpdateAsync(Doctor doctor)
+        {
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "stp_UpdateDoctor";
+
+                command.Parameters.Add(new SqlParameter("@DoctorId", SqlDbType.Int) { Value = doctor.DoctorId });
+                command.Parameters.Add(new SqlParameter("@DoctorName", SqlDbType.NVarChar, 100) { Value = doctor.DoctorName });
+                command.Parameters.Add(new SqlParameter("@Specialization", SqlDbType.NVarChar, 100) { Value = doctor.Specialization ?? (object)DBNull.Value });
+                command.Parameters.Add(new SqlParameter("@ContactNumber", SqlDbType.NVarChar, 15) { Value = doctor.ContactNumber ?? (object)DBNull.Value });
+                command.Parameters.Add(new SqlParameter("@Email", SqlDbType.NVarChar, 100) { Value = doctor.Email ?? (object)DBNull.Value });
+
+                var rowsAffected = await command.ExecuteNonQueryAsync();
+                return rowsAffected > 0;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error updating doctor: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<bool> DeleteAsync(int doctorId)
+        {
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "stp_DeleteDoctor";
+
+                command.Parameters.Add(new SqlParameter("@DoctorId", SqlDbType.Int) { Value = doctorId });
+
+                var rowsAffected = await command.ExecuteNonQueryAsync();
+                return rowsAffected > 0;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error deleting doctor: {ex.Message}", ex);
+            }
+        }
+    }
+}
+
+// VisitTypeRepository.cs
+using System.Data;
+using Microsoft.Data.SqlClient;
+using webapi.Models;
+using webapi.Data;
+
+namespace webapi.Repositories
+{
+    public interface IVisitTypeRepository
+    {
+        Task<VisitType> GetByIdAsync(int visitTypeId);
+        Task<IEnumerable<VisitType>> GetAllAsync();
+        Task<int> AddAsync(VisitType visitType);
+        Task<bool> UpdateAsync(VisitType visitType);
+        Task<bool> DeleteAsync(int visitTypeId);
+    }
+
+    public class VisitTypeRepository : IVisitTypeRepository
+    {
+        private readonly IDbConnectionFactory _connectionFactory;
+
+        public VisitTypeRepository(IDbConnectionFactory connectionFactory)
+        {
+            _connectionFactory = connectionFactory;
+        }
+
+        public async Task<VisitType> GetByIdAsync(int visitTypeId)
+        {
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "stp_GetVisitTypeById";
+
+                command.Parameters.Add(new SqlParameter("@VisitTypeId", SqlDbType.Int) { Value = visitTypeId });
+
+                using var reader = await command.ExecuteReaderAsync();
+
+                if (await reader.ReadAsync())
+                {
+                    return new VisitType
+                    {
+                        VisitTypeId = reader.GetInt32("VisitTypeId"),
+                        VisitTypeName = reader.GetString("VisitTypeName"),
+                        BaseRate = reader.GetDecimal("BaseRate"),
+                        Description = reader.IsDBNull("Description") ? null : reader.GetString("Description")
+                    };
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error retrieving visit type: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<IEnumerable<VisitType>> GetAllAsync()
+        {
+            try
+            {
+                var visitTypes = new List<VisitType>();
+
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "stp_GetAllVisitTypes";
+
+                using var reader = await command.ExecuteReaderAsync();
+
+                while (await reader.ReadAsync())
+                {
+                    visitTypes.Add(new VisitType
+                    {
+                        VisitTypeId = reader.GetInt32("VisitTypeId"),
+                        VisitTypeName = reader.GetString("VisitTypeName"),
+                        BaseRate = reader.GetDecimal("BaseRate"),
+                        Description = reader.IsDBNull("Description") ? null : reader.GetString("Description")
+                    });
+                }
+
+                return visitTypes;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error retrieving all visit types: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<int> AddAsync(VisitType visitType)
+        {
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "stp_AddVisitType";
+
+                command.Parameters.Add(new SqlParameter("@VisitTypeName", SqlDbType.NVarChar, 50) { Value = visitType.VisitTypeName });
+                command.Parameters.Add(new SqlParameter("@BaseRate", SqlDbType.Decimal) { Value = visitType.BaseRate });
+                command.Parameters.Add(new SqlParameter("@Description", SqlDbType.NVarChar, 255) { Value = visitType.Description ?? (object)DBNull.Value });
+
+                await command.ExecuteNonQueryAsync();
+
+                command.CommandText = "SELECT SCOPE_IDENTITY()";
+                command.CommandType = CommandType.Text;
+                command.Parameters.Clear();
+
+                var result = await command.ExecuteScalarAsync();
+                return Convert.ToInt32(result);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error adding visit type: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<bool> UpdateAsync(VisitType visitType)
+        {
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "stp_UpdateVisitType";
+
+                command.Parameters.Add(new SqlParameter("@VisitTypeId", SqlDbType.Int) { Value = visitType.VisitTypeId });
+                command.Parameters.Add(new SqlParameter("@VisitTypeName", SqlDbType.NVarChar, 50) { Value = visitType.VisitTypeName });
+                command.Parameters.Add(new SqlParameter("@BaseRate", SqlDbType.Decimal) { Value = visitType.BaseRate });
+                command.Parameters.Add(new SqlParameter("@Description", SqlDbType.NVarChar, 255) { Value = visitType.Description ?? (object)DBNull.Value });
+
+                var rowsAffected = await command.ExecuteNonQueryAsync();
+                return rowsAffected > 0;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error updating visit type: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<bool> DeleteAsync(int visitTypeId)
+        {
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "stp_DeleteVisitType";
+
+                command.Parameters.Add(new SqlParameter("@VisitTypeId", SqlDbType.Int) { Value = visitTypeId });
+
+                var rowsAffected = await command.ExecuteNonQueryAsync();
+                return rowsAffected > 0;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error deleting visit type: {ex.Message}", ex);
+            }
+        }
+    }
+}
+
+// PatientVisitRepository.cs
+using System.Data;
+using Microsoft.Data.SqlClient;
+using webapi.Models;
+using webapi.Data;
+
+namespace webapi.Repositories
+{
+    public interface IPatientVisitRepository
+    {
+        Task<PatientVisit> GetByIdAsync(int id);
+        Task<IEnumerable<PatientVisit>> GetAllAsync();
+        Task<int> AddAsync(PatientVisit patientVisit);
+        Task<bool> UpdateAsync(PatientVisit patientVisit);
+        Task<bool> DeleteAsync(int id);
+    }
+
+    public class PatientVisitRepository : IPatientVisitRepository
+    {
+        private readonly IDbConnectionFactory _connectionFactory;
+
+        public PatientVisitRepository(IDbConnectionFactory connectionFactory)
+        {
+            _connectionFactory = connectionFactory;
+        }
+
+        public async Task<PatientVisit> GetByIdAsync(int id)
+        {
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "stp_GetPatientVisitById";
+
+                command.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Value = id });
+
+                using var reader = await command.ExecuteReaderAsync();
+
+                if (await reader.ReadAsync())
+                {
+                    return new PatientVisit
+                    {
+                        Id = reader.GetInt32("Id"),
+                        PatientId = reader.GetInt32("PatientId"),
+                        DoctorId = reader.IsDBNull("DoctorId") ? null : reader.GetInt32("DoctorId"),
+                        VisitTypeId = reader.GetInt32("VisitTypeId"),
+                        VisitDate = reader.GetDateTime("VisitDate"),
+                        Note = reader.IsDBNull("Note") ? null : reader.GetString("Note"),
+                        DurationInMinutes = reader.GetInt32("DurationInMinutes"),
+                        Fee = reader.GetDecimal("Fee"),
+                        CreatedDate = reader.GetDateTime("CreatedDate"),
+                        CreatedBy = reader.IsDBNull("CreatedBy") ? null : reader.GetInt32("CreatedBy"),
+                        ModifiedDate = reader.IsDBNull("ModifiedDate") ? null : reader.GetDateTime("ModifiedDate"),
+                        ModifiedBy = reader.IsDBNull("ModifiedBy") ? null : reader.GetInt32("ModifiedBy")
+                    };
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error retrieving patient visit: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<IEnumerable<PatientVisit>> GetAllAsync()
+        {
+            try
+            {
+                var patientVisits = new List<PatientVisit>();
+
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "stp_GetAllPatientVisits";
+
+                using var reader = await command.ExecuteReaderAsync();
+
+                while (await reader.ReadAsync())
+                {
+                    patientVisits.Add(new PatientVisit
+                    {
+                        Id = reader.GetInt32("Id"),
+                        PatientId = reader.GetInt32("PatientId"),
+                        DoctorId = reader.IsDBNull("DoctorId") ? null : reader.GetInt32("DoctorId"),
+                        VisitTypeId = reader.GetInt32("VisitTypeId"),
+                        VisitDate = reader.GetDateTime("VisitDate"),
+                        Note = reader.IsDBNull("Note") ? null : reader.GetString("Note"),
+                        DurationInMinutes = reader.GetInt32("DurationInMinutes"),
+                        Fee = reader.GetDecimal("Fee"),
+                        CreatedDate = reader.GetDateTime("CreatedDate"),
+                        CreatedBy = reader.IsDBNull("CreatedBy") ? null : reader.GetInt32("CreatedBy"),
+                        ModifiedDate = reader.IsDBNull("ModifiedDate") ? null : reader.GetDateTime("ModifiedDate"),
+                        ModifiedBy = reader.IsDBNull("ModifiedBy") ? null : reader.GetInt32("ModifiedBy")
+                    });
+                }
+
+                return patientVisits;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error retrieving all patient visits: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<int> AddAsync(PatientVisit patientVisit)
+        {
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "stp_AddPatientVisit";
+
+                command.Parameters.Add(new SqlParameter("@PatientId", SqlDbType.Int) { Value = patientVisit.PatientId });
+                command.Parameters.Add(new SqlParameter("@DoctorId", SqlDbType.Int) { Value = patientVisit.DoctorId ?? (object)DBNull.Value });
+                command.Parameters.Add(new SqlParameter("@VisitTypeId", SqlDbType.Int) { Value = patientVisit.VisitTypeId });
+                command.Parameters.Add(new SqlParameter("@VisitDate", SqlDbType.DateTime2) { Value = patientVisit.VisitDate });
+                command.Parameters.Add(new SqlParameter("@Note", SqlDbType.NVarChar, 500) { Value = patientVisit.Note ?? (object)DBNull.Value });
+                command.Parameters.Add(new SqlParameter("@DurationInMinutes", SqlDbType.Int) { Value = patientVisit.DurationInMinutes });
+                command.Parameters.Add(new SqlParameter("@Fee", SqlDbType.Decimal) { Value = patientVisit.Fee });
+                command.Parameters.Add(new SqlParameter("@CreatedBy", SqlDbType.Int) { Value = patientVisit.CreatedBy ?? (object)DBNull.Value });
+
+                await command.ExecuteNonQueryAsync();
+
+                command.CommandText = "SELECT SCOPE_IDENTITY()";
+                command.CommandType = CommandType.Text;
+                command.Parameters.Clear();
+
+                var result = await command.ExecuteScalarAsync();
+                return Convert.ToInt32(result);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error adding patient visit: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<bool> UpdateAsync(PatientVisit patientVisit)
+        {
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "stp_UpdatePatientVisit";
+
+                command.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Value = patientVisit.Id });
+                command.Parameters.Add(new SqlParameter("@PatientId", SqlDbType.Int) { Value = patientVisit.PatientId });
+                command.Parameters.Add(new SqlParameter("@DoctorId", SqlDbType.Int) { Value = patientVisit.DoctorId ?? (object)DBNull.Value });
+                command.Parameters.Add(new SqlParameter("@VisitTypeId", SqlDbType.Int) { Value = patientVisit.VisitTypeId });
+                command.Parameters.Add(new SqlParameter("@VisitDate", SqlDbType.DateTime2) { Value = patientVisit.VisitDate });
+                command.Parameters.Add(new SqlParameter("@Note", SqlDbType.NVarChar, 500) { Value = patientVisit.Note ?? (object)DBNull.Value });
+                command.Parameters.Add(new SqlParameter("@DurationInMinutes", SqlDbType.Int) { Value = patientVisit.DurationInMinutes });
+                command.Parameters.Add(new SqlParameter("@Fee", SqlDbType.Decimal) { Value = patientVisit.Fee });
+                command.Parameters.Add(new SqlParameter("@ModifiedBy", SqlDbType.Int) { Value = patientVisit.ModifiedBy ?? (object)DBNull.Value });
+
+                var rowsAffected = await command.ExecuteNonQueryAsync();
+                return rowsAffected > 0;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error updating patient visit: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "stp_DeletePatientVisit";
+
+                command.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Value = id });
+
+                var rowsAffected = await command.ExecuteNonQueryAsync();
+                return rowsAffected > 0;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error deleting patient visit: {ex.Message}", ex);
+            }
+        }
+    }
+}
+
+// FeeRateRepository.cs
+using System.Data;
+using Microsoft.Data.SqlClient;
+using webapi.Models;
+using webapi.Data;
+
+namespace webapi.Repositories
+{
+    public interface IFeeRateRepository
+    {
+        Task<FeeRate> GetByIdAsync(int feeRateId);
+        Task<IEnumerable<FeeRate>> GetAllAsync();
+        Task<int> AddAsync(FeeRate feeRate);
+        Task<bool> UpdateAsync(FeeRate feeRate);
+        Task<bool> DeleteAsync(int feeRateId);
+    }
+
+    public class FeeRateRepository : IFeeRateRepository
+    {
+        private readonly IDbConnectionFactory _connectionFactory;
+
+        public FeeRateRepository(IDbConnectionFactory connectionFactory)
+        {
+            _connectionFactory = connectionFactory;
+        }
+
+        public async Task<FeeRate> GetByIdAsync(int feeRateId)
+        {
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "stp_GetFeeRateById";
+
+                command.Parameters.Add(new SqlParameter("@FeeRateId", SqlDbType.Int) { Value = feeRateId });
+
+                using var reader = await command.ExecuteReaderAsync();
+
+                if (await reader.ReadAsync())
+                {
+                    return new FeeRate
+                    {
+                        FeeRateId = reader.GetInt32("FeeRateId"),
+                        VisitTypeId = reader.GetInt32("VisitTypeId"),
+                        BaseRate = reader.GetDecimal("BaseRate"),
+                        ExtraTimeRate = reader.GetDecimal("ExtraTimeRate"),
+                        ExtraTimeThreshold = reader.GetInt32("ExtraTimeThreshold"),
+                        EffectiveDate = reader.GetDateTime("EffectiveDate")
+                    };
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error retrieving fee rate: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<IEnumerable<FeeRate>> GetAllAsync()
+        {
+            try
+            {
+                var feeRates = new List<FeeRate>();
+
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "stp_GetAllFeeRates";
+
+                using var reader = await command.ExecuteReaderAsync();
+
+                while (await reader.ReadAsync())
+                {
+                    feeRates.Add(new FeeRate
+                    {
+                        FeeRateId = reader.GetInt32("FeeRateId"),
+                        VisitTypeId = reader.GetInt32("VisitTypeId"),
+                        BaseRate = reader.GetDecimal("BaseRate"),
+                        ExtraTimeRate = reader.GetDecimal("ExtraTimeRate"),
+                        ExtraTimeThreshold = reader.GetInt32("ExtraTimeThreshold"),
+                        EffectiveDate = reader.GetDateTime("EffectiveDate")
+                    });
+                }
+
+                return feeRates;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error retrieving all fee rates: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<int> AddAsync(FeeRate feeRate)
+        {
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "stp_AddFeeRate";
+
+                command.Parameters.Add(new SqlParameter("@VisitTypeId", SqlDbType.Int) { Value = feeRate.VisitTypeId });
+                command.Parameters.Add(new SqlParameter("@BaseRate", SqlDbType.Decimal) { Value = feeRate.BaseRate });
+                command.Parameters.Add(new SqlParameter("@ExtraTimeRate", SqlDbType.Decimal) { Value = feeRate.ExtraTimeRate });
+                command.Parameters.Add(new SqlParameter("@ExtraTimeThreshold", SqlDbType.Int) { Value = feeRate.ExtraTimeThreshold });
+
+                await command.ExecuteNonQueryAsync();
+
+                command.CommandText = "SELECT SCOPE_IDENTITY()";
+                command.CommandType = CommandType.Text;
+                command.Parameters.Clear();
+
+                var result = await command.ExecuteScalarAsync();
+                return Convert.ToInt32(result);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error adding fee rate: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<bool> UpdateAsync(FeeRate feeRate)
+        {
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "stp_UpdateFeeRate";
+
+                command.Parameters.Add(new SqlParameter("@FeeRateId", SqlDbType.Int) { Value = feeRate.FeeRateId });
+                command.Parameters.Add(new SqlParameter("@VisitTypeId", SqlDbType.Int) { Value = feeRate.VisitTypeId });
+                command.Parameters.Add(new SqlParameter("@BaseRate", SqlDbType.Decimal) { Value = feeRate.BaseRate });
+                command.Parameters.Add(new SqlParameter("@ExtraTimeRate", SqlDbType.Decimal) { Value = feeRate.ExtraTimeRate });
+                command.Parameters.Add(new SqlParameter("@ExtraTimeThreshold", SqlDbType.Int) { Value = feeRate.ExtraTimeThreshold });
+
+                var rowsAffected = await command.ExecuteNonQueryAsync();
+                return rowsAffected > 0;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error updating fee rate: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<bool> DeleteAsync(int feeRateId)
+        {
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "stp_DeleteFeeRate";
+
+                command.Parameters.Add(new SqlParameter("@FeeRateId", SqlDbType.Int) { Value = feeRateId });
+
+                var rowsAffected = await command.ExecuteNonQueryAsync();
+                return rowsAffected > 0;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error deleting fee rate: {ex.Message}", ex);
+            }
+        }
+    }
+}
+
+// ActivityLogRepository.cs
+using System.Data;
+using Microsoft.Data.SqlClient;
+using webapi.Models;
+using webapi.Data;
+
+namespace webapi.Repositories
+{
+    public interface IActivityLogRepository
+    {
+        Task<ActivityLog> GetByIdAsync(int logId);
+        Task<IEnumerable<ActivityLog>> GetAllAsync();
+        Task<int> AddAsync(ActivityLog activityLog);
+        Task<bool> DeleteAsync(int logId);
+    }
+
+    public class ActivityLogRepository : IActivityLogRepository
+    {
+        private readonly IDbConnectionFactory _connectionFactory;
+
+        public ActivityLogRepository(IDbConnectionFactory connectionFactory)
+        {
+            _connectionFactory = connectionFactory;
+        }
+
+        public async Task<ActivityLog> GetByIdAsync(int logId)
+        {
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "stp_GetActivityLogById";
+
+                command.Parameters.Add(new SqlParameter("@LogId", SqlDbType.Int) { Value = logId });
+
+                using var reader = await command.ExecuteReaderAsync();
+
+                if (await reader.ReadAsync())
+                {
+                    return new ActivityLog
+                    {
+                        LogId = reader.GetInt32("LogId"),
+                        LogDateTime = reader.GetDateTime("LogDateTime"),
+                        Action = reader.GetString("Action"),
+                        Success = reader.GetBoolean("Success"),
+                        Details = reader.IsDBNull("Details") ? null : reader.GetString("Details"),
+                        UserId = reader.IsDBNull("UserId") ? null : reader.GetInt32("UserId"),
+                        VisitId = reader.IsDBNull("VisitId") ? null : reader.GetInt32("VisitId")
+                    };
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error retrieving activity log: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<IEnumerable<ActivityLog>> GetAllAsync()
+        {
+            try
+            {
+                var activityLogs = new List<ActivityLog>();
+
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "stp_GetAllActivityLogs";
+
+                using var reader = await command.ExecuteReaderAsync();
+
+                while (await reader.ReadAsync())
+                {
+                    activityLogs.Add(new ActivityLog
+                    {
+                        LogId = reader.GetInt32("LogId"),
+                        LogDateTime = reader.GetDateTime("LogDateTime"),
+                        Action = reader.GetString("Action"),
+                        Success = reader.GetBoolean("Success"),
+                        Details = reader.IsDBNull("Details") ? null : reader.GetString("Details"),
+                        UserId = reader.IsDBNull("UserId") ? null : reader.GetInt32("UserId"),
+                        VisitId = reader.IsDBNull("VisitId") ? null : reader.GetInt32("VisitId")
+                    });
+                }
+
+                return activityLogs;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error retrieving all activity logs: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<int> AddAsync(ActivityLog activityLog)
+        {
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "stp_AddActivityLog";
+
+                command.Parameters.Add(new SqlParameter("@Action", SqlDbType.NVarChar, 100) { Value = activityLog.Action });
+                command.Parameters.Add(new SqlParameter("@Success", SqlDbType.Bit) { Value = activityLog.Success });
+                command.Parameters.Add(new SqlParameter("@Details", SqlDbType.NVarChar, 500) { Value = activityLog.Details ?? (object)DBNull.Value });
+                command.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int) { Value = activityLog.UserId ?? (object)DBNull.Value });
+                command.Parameters.Add(new SqlParameter("@VisitId", SqlDbType.Int) { Value = activityLog.VisitId ?? (object)DBNull.Value });
+
+                await command.ExecuteNonQueryAsync();
+
+                command.CommandText = "SELECT SCOPE_IDENTITY()";
+                command.CommandType = CommandType.Text;
+                command.Parameters.Clear();
+
+                var result = await command.ExecuteScalarAsync();
+                return Convert.ToInt32(result);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error adding activity log: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<bool> DeleteAsync(int logId)
+        {
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "stp_DeleteActivityLog";
+
+                command.Parameters.Add(new SqlParameter("@LogId", SqlDbType.Int) { Value = logId });
+
+                var rowsAffected = await command.ExecuteNonQueryAsync();
+                return rowsAffected > 0;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error deleting activity log: {ex.Message}", ex);
+            }
+        }
+    }
+}
