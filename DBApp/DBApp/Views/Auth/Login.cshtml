@@ -1,0 +1,44 @@
+@model DBApp.Models.LoginDto
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <link rel="stylesheet" href="~/css/style.css" />
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h2>Login</h2>
+            
+            @if(ViewBag.Error != null)
+            {
+                <div class="error">@ViewBag.Error</div>
+            }
+            
+            @if(ViewBag.Success != null)
+            {
+                <div class="success">@ViewBag.Success</div>
+            }
+            
+            <form asp-action="Login" method="post">
+                <div class="form-group">
+                    <label asp-for="Email">Email:</label>
+                    <input asp-for="Email" type="email" required />
+                    <span asp-validation-for="Email" class="error"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label asp-for="Password">Password:</label>
+                    <input asp-for="Password" type="password" required />
+                    <span asp-validation-for="Password" class="error"></span>
+                </div>
+                
+                <button type="submit" class="btn">Login</button>
+            </form>
+            
+            <p><a href="@Url.Action("Signup", "Auth")">Don't have an account? Sign up</a></p>
+        </div>
+    </div>
+</body>
+</html>

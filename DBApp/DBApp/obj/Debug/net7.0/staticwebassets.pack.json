@@ -1,0 +1,29 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\6606\\Downloads\\malik-moaz-6606\\DBApp\\DBApp\\wwwroot\\JS\\App.js",
+      "PackagePath": "staticwebassets\\JS\\App.js"
+    },
+    {
+      "Id": "C:\\Users\\6606\\Downloads\\malik-moaz-6606\\DBApp\\DBApp\\wwwroot\\css\\style.css",
+      "PackagePath": "staticwebassets\\css\\style.css"
+    },
+    {
+      "Id": "obj\\Debug\\net7.0\\staticwebassets\\msbuild.DBApp.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net7.0\\staticwebassets\\msbuild.build.DBApp.props",
+      "PackagePath": "build\\DBApp.props"
+    },
+    {
+      "Id": "obj\\Debug\\net7.0\\staticwebassets\\msbuild.buildMultiTargeting.DBApp.props",
+      "PackagePath": "buildMultiTargeting\\DBApp.props"
+    },
+    {
+      "Id": "obj\\Debug\\net7.0\\staticwebassets\\msbuild.buildTransitive.DBApp.props",
+      "PackagePath": "buildTransitive\\DBApp.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

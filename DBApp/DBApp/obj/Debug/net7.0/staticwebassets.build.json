@@ -1,0 +1,54 @@
+{
+  "Version": 1,
+  "Hash": "DyoMYsfrz1CI6aYiiDBL2GSjv7Uvoa6uEM1ostmH28Q=",
+  "Source": "DBApp",
+  "BasePath": "_content/DBApp",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "DBApp\\wwwroot",
+      "Source": "DBApp",
+      "ContentRoot": "C:\\Users\\6606\\Downloads\\malik-moaz-6606\\DBApp\\DBApp\\wwwroot\\",
+      "BasePath": "_content/DBApp",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "C:\\Users\\6606\\Downloads\\malik-moaz-6606\\DBApp\\DBApp\\wwwroot\\css\\style.css",
+      "SourceId": "DBApp",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\6606\\Downloads\\malik-moaz-6606\\DBApp\\DBApp\\wwwroot\\",
+      "BasePath": "_content/DBApp",
+      "RelativePath": "css/style.css",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\css\\style.css"
+    },
+    {
+      "Identity": "C:\\Users\\6606\\Downloads\\malik-moaz-6606\\DBApp\\DBApp\\wwwroot\\JS\\App.js",
+      "SourceId": "DBApp",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\6606\\Downloads\\malik-moaz-6606\\DBApp\\DBApp\\wwwroot\\",
+      "BasePath": "_content/DBApp",
+      "RelativePath": "JS/App.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\JS\\App.js"
+    }
+  ]
+}

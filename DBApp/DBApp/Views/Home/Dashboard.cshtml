@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="~/css/style.css" />
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard">
+            <h1>Login Successful</h1>
+            <p>Welcome, @Context.Session.GetString("UserName")!</p>
+            <p>Role: @Context.Session.GetString("UserRole")</p>
+            <a href="@Url.Action("Logout", "Auth")" class="btn">Logout</a>
+        </div>
+    </div>
+</body>
+</html>
