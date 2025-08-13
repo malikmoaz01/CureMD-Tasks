@@ -95,83 +95,158 @@ namespace webapi.Repositories
             }
         }
 
-        public async Task<int> AddAsync(Doctor doctor)
+public async Task<int> AddAsync(Doctor doctor)
+{
+    try
+    {
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        using var command = connection.CreateCommand();
+        command.CommandType = CommandType.StoredProcedure;
+        command.CommandText = "stp_AddDoctor";
+
+        // Add parameters with proper null handling
+        command.Parameters.Add(new SqlParameter("@DoctorName", SqlDbType.NVarChar, 100) 
+        { 
+            Value = string.IsNullOrWhiteSpace(doctor.DoctorName) ? (object)DBNull.Value : doctor.DoctorName.Trim() 
+        });
+        
+        command.Parameters.Add(new SqlParameter("@Specialization", SqlDbType.NVarChar, 100) 
+        { 
+            Value = string.IsNullOrWhiteSpace(doctor.Specialization) ? (object)DBNull.Value : doctor.Specialization.Trim() 
+        });
+        
+        command.Parameters.Add(new SqlParameter("@ContactNumber", SqlDbType.NVarChar, 15) 
+        { 
+            Value = string.IsNullOrWhiteSpace(doctor.ContactNumber) ? (object)DBNull.Value : doctor.ContactNumber.Trim() 
+        });
+        
+        command.Parameters.Add(new SqlParameter("@Email", SqlDbType.NVarChar, 100) 
+        { 
+            Value = string.IsNullOrWhiteSpace(doctor.Email) ? (object)DBNull.Value : doctor.Email.Trim() 
+        });
+
+        // Execute and get the new doctor ID
+        var result = await command.ExecuteScalarAsync();
+        return Convert.ToInt32(result);
+    }
+    catch (SqlException ex)
+    {
+        // Handle specific SQL Server errors
+        if (ex.Number == 50006)
+            throw new ArgumentException("Doctor name is required.");
+        if (ex.Number == 50007)
+            throw new ArgumentException("Doctor not found.");
+            
+        throw new InvalidOperationException($"Database error adding doctor: {ex.Message}", ex);
+    }
+    catch (Exception ex)
+    {
+        throw new InvalidOperationException($"Error adding doctor: {ex.Message}", ex);
+    }
+}
+
+public async Task<bool> DeleteAsync(int doctorId)
+{
+    try
+    {
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        using var command = connection.CreateCommand();
+        command.CommandType = CommandType.StoredProcedure;
+        command.CommandText = "stp_DeleteDoctor";
+
+        command.Parameters.Add(new SqlParameter("@DoctorId", SqlDbType.Int) { Value = doctorId });
+
+        // Execute and get result
+        var result = await command.ExecuteScalarAsync();
+        
+        if (result != null && result != DBNull.Value)
         {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
-
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_AddDoctor";
-
-                command.Parameters.Add(new SqlParameter("@DoctorName", SqlDbType.NVarChar, 100) { Value = doctor.DoctorName });
-                command.Parameters.Add(new SqlParameter("@Specialization", SqlDbType.NVarChar, 100) { Value = doctor.Specialization ?? (object)DBNull.Value });
-                command.Parameters.Add(new SqlParameter("@ContactNumber", SqlDbType.NVarChar, 15) { Value = doctor.ContactNumber ?? (object)DBNull.Value });
-                command.Parameters.Add(new SqlParameter("@Email", SqlDbType.NVarChar, 100) { Value = doctor.Email ?? (object)DBNull.Value });
-
-                await command.ExecuteNonQueryAsync();
-
-                command.CommandText = "SELECT SCOPE_IDENTITY()";
-                command.CommandType = CommandType.Text;
-                command.Parameters.Clear();
-
-                var result = await command.ExecuteScalarAsync();
-                return Convert.ToInt32(result);
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error adding doctor: {ex.Message}", ex);
-            }
+            int rowsAffected = Convert.ToInt32(result);
+            return rowsAffected > 0;
         }
+        
+        return false;
+    }
+    catch (SqlException ex)
+    {
+        // Handle specific SQL Server errors
+        if (ex.Number == 50007)
+            throw new ArgumentException("Doctor not found.");
+        if (ex.Number == 50011)
+            throw new InvalidOperationException("Cannot delete doctor with existing appointments.");
+            
+        throw new InvalidOperationException($"Cant Delete Due to Refrential Integrity: {ex.Message}", ex);
+    }
+    catch (Exception ex)
+    {
+        throw new InvalidOperationException($"Error deleting doctor: {ex.Message}", ex);
+    }
+}
 
-        public async Task<bool> UpdateAsync(Doctor doctor)
+public async Task<bool> UpdateAsync(Doctor doctor)
+{
+    try
+    {
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        using var command = connection.CreateCommand();
+        command.CommandType = CommandType.StoredProcedure;
+        command.CommandText = "stp_UpdateDoctor";
+ 
+        command.Parameters.Add(new SqlParameter("@DoctorId", SqlDbType.Int) 
+        { 
+            Value = doctor.DoctorId 
+        });
+        
+        command.Parameters.Add(new SqlParameter("@DoctorName", SqlDbType.NVarChar, 100) 
+        { 
+            Value = string.IsNullOrWhiteSpace(doctor.DoctorName) ? (object)DBNull.Value : doctor.DoctorName.Trim() 
+        });
+        
+        command.Parameters.Add(new SqlParameter("@Specialization", SqlDbType.NVarChar, 100) 
+        { 
+            Value = string.IsNullOrWhiteSpace(doctor.Specialization) ? (object)DBNull.Value : doctor.Specialization.Trim() 
+        });
+        
+        command.Parameters.Add(new SqlParameter("@ContactNumber", SqlDbType.NVarChar, 15) 
+        { 
+            Value = string.IsNullOrWhiteSpace(doctor.ContactNumber) ? (object)DBNull.Value : doctor.ContactNumber.Trim() 
+        });
+        
+        command.Parameters.Add(new SqlParameter("@Email", SqlDbType.NVarChar, 100) 
+        { 
+            Value = string.IsNullOrWhiteSpace(doctor.Email) ? (object)DBNull.Value : doctor.Email.Trim() 
+        });
+
+        // Execute and get result
+        var result = await command.ExecuteScalarAsync();
+        
+        if (result != null && result != DBNull.Value)
         {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
-
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_UpdateDoctor";
-
-                command.Parameters.Add(new SqlParameter("@DoctorId", SqlDbType.Int) { Value = doctor.DoctorId });
-                command.Parameters.Add(new SqlParameter("@DoctorName", SqlDbType.NVarChar, 100) { Value = doctor.DoctorName });
-                command.Parameters.Add(new SqlParameter("@Specialization", SqlDbType.NVarChar, 100) { Value = doctor.Specialization ?? (object)DBNull.Value });
-                command.Parameters.Add(new SqlParameter("@ContactNumber", SqlDbType.NVarChar, 15) { Value = doctor.ContactNumber ?? (object)DBNull.Value });
-                command.Parameters.Add(new SqlParameter("@Email", SqlDbType.NVarChar, 100) { Value = doctor.Email ?? (object)DBNull.Value });
-
-                var rowsAffected = await command.ExecuteNonQueryAsync();
-                return rowsAffected > 0;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error updating doctor: {ex.Message}", ex);
-            }
+            int rowsAffected = Convert.ToInt32(result);
+            return rowsAffected > 0;
         }
-
-        public async Task<bool> DeleteAsync(int doctorId)
-        {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
-
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_DeleteDoctor";
-
-                command.Parameters.Add(new SqlParameter("@DoctorId", SqlDbType.Int) { Value = doctorId });
-
-                var rowsAffected = await command.ExecuteNonQueryAsync();
-                return rowsAffected > 0;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error deleting doctor: {ex.Message}", ex);
-            }
-        }
+        
+        return false;
+    }
+    catch (SqlException ex)
+    { 
+        if (ex.Number == 50006)
+            throw new ArgumentException("Doctor name is required.");
+        if (ex.Number == 50007)
+            throw new ArgumentException("Doctor not found.");
+            
+        throw new InvalidOperationException($"Database error updating doctor: {ex.Message}", ex);
+    }
+    catch (Exception ex)
+    {
+        throw new InvalidOperationException($"Error updating doctor: {ex.Message}", ex);
+    }
+}
     }
 }

@@ -3,175 +3,414 @@ USE PatientVisitMS6606;
 
 
 GO
--- ===== USERS =====
-CREATE PROCEDURE stp_AddUser
+CREATE OR ALTER PROCEDURE stp_AddUser
     @Username NVARCHAR(50),
     @Password NVARCHAR(255),
-    @UserRole NVARCHAR(20)
+    @UserRole NVARCHAR(20),
+    @NewUserId INT OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        
+        IF EXISTS (SELECT 1 FROM Users WHERE Username = @Username)
+        BEGIN
+            ROLLBACK TRANSACTION;
+            RAISERROR('Username already exists', 16, 1);
+            RETURN;
+        END
+        
+        INSERT INTO Users (Username, Password, UserRole, CreatedDate)
+        VALUES (@Username, @Password, @UserRole, GETUTCDATE());
+        
+        SET @NewUserId = SCOPE_IDENTITY();
+        
+        COMMIT TRANSACTION;
+        
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+            
+        -- Re-throw the error
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+        DECLARE @ErrorState INT = ERROR_STATE();
+        
+        RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
+    END CATCH
+END
+
+
+
+
+
+-- ===== FIXED PATIENT STORED PROCEDURES =====
+
+-- Fixed Update Patient Procedure
+CREATE OR ALTER PROCEDURE stp_UpdatePatient
+    @PatientId INT, 
+    @PatientName NVARCHAR(100), 
+    @DateOfBirth DATE, 
+    @Gender NVARCHAR(10), 
+    @ContactNumber NVARCHAR(15),
+    @Email NVARCHAR(100), 
+    @Address NVARCHAR(255), 
+    @EmergencyContact NVARCHAR(15)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @RowsAffected INT = 0;
+    
+    BEGIN TRY
+        -- Check if patient exists
+        IF NOT EXISTS (SELECT 1 FROM Patients WHERE PatientId = @PatientId) 
+        BEGIN
+            THROW 50010, 'Patient not found', 1;
+        END
+        
+        -- Validate required fields
+        IF @PatientName IS NULL OR LTRIM(RTRIM(@PatientName)) = '' 
+        BEGIN
+            THROW 50008, 'PatientName is required', 1;
+        END
+        
+        -- Validate Gender only if it's provided (not NULL)
+        IF @Gender IS NOT NULL AND @Gender NOT IN ('Male', 'Female', 'Other') 
+        BEGIN
+            THROW 50009, 'Invalid Gender. Must be Male, Female, or Other', 1;
+        END
+        
+        -- Update patient
+        UPDATE Patients 
+        SET PatientName = @PatientName, 
+            DateOfBirth = @DateOfBirth, 
+            Gender = @Gender,
+            ContactNumber = @ContactNumber, 
+            Email = @Email, 
+            Address = @Address, 
+            EmergencyContact = @EmergencyContact
+        WHERE PatientId = @PatientId;
+        
+        SET @RowsAffected = @@ROWCOUNT;
+        
+        -- Return success indicator
+        SELECT @RowsAffected as RowsAffected;
+        
+    END TRY 
+    BEGIN CATCH 
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+        THROW @ErrorNumber, @ErrorMessage, 1;
+    END CATCH
+END;
+GO
+
+-- Fixed Delete Patient Procedure
+CREATE OR ALTER PROCEDURE stp_DeletePatient 
+    @PatientId INT
+AS
+BEGIN
+    SET NOCOUNT ON; 
+    
+    DECLARE @RowsAffected INT = 0;
+    
+    BEGIN TRY  
+        IF NOT EXISTS (SELECT 1 FROM Patients WHERE PatientId = @PatientId)
+        BEGIN
+            THROW 50010, 'Patient not found', 1;
+        END
+        
+        DELETE FROM Patients WHERE PatientId = @PatientId;
+        SET @RowsAffected = @@ROWCOUNT;
+        
+        SELECT @RowsAffected as RowsAffected;
+        
+    END TRY 
+    BEGIN CATCH 
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+        THROW @ErrorNumber, @ErrorMessage, 1;
+    END CATCH
+END;
+GO
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- ===== FIXED DOCTORS STORED PROCEDURES =====
+
+-- Fixed Add Doctor Procedure
+CREATE OR ALTER PROCEDURE stp_AddDoctor
+    @DoctorName NVARCHAR(100), 
+    @Specialization NVARCHAR(100), 
+    @ContactNumber NVARCHAR(15), 
+    @Email NVARCHAR(100)
 AS
 BEGIN
     SET NOCOUNT ON;
     BEGIN TRY
-        IF @Username IS NULL OR LTRIM(RTRIM(@Username)) = '' THROW 50001, 'Username is required', 1;
-        IF @Password IS NULL OR LTRIM(RTRIM(@Password)) = '' THROW 50002, 'Password is required', 1;
-        IF @UserRole NOT IN ('Admin', 'Receptionist') THROW 50003, 'Invalid UserRole', 1;
-        INSERT INTO Users (Username, Password, UserRole) VALUES (@Username, @Password, @UserRole);
-    END TRY BEGIN CATCH THROW; END CATCH
+        -- Validate required fields
+        IF @DoctorName IS NULL OR LTRIM(RTRIM(@DoctorName)) = '' 
+            THROW 50006, 'DoctorName is required', 1;
+        
+        -- Insert doctor and return the new ID
+        INSERT INTO Doctors (DoctorName, Specialization, ContactNumber, Email) 
+        VALUES (@DoctorName, @Specialization, @ContactNumber, @Email);
+        
+        -- Return the new doctor ID
+        SELECT SCOPE_IDENTITY() as NewDoctorId;
+        
+    END TRY 
+    BEGIN CATCH 
+        -- Re-throw the error with details
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+        THROW @ErrorNumber, @ErrorMessage, 1;
+    END CATCH
+END;
+GO
+-- ===== FIXED DELETE AND UPDATE PROCEDURES =====
+
+-- Fixed Delete Doctor Procedure
+CREATE OR ALTER PROCEDURE stp_DeleteDoctor 
+    @DoctorId INT
+AS
+BEGIN
+    SET NOCOUNT ON; 
+    
+    DECLARE @RowsAffected INT = 0;
+    
+    BEGIN TRY 
+        -- Check if doctor exists before deletion
+        IF NOT EXISTS (SELECT 1 FROM Doctors WHERE DoctorId = @DoctorId)
+        BEGIN
+            THROW 50007, 'Doctor not found', 1;
+        END
+        -- Perform the deletion
+        DELETE FROM Doctors WHERE DoctorId = @DoctorId;
+        SET @RowsAffected = @@ROWCOUNT;
+        
+        -- Return success indicator
+        SELECT @RowsAffected as RowsAffected;
+        
+    END TRY 
+    BEGIN CATCH 
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+        THROW @ErrorNumber, @ErrorMessage, 1;
+    END CATCH
 END;
 GO
 
-CREATE PROCEDURE stp_UpdateUser
-    @UserId INT, @Username NVARCHAR(50), @Password NVARCHAR(255), @UserRole NVARCHAR(20)
+-- Fixed Update Doctor Procedure  
+CREATE OR ALTER PROCEDURE stp_UpdateDoctor
+    @DoctorId INT, 
+    @DoctorName NVARCHAR(100), 
+    @Specialization NVARCHAR(100), 
+    @ContactNumber NVARCHAR(15), 
+    @Email NVARCHAR(100)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @RowsAffected INT = 0;
+    
+    BEGIN TRY
+        -- Check if doctor exists
+        IF NOT EXISTS (SELECT 1 FROM Doctors WHERE DoctorId = @DoctorId) 
+        BEGIN
+            THROW 50007, 'Doctor not found', 1;
+        END
+        
+        -- Validate required fields
+        IF @DoctorName IS NULL OR LTRIM(RTRIM(@DoctorName)) = '' 
+        BEGIN
+            THROW 50006, 'DoctorName is required', 1;
+        END
+        
+        -- Update doctor
+        UPDATE Doctors 
+        SET DoctorName = @DoctorName, 
+            Specialization = @Specialization, 
+            ContactNumber = @ContactNumber, 
+            Email = @Email 
+        WHERE DoctorId = @DoctorId;
+        
+        SET @RowsAffected = @@ROWCOUNT;
+        
+        -- Return success indicator
+        SELECT @RowsAffected as RowsAffected;
+        
+    END TRY 
+    BEGIN CATCH 
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+        THROW @ErrorNumber, @ErrorMessage, 1;
+    END CATCH
+END;
+GO
+
+-- Get Doctor by ID (no changes needed)
+CREATE OR ALTER PROCEDURE stp_GetDoctorById 
+    @DoctorId INT
+AS
+BEGIN
+    SET NOCOUNT ON; 
+    SELECT * FROM Doctors WHERE DoctorId = @DoctorId;
+END;
+GO
+
+-- Get All Doctors (no changes needed)
+CREATE OR ALTER PROCEDURE stp_GetAllDoctors
+AS
+BEGIN
+    SET NOCOUNT ON; 
+    SELECT * FROM Doctors ORDER BY CreatedDate DESC;
+END;
+GO
+
+
+
+ 
+
+-- Fixed Add Patient Procedure
+CREATE OR ALTER PROCEDURE stp_AddPatient
+    @PatientName NVARCHAR(100), 
+    @DateOfBirth DATE, 
+    @Gender NVARCHAR(10), 
+    @ContactNumber NVARCHAR(15),
+    @Email NVARCHAR(100), 
+    @Address NVARCHAR(255), 
+    @EmergencyContact NVARCHAR(15)
 AS
 BEGIN
     SET NOCOUNT ON;
     BEGIN TRY
-        IF NOT EXISTS (SELECT 1 FROM Users WHERE UserId = @UserId) THROW 50004, 'User not found', 1;
-        IF @UserRole NOT IN ('Admin', 'Receptionist') THROW 50005, 'Invalid UserRole', 1;
-        UPDATE Users SET Username=@Username, Password=@Password, UserRole=@UserRole WHERE UserId=@UserId;
-    END TRY BEGIN CATCH THROW; END CATCH
-END;
-GO
-
-CREATE PROCEDURE stp_DeleteUser @UserId INT
-AS
-BEGIN
-    SET NOCOUNT ON; BEGIN TRY DELETE FROM Users WHERE UserId=@UserId; END TRY BEGIN CATCH THROW; END CATCH
-END;
-GO
-
-CREATE PROCEDURE stp_GetUserById @UserId INT
-AS
-BEGIN
-    SET NOCOUNT ON; SELECT * FROM Users WHERE UserId=@UserId;
-END;
-GO
-
-CREATE PROCEDURE stp_GetAllUsers
-AS
-BEGIN
-    SET NOCOUNT ON; SELECT * FROM Users;
-END;
-GO
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- ===== DOCTORS =====
-CREATE PROCEDURE stp_AddDoctor
-    @DoctorName NVARCHAR(100), @Specialization NVARCHAR(100), @ContactNumber NVARCHAR(15), @Email NVARCHAR(100)
-AS
-BEGIN
-    SET NOCOUNT ON;
-    BEGIN TRY
-        IF @DoctorName IS NULL OR LTRIM(RTRIM(@DoctorName)) = '' THROW 50006, 'DoctorName is required', 1;
-        INSERT INTO Doctors (DoctorName, Specialization, ContactNumber, Email) VALUES (@DoctorName, @Specialization, @ContactNumber, @Email);
-    END TRY BEGIN CATCH THROW; END CATCH
-END;
-GO
-
-CREATE PROCEDURE stp_UpdateDoctor
-    @DoctorId INT, @DoctorName NVARCHAR(100), @Specialization NVARCHAR(100), @ContactNumber NVARCHAR(15), @Email NVARCHAR(100)
-AS
-BEGIN
-    SET NOCOUNT ON;
-    BEGIN TRY
-        IF NOT EXISTS (SELECT 1 FROM Doctors WHERE DoctorId=@DoctorId) THROW 50007, 'Doctor not found', 1;
-        UPDATE Doctors SET DoctorName=@DoctorName, Specialization=@Specialization, ContactNumber=@ContactNumber, Email=@Email WHERE DoctorId=@DoctorId;
-    END TRY BEGIN CATCH THROW; END CATCH
-END;
-GO
-
-CREATE PROCEDURE stp_DeleteDoctor @DoctorId INT
-AS
-BEGIN
-    SET NOCOUNT ON; BEGIN TRY DELETE FROM Doctors WHERE DoctorId=@DoctorId; END TRY BEGIN CATCH THROW; END CATCH
-END;
-GO
-
-CREATE PROCEDURE stp_GetDoctorById @DoctorId INT
-AS
-BEGIN
-    SET NOCOUNT ON; SELECT * FROM Doctors WHERE DoctorId=@DoctorId;
-END;
-GO
-
-CREATE PROCEDURE stp_GetAllDoctors
-AS
-BEGIN
-    SET NOCOUNT ON; SELECT * FROM Doctors;
-END;
-GO
-
-
-
-
-
-
--- ===== PATIENTS =====
-CREATE PROCEDURE stp_AddPatient
-    @PatientName NVARCHAR(100), @DateOfBirth DATE, @Gender NVARCHAR(10), @ContactNumber NVARCHAR(15),
-    @Email NVARCHAR(100), @Address NVARCHAR(255), @EmergencyContact NVARCHAR(15)
-AS
-BEGIN
-    SET NOCOUNT ON;
-    BEGIN TRY
-        IF @PatientName IS NULL OR LTRIM(RTRIM(@PatientName)) = '' THROW 50008, 'PatientName is required', 1;
-        IF @Gender NOT IN ('Male', 'Female', 'Other') THROW 50009, 'Invalid Gender', 1;
+        -- Validate required fields
+        IF @PatientName IS NULL OR LTRIM(RTRIM(@PatientName)) = '' 
+            THROW 50008, 'PatientName is required', 1;
+        
+        -- Validate Gender only if it's provided (not NULL)
+        IF @Gender IS NOT NULL AND @Gender NOT IN ('Male', 'Female', 'Other') 
+            THROW 50009, 'Invalid Gender. Must be Male, Female, or Other', 1;
+        
+        -- Insert patient and return the new ID
         INSERT INTO Patients (PatientName, DateOfBirth, Gender, ContactNumber, Email, Address, EmergencyContact)
         VALUES (@PatientName, @DateOfBirth, @Gender, @ContactNumber, @Email, @Address, @EmergencyContact);
-    END TRY BEGIN CATCH THROW; END CATCH
+        
+        -- Return the new patient ID
+        SELECT SCOPE_IDENTITY() as NewPatientId;
+        
+    END TRY 
+    BEGIN CATCH 
+        -- Re-throw the error with details
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+        THROW @ErrorNumber, @ErrorMessage, 1;
+    END CATCH
 END;
 GO
 
-CREATE PROCEDURE stp_UpdatePatient
-    @PatientId INT, @PatientName NVARCHAR(100), @DateOfBirth DATE, @Gender NVARCHAR(10), @ContactNumber NVARCHAR(15),
-    @Email NVARCHAR(100), @Address NVARCHAR(255), @EmergencyContact NVARCHAR(15)
+-- Fixed Update Patient Procedure
+CREATE OR ALTER PROCEDURE stp_UpdatePatient
+    @PatientId INT, 
+    @PatientName NVARCHAR(100), 
+    @DateOfBirth DATE, 
+    @Gender NVARCHAR(10), 
+    @ContactNumber NVARCHAR(15),
+    @Email NVARCHAR(100), 
+    @Address NVARCHAR(255), 
+    @EmergencyContact NVARCHAR(15)
 AS
 BEGIN
     SET NOCOUNT ON;
     BEGIN TRY
-        IF NOT EXISTS (SELECT 1 FROM Patients WHERE PatientId=@PatientId) THROW 50010, 'Patient not found', 1;
-        UPDATE Patients SET PatientName=@PatientName, DateOfBirth=@DateOfBirth, Gender=@Gender,
-        ContactNumber=@ContactNumber, Email=@Email, Address=@Address, EmergencyContact=@EmergencyContact
-        WHERE PatientId=@PatientId;
-    END TRY BEGIN CATCH THROW; END CATCH
+        -- Check if patient exists
+        IF NOT EXISTS (SELECT 1 FROM Patients WHERE PatientId = @PatientId) 
+            THROW 50010, 'Patient not found', 1;
+        
+        -- Validate required fields
+        IF @PatientName IS NULL OR LTRIM(RTRIM(@PatientName)) = '' 
+            THROW 50008, 'PatientName is required', 1;
+        
+        -- Validate Gender only if it's provided (not NULL)
+        IF @Gender IS NOT NULL AND @Gender NOT IN ('Male', 'Female', 'Other') 
+            THROW 50009, 'Invalid Gender. Must be Male, Female, or Other', 1;
+        
+        -- Update patient
+        UPDATE Patients 
+        SET PatientName = @PatientName, 
+            DateOfBirth = @DateOfBirth, 
+            Gender = @Gender,
+            ContactNumber = @ContactNumber, 
+            Email = @Email, 
+            Address = @Address, 
+            EmergencyContact = @EmergencyContact
+        WHERE PatientId = @PatientId;
+        
+    END TRY 
+    BEGIN CATCH 
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+        THROW @ErrorNumber, @ErrorMessage, 1;
+    END CATCH
 END;
 GO
 
-CREATE PROCEDURE stp_DeletePatient @PatientId INT
+-- Fixed Delete Patient Procedure
+CREATE OR ALTER PROCEDURE stp_DeletePatient 
+    @PatientId INT
 AS
 BEGIN
-    SET NOCOUNT ON; BEGIN TRY DELETE FROM Patients WHERE PatientId=@PatientId; END TRY BEGIN CATCH THROW; END CATCH
+    SET NOCOUNT ON; 
+    BEGIN TRY 
+        -- Check if patient exists before deletion
+        IF NOT EXISTS (SELECT 1 FROM Patients WHERE PatientId = @PatientId)
+            THROW 50010, 'Patient not found', 1;
+            
+        DELETE FROM Patients WHERE PatientId = @PatientId; 
+    END TRY 
+    BEGIN CATCH 
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+        THROW @ErrorNumber, @ErrorMessage, 1;
+    END CATCH
 END;
 GO
 
-CREATE PROCEDURE stp_GetPatientById @PatientId INT
+-- Get Patient by ID (no changes needed)
+CREATE OR ALTER PROCEDURE stp_GetPatientById 
+    @PatientId INT
 AS
 BEGIN
-    SET NOCOUNT ON; SELECT * FROM Patients WHERE PatientId=@PatientId;
+    SET NOCOUNT ON; 
+    SELECT * FROM Patients WHERE PatientId = @PatientId;
 END;
 GO
 
-CREATE PROCEDURE stp_GetAllPatients
+-- Get All Patients (no changes needed)
+CREATE OR ALTER PROCEDURE stp_GetAllPatients
 AS
 BEGIN
-    SET NOCOUNT ON; SELECT * FROM Patients;
+    SET NOCOUNT ON; 
+    SELECT * FROM Patients ORDER BY CreatedDate DESC;
 END;
 GO
 

@@ -582,8 +582,7 @@
             visits: [],
             visitTypes: []
         };
-
-        // Initialize the dashboard
+ 
         document.addEventListener('DOMContentLoaded', function() {
             checkAuth();
             initializeUserInfo();
@@ -602,8 +601,7 @@
             const username = localStorage.getItem('username');
             const userRole = localStorage.getItem('userRole');
             document.getElementById('userInfo').textContent = `Welcome, ${username} (${userRole})`;
-            
-            // Show admin-only elements
+             
             if (userRole === 'Admin') {
                 document.querySelectorAll('.admin-only').forEach(el => {
                     el.classList.add('show');
@@ -616,13 +614,11 @@
             window.location.href = 'login.html';
         }
 
-        function showTab(tabName) {
-            // Hide all tabs
+        function showTab(tabName) { 
             document.querySelectorAll('.tab-pane').forEach(tab => {
                 tab.classList.remove('active');
             });
-            
-            // Remove active class from all nav tabs
+             
             document.querySelectorAll('.nav-tab').forEach(tab => {
                 tab.classList.remove('active');
             });

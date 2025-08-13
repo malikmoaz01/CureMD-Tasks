@@ -99,85 +99,134 @@ namespace webapi.Controllers
             }
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePatient(int id, [FromBody] UpdatePatientDto updatePatientDto)
+         [HttpPut("{id}")]
+public async Task<IActionResult> UpdatePatient(int id, [FromBody] UpdatePatientDto updatePatientDto)
+{
+    try
+    { 
+        Console.WriteLine($"Attempting to update patient with ID: {id}");
+        
+        if (id <= 0 || updatePatientDto.PatientId != id)
         {
-            try
-            {
-                if (id <= 0 || updatePatientDto.PatientId != id)
-                {
-                    return BadRequest(ApiResponse<object>.ErrorResult("Invalid patient ID."));
-                }
-
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ApiResponse<object>.ErrorResult("Invalid input data."));
-                }
-
-                var existingPatient = await _patientRepository.GetByIdAsync(id);
-                if (existingPatient == null)
-                {
-                    return NotFound(ApiResponse<object>.ErrorResult("Patient not found."));
-                }
-
-                var patient = new Patient
-                {
-                    PatientId = updatePatientDto.PatientId,
-                    PatientName = updatePatientDto.PatientName?.Trim(),
-                    DateOfBirth = updatePatientDto.DateOfBirth,
-                    Gender = updatePatientDto.Gender?.Trim(),
-                    ContactNumber = updatePatientDto.ContactNumber?.Trim(),
-                    Email = updatePatientDto.Email?.Trim(),
-                    Address = updatePatientDto.Address?.Trim(),
-                    EmergencyContact = updatePatientDto.EmergencyContact?.Trim()
-                };
-
-                var success = await _patientRepository.UpdateAsync(patient);
-                
-                if (success)
-                {
-                    var updatedPatient = await _patientRepository.GetByIdAsync(id);
-                    return Ok(ApiResponse<Patient>.SuccessResult(updatedPatient, "Patient updated successfully."));
-                }
-
-                return BadRequest(ApiResponse<object>.ErrorResult("Failed to update patient."));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ApiResponse<object>.ErrorResult("Error updating patient."));
-            }
+            Console.WriteLine("Invalid patient ID or ID mismatch");
+            return BadRequest(ApiResponse<object>.ErrorResult("Invalid patient ID."));
         }
 
-        [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeletePatient(int id)
+        if (!ModelState.IsValid)
         {
-            try
-            {
-                if (id <= 0)
-                {
-                    return BadRequest(ApiResponse<object>.ErrorResult("Invalid patient ID."));
-                }
-
-                var existingPatient = await _patientRepository.GetByIdAsync(id);
-                if (existingPatient == null)
-                {
-                    return NotFound(ApiResponse<object>.ErrorResult("Patient not found."));
-                }
-
-                var success = await _patientRepository.DeleteAsync(id);
-                
-                if (success)
-                {
-                    return Ok(ApiResponse<object>.SuccessResult(null, "Patient deleted successfully."));
-                }
-
-                return BadRequest(ApiResponse<object>.ErrorResult("Failed to delete patient."));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ApiResponse<object>.ErrorResult("Error deleting patient."));
-            }
+            var errors = ModelState
+                .Where(x => x.Value.Errors.Count > 0)
+                .Select(x => new { Field = x.Key, Errors = x.Value.Errors.Select(e => e.ErrorMessage) });
+            
+            var errorMessage = $"Invalid input data: {string.Join(", ", errors.SelectMany(e => e.Errors))}";
+            Console.WriteLine($"Model validation failed: {errorMessage}");
+            return BadRequest(ApiResponse<object>.ErrorResult(errorMessage));
         }
+
+        var existingPatient = await _patientRepository.GetByIdAsync(id);
+        if (existingPatient == null)
+        {
+            Console.WriteLine($"Patient with ID {id} not found for update");
+            return NotFound(ApiResponse<object>.ErrorResult("Patient not found."));
+        }
+
+        var patient = new Patient
+        {
+            PatientId = updatePatientDto.PatientId,
+            PatientName = updatePatientDto.PatientName?.Trim(),
+            DateOfBirth = updatePatientDto.DateOfBirth,
+            Gender = updatePatientDto.Gender?.Trim(),
+            ContactNumber = updatePatientDto.ContactNumber?.Trim(),
+            Email = updatePatientDto.Email?.Trim(),
+            Address = updatePatientDto.Address?.Trim(),
+            EmergencyContact = updatePatientDto.EmergencyContact?.Trim()
+        };
+
+        Console.WriteLine($"Updating patient: {patient.PatientName}");
+
+        var success = await _patientRepository.UpdateAsync(patient);
+        
+        Console.WriteLine($"Update result: {success}");
+        
+        if (success)
+        {
+            var updatedPatient = await _patientRepository.GetByIdAsync(id);
+            return Ok(ApiResponse<Patient>.SuccessResult(updatedPatient, "Patient updated successfully."));
+        }
+
+        Console.WriteLine("Update operation returned false");
+        return BadRequest(ApiResponse<object>.ErrorResult("Failed to update patient."));
+    }
+    catch (ArgumentException ex)
+    {
+        Console.WriteLine($"Argument exception: {ex.Message}");
+        return BadRequest(ApiResponse<object>.ErrorResult(ex.Message));
+    }
+    catch (InvalidOperationException ex)
+    {
+        Console.WriteLine($"Invalid operation exception: {ex.Message}");
+        return BadRequest(ApiResponse<object>.ErrorResult(ex.Message));
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"General exception: {ex.Message}");
+        Console.WriteLine($"Stack trace: {ex.StackTrace}");
+        return StatusCode(500, ApiResponse<object>.ErrorResult("Error updating patient."));
+    }
+}
+
+[HttpDelete("{id}")]
+[Authorize(Roles = "Admin")]
+public async Task<IActionResult> DeletePatient(int id)
+{
+    try
+    {
+        // Log the incoming request
+        Console.WriteLine($"Attempting to delete patient with ID: {id}");
+        
+        if (id <= 0)
+        {
+            Console.WriteLine("Invalid patient ID provided");
+            return BadRequest(ApiResponse<object>.ErrorResult("Invalid patient ID."));
+        }
+
+        var existingPatient = await _patientRepository.GetByIdAsync(id);
+        if (existingPatient == null)
+        {
+            Console.WriteLine($"Patient with ID {id} not found");
+            return NotFound(ApiResponse<object>.ErrorResult("Patient not found."));
+        }
+
+        Console.WriteLine($"Patient found: {existingPatient.PatientName}, attempting deletion");
+
+        var success = await _patientRepository.DeleteAsync(id);
+        
+        Console.WriteLine($"Deletion result: {success}");
+        
+        if (success)
+        {
+            return Ok(ApiResponse<object>.SuccessResult(null, "Patient deleted successfully."));
+        }
+
+        Console.WriteLine("Delete operation returned false");
+        return BadRequest(ApiResponse<object>.ErrorResult("Failed to delete patient."));
+    }
+    catch (ArgumentException ex)
+    {
+        Console.WriteLine($"Argument exception: {ex.Message}");
+        return BadRequest(ApiResponse<object>.ErrorResult(ex.Message));
+    }
+    catch (InvalidOperationException ex)
+    {
+        Console.WriteLine($"Invalid operation exception: {ex.Message}");
+        return BadRequest(ApiResponse<object>.ErrorResult(ex.Message));
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"General exception: {ex.Message}");
+        Console.WriteLine($"Stack trace: {ex.StackTrace}");
+        return StatusCode(500, ApiResponse<object>.ErrorResult("Error deleting patient."));
+    }
+}
     }
 }
