@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -292,9 +293,10 @@
         }
     </style>
 </head>
+
 <body>
     <div class="header">
-        <h1>Patient Visit Management System</h1>
+        <h1>Patient Visit MS 6606 CureMD</h1>
         <div class="user-info">
             <span id="userInfo">Welcome, User</span>
             <button class="logout-btn" onclick="logout()">Logout</button>
@@ -307,6 +309,7 @@
             <button class="nav-tab" onclick="showTab('doctors')">Doctors</button>
             <button class="nav-tab" onclick="showTab('visits')">Visits</button>
             <button class="nav-tab" onclick="showTab('visitTypes')">Visit Types</button>
+            <a href="activity.html" class="nav-tab" onclick="showTab('Activity')">Activity Log</a>
         </div>
 
         <div class="tab-content">
@@ -314,7 +317,8 @@
             <div id="patients" class="tab-pane active">
                 <div class="actions">
                     <div>
-                        <input type="text" class="search-box" id="patientSearch" placeholder="Search patients..." onkeyup="filterTable('patientsTable', this.value)">
+                        <input type="text" class="search-box" id="patientSearch" placeholder="Search patients..."
+                            onkeyup="filterTable('patientsTable', this.value)">
                     </div>
                     <button class="btn btn-success" onclick="showAddPatientModal()">Add Patient</button>
                 </div>
@@ -340,7 +344,8 @@
             <div id="doctors" class="tab-pane">
                 <div class="actions">
                     <div>
-                        <input type="text" class="search-box" id="doctorSearch" placeholder="Search doctors..." onkeyup="filterTable('doctorsTable', this.value)">
+                        <input type="text" class="search-box" id="doctorSearch" placeholder="Search doctors..."
+                            onkeyup="filterTable('doctorsTable', this.value)">
                     </div>
                     <button class="btn btn-success" onclick="showAddDoctorModal()">Add Doctor</button>
                 </div>
@@ -365,7 +370,8 @@
             <div id="visits" class="tab-pane">
                 <div class="actions">
                     <div>
-                        <input type="text" class="search-box" id="visitSearch" placeholder="Search visits..." onkeyup="filterTable('visitsTable', this.value)">
+                        <input type="text" class="search-box" id="visitSearch" placeholder="Search visits..."
+                            onkeyup="filterTable('visitsTable', this.value)">
                     </div>
                     <button class="btn btn-success" onclick="showAddVisitModal()">Add Visit</button>
                 </div>
@@ -392,7 +398,8 @@
             <div id="visitTypes" class="tab-pane">
                 <div class="actions">
                     <div>
-                        <input type="text" class="search-box" id="visitTypeSearch" placeholder="Search visit types..." onkeyup="filterTable('visitTypesTable', this.value)">
+                        <input type="text" class="search-box" id="visitTypeSearch" placeholder="Search visit types..."
+                            onkeyup="filterTable('visitTypesTable', this.value)">
                     </div>
                     <button class="btn btn-success admin-only" onclick="showAddVisitTypeModal()">Add Visit Type</button>
                 </div>
@@ -549,7 +556,6 @@
         </div>
     </div>
 
-    <!-- Visit Type Modal -->
     <div id="visitTypeModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -582,8 +588,8 @@
             visits: [],
             visitTypes: []
         };
- 
-        document.addEventListener('DOMContentLoaded', function() {
+
+        document.addEventListener('DOMContentLoaded', function () {
             checkAuth();
             initializeUserInfo();
             loadAllData();
@@ -601,7 +607,6 @@
             const username = localStorage.getItem('username');
             const userRole = localStorage.getItem('userRole');
             document.getElementById('userInfo').textContent = `Welcome, ${username} (${userRole})`;
-             
             if (userRole === 'Admin') {
                 document.querySelectorAll('.admin-only').forEach(el => {
                     el.classList.add('show');
@@ -614,20 +619,15 @@
             window.location.href = 'login.html';
         }
 
-        function showTab(tabName) { 
+        function showTab(tabName) {
             document.querySelectorAll('.tab-pane').forEach(tab => {
                 tab.classList.remove('active');
             });
-             
             document.querySelectorAll('.nav-tab').forEach(tab => {
                 tab.classList.remove('active');
             });
-            
-            // Show selected tab
             document.getElementById(tabName).classList.add('active');
             event.target.classList.add('active');
-            
-            // Load data if not already loaded
             if (tabName === 'patients' && currentData.patients.length === 0) {
                 loadPatients();
             } else if (tabName === 'doctors' && currentData.doctors.length === 0) {
@@ -643,33 +643,45 @@
             await loadPatients();
         }
 
-        async function makeApiRequest(endpoint, options = {}) {
+        function makeApiRequest(endpoint, options = {}) {
             const token = localStorage.getItem('token');
+            const method = options.method || 'GET';
             const headers = {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
                 ...options.headers
             };
-
-            try {
-                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-                    ...options,
-                    headers
+            const body = options.body || null;
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open(method, `${API_BASE_URL}${endpoint}`, true);
+                Object.entries(headers).forEach(([k, v]) => {
+                    if (v != null) xhr.setRequestHeader(k, v);
                 });
-
-                if (response.status === 401) {
-                    logout();
-                    return null;
+                xhr.onload = function () {
+                    if (xhr.status === 401) {
+                        logout();
+                        resolve(null);
+                        return;
+                    }
+                    try {
+                        const json = xhr.responseText ? JSON.parse(xhr.responseText) : null;
+                        resolve(json);
+                    } catch (err) {
+                        reject(err);
+                    }
+                };
+                xhr.onerror = function () {
+                    reject(new Error('Network error'));
+                };
+                if (body) {
+                    xhr.send(body);
+                } else {
+                    xhr.send();
                 }
-
-                return await response.json();
-            } catch (error) {
-                console.error('API request failed:', error);
-                throw error;
-            }
+            });
         }
 
-        // Patient Functions
         async function loadPatients() {
             showLoading('patients');
             try {
@@ -690,21 +702,20 @@
         function renderPatientsTable() {
             const tbody = document.querySelector('#patientsTable tbody');
             const userRole = localStorage.getItem('userRole');
-            
             tbody.innerHTML = currentData.patients.map(patient => `
-                <tr>
-                    <td>${patient.patientId}</td>
-                    <td>${patient.patientName}</td>
-                    <td>${patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
-                    <td>${patient.gender || 'N/A'}</td>
-                    <td>${patient.contactNumber || 'N/A'}</td>
-                    <td>${patient.email || 'N/A'}</td>
-                    <td class="table-actions">
-                        <button class="btn btn-small" onclick="editPatient(${patient.patientId})">Edit</button>
-                        ${userRole === 'Admin' ? `<button class="btn btn-danger btn-small" onclick="deletePatient(${patient.patientId})">Delete</button>` : ''}
-                    </td>
-                </tr>
-            `).join('');
+        <tr>
+            <td>${patient.patientId}</td>
+            <td>${patient.patientName}</td>
+            <td>${patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
+            <td>${patient.gender || 'N/A'}</td>
+            <td>${patient.contactNumber || 'N/A'}</td>
+            <td>${patient.email || 'N/A'}</td>
+            <td class="table-actions">
+                <button class="btn btn-small" onclick="editPatient(${patient.patientId})">Edit</button>
+                ${userRole === 'Admin' ? `<button class="btn btn-danger btn-small" onclick="deletePatient(${patient.patientId})">Delete</button>` : ''}
+            </td>
+        </tr>
+    `).join('');
         }
 
         function showAddPatientModal() {
@@ -746,12 +757,10 @@
             }
         }
 
-        document.getElementById('patientForm').addEventListener('submit', async function(e) {
+        document.getElementById('patientForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            
             const patientId = document.getElementById('patientId').value;
             const isEdit = !!patientId;
-            
             const patientData = {
                 patientName: document.getElementById('patientName').value.trim(),
                 dateOfBirth: document.getElementById('patientDob').value || null,
@@ -761,20 +770,16 @@
                 address: document.getElementById('patientAddress').value.trim() || null,
                 emergencyContact: document.getElementById('patientEmergencyContact').value.trim() || null
             };
-
             if (isEdit) {
                 patientData.patientId = parseInt(patientId);
             }
-
             try {
                 const endpoint = isEdit ? `/patient/${patientId}` : '/patient';
                 const method = isEdit ? 'PUT' : 'POST';
-                
                 const response = await makeApiRequest(endpoint, {
                     method,
                     body: JSON.stringify(patientData)
                 });
-
                 if (response && response.success) {
                     showAlert('patients', `Patient ${isEdit ? 'updated' : 'created'} successfully`, 'success');
                     closeModal('patientModal');
@@ -787,7 +792,6 @@
             }
         });
 
-        // Doctor Functions
         async function loadDoctors() {
             showLoading('doctors');
             try {
@@ -809,20 +813,19 @@
         function renderDoctorsTable() {
             const tbody = document.querySelector('#doctorsTable tbody');
             const userRole = localStorage.getItem('userRole');
-            
             tbody.innerHTML = currentData.doctors.map(doctor => `
-                <tr>
-                    <td>${doctor.doctorId}</td>
-                    <td>${doctor.doctorName}</td>
-                    <td>${doctor.specialization || 'N/A'}</td>
-                    <td>${doctor.contactNumber || 'N/A'}</td>
-                    <td>${doctor.email || 'N/A'}</td>
-                    <td class="table-actions">
-                        <button class="btn btn-small" onclick="editDoctor(${doctor.doctorId})">Edit</button>
-                        ${userRole === 'Admin' ? `<button class="btn btn-danger btn-small" onclick="deleteDoctor(${doctor.doctorId})">Delete</button>` : ''}
-                    </td>
-                </tr>
-            `).join('');
+        <tr>
+            <td>${doctor.doctorId}</td>
+            <td>${doctor.doctorName}</td>
+            <td>${doctor.specialization || 'N/A'}</td>
+            <td>${doctor.contactNumber || 'N/A'}</td>
+            <td>${doctor.email || 'N/A'}</td>
+            <td class="table-actions">
+                <button class="btn btn-small" onclick="editDoctor(${doctor.doctorId})">Edit</button>
+                ${userRole === 'Admin' ? `<button class="btn btn-danger btn-small" onclick="deleteDoctor(${doctor.doctorId})">Delete</button>` : ''}
+            </td>
+        </tr>
+    `).join('');
         }
 
         function showAddDoctorModal() {
@@ -861,32 +864,26 @@
             }
         }
 
-        document.getElementById('doctorForm').addEventListener('submit', async function(e) {
+        document.getElementById('doctorForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            
             const doctorId = document.getElementById('doctorId').value;
             const isEdit = !!doctorId;
-            
             const doctorData = {
                 doctorName: document.getElementById('doctorName').value.trim(),
                 specialization: document.getElementById('doctorSpecialization').value.trim() || null,
                 contactNumber: document.getElementById('doctorContact').value.trim() || null,
                 email: document.getElementById('doctorEmail').value.trim() || null
             };
-
             if (isEdit) {
                 doctorData.doctorId = parseInt(doctorId);
             }
-
             try {
                 const endpoint = isEdit ? `/doctor/${doctorId}` : '/doctor';
                 const method = isEdit ? 'PUT' : 'POST';
-                
                 const response = await makeApiRequest(endpoint, {
                     method,
                     body: JSON.stringify(doctorData)
                 });
-
                 if (response && response.success) {
                     showAlert('doctors', `Doctor ${isEdit ? 'updated' : 'created'} successfully`, 'success');
                     closeModal('doctorModal');
@@ -899,7 +896,6 @@
             }
         });
 
-        // Visit Functions
         async function loadVisits() {
             showLoading('visits');
             try {
@@ -920,38 +916,33 @@
         function renderVisitsTable() {
             const tbody = document.querySelector('#visitsTable tbody');
             const userRole = localStorage.getItem('userRole');
-            
             tbody.innerHTML = currentData.visits.map(visit => {
                 const patient = currentData.patients.find(p => p.patientId === visit.patientId);
                 const doctor = currentData.doctors.find(d => d.doctorId === visit.doctorId);
                 const visitType = currentData.visitTypes.find(vt => vt.visitTypeId === visit.visitTypeId);
-                
                 return `
-                    <tr>
-                        <td>${visit.id}</td>
-                        <td>${patient ? patient.patientName : 'Unknown'}</td>
-                        <td>${doctor ? doctor.doctorName : 'N/A'}</td>
-                        <td>${visitType ? visitType.visitTypeName : 'Unknown'}</td>
-                        <td>${new Date(visit.visitDate).toLocaleString()}</td>
-                        <td>${visit.durationInMinutes} mins</td>
-                        <td>${visit.fee.toFixed(2)}</td>
-                        <td class="table-actions">
-                            <button class="btn btn-small" onclick="editVisit(${visit.id})">Edit</button>
-                            ${userRole === 'Admin' ? `<button class="btn btn-danger btn-small" onclick="deleteVisit(${visit.id})">Delete</button>` : ''}
-                        </td>
-                    </tr>
-                `;
+            <tr>
+                <td>${visit.id}</td>
+                <td>${patient ? patient.patientName : 'Unknown'}</td>
+                <td>${doctor ? doctor.doctorName : 'N/A'}</td>
+                <td>${visitType ? visitType.visitTypeName : 'Unknown'}</td>
+                <td>${new Date(visit.visitDate).toLocaleString()}</td>
+                <td>${visit.durationInMinutes} mins</td>
+                <td>${visit.fee.toFixed(2)}</td>
+                <td class="table-actions">
+                    <button class="btn btn-small" onclick="editVisit(${visit.id})">Edit</button>
+                    ${userRole === 'Admin' ? `<button class="btn btn-danger btn-small" onclick="deleteVisit(${visit.id})">Delete</button>` : ''}
+                </td>
+            </tr>
+        `;
             }).join('');
         }
 
         async function showAddVisitModal() {
-            // Load required data first
             if (currentData.patients.length === 0) await loadPatients();
             if (currentData.doctors.length === 0) await loadDoctors();
             if (currentData.visitTypes.length === 0) await loadVisitTypes();
-            
             populateSelectOptions();
-            
             document.getElementById('visitModalTitle').textContent = 'Add Visit';
             document.getElementById('visitForm').reset();
             document.getElementById('visitId').value = '';
@@ -963,7 +954,6 @@
             const visit = currentData.visits.find(v => v.id === id);
             if (visit) {
                 populateSelectOptions();
-                
                 document.getElementById('visitModalTitle').textContent = 'Edit Visit';
                 document.getElementById('visitId').value = visit.id;
                 document.getElementById('visitPatient').value = visit.patientId;
@@ -993,12 +983,10 @@
             }
         }
 
-        document.getElementById('visitForm').addEventListener('submit', async function(e) {
+        document.getElementById('visitForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            
             const visitId = document.getElementById('visitId').value;
             const isEdit = !!visitId;
-            
             const visitData = {
                 patientId: parseInt(document.getElementById('visitPatient').value),
                 doctorId: document.getElementById('visitDoctor').value ? parseInt(document.getElementById('visitDoctor').value) : null,
@@ -1008,20 +996,16 @@
                 fee: parseFloat(document.getElementById('visitFee').value),
                 note: document.getElementById('visitNote').value.trim() || null
             };
-
             if (isEdit) {
                 visitData.id = parseInt(visitId);
             }
-
             try {
                 const endpoint = isEdit ? `/patientvisit/${visitId}` : '/patientvisit';
                 const method = isEdit ? 'PUT' : 'POST';
-                
                 const response = await makeApiRequest(endpoint, {
                     method,
                     body: JSON.stringify(visitData)
                 });
-
                 if (response && response.success) {
                     showAlert('visits', `Visit ${isEdit ? 'updated' : 'created'} successfully`, 'success');
                     closeModal('visitModal');
@@ -1034,7 +1018,6 @@
             }
         });
 
-        // Visit Type Functions
         async function loadVisitTypes() {
             showLoading('visitTypes');
             try {
@@ -1056,20 +1039,17 @@
         function renderVisitTypesTable() {
             const tbody = document.querySelector('#visitTypesTable tbody');
             const userRole = localStorage.getItem('userRole');
-            
             tbody.innerHTML = currentData.visitTypes.map(visitType => `
-                <tr>
-                    <td>${visitType.visitTypeId}</td>
-                    <td>${visitType.visitTypeName}</td>
-                    <td>${visitType.baseRate.toFixed(2)}</td>
-                    <td>${visitType.description || 'N/A'}</td>
-                    <td class="admin-only table-actions">
-                        <button class="btn btn-danger btn-small" onclick="deleteVisitType(${visitType.visitTypeId})">Delete</button>
-                    </td>
-                </tr>
-            `).join('');
-            
-            // Show admin columns
+        <tr>
+            <td>${visitType.visitTypeId}</td>
+            <td>${visitType.visitTypeName}</td>
+            <td>${visitType.baseRate.toFixed(2)}</td>
+            <td>${visitType.description || 'N/A'}</td>
+            <td class="admin-only table-actions">
+                <button class="btn btn-danger btn-small" onclick="deleteVisitType(${visitType.visitTypeId})">Delete</button>
+            </td>
+        </tr>
+    `).join('');
             if (userRole === 'Admin') {
                 document.querySelectorAll('#visitTypesTable .admin-only').forEach(el => {
                     el.style.display = 'table-cell';
@@ -1098,21 +1078,18 @@
             }
         }
 
-        document.getElementById('visitTypeForm').addEventListener('submit', async function(e) {
+        document.getElementById('visitTypeForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            
             const visitTypeData = {
                 visitTypeName: document.getElementById('visitTypeName').value.trim(),
                 baseRate: parseFloat(document.getElementById('visitTypeRate').value),
                 description: document.getElementById('visitTypeDescription').value.trim() || null
             };
-
             try {
                 const response = await makeApiRequest('/visittype', {
                     method: 'POST',
                     body: JSON.stringify(visitTypeData)
                 });
-
                 if (response && response.success) {
                     showAlert('visitTypes', 'Visit type created successfully', 'success');
                     closeModal('visitTypeModal');
@@ -1125,26 +1102,19 @@
             }
         });
 
-        // Utility Functions
         function populateSelectOptions() {
-            // Populate patient select
             const patientSelect = document.getElementById('visitPatient');
             patientSelect.innerHTML = '<option value="">Select Patient</option>' +
                 currentData.patients.map(p => `<option value="${p.patientId}">${p.patientName}</option>`).join('');
-
-            // Populate doctor select
             const doctorSelect = document.getElementById('visitDoctor');
             doctorSelect.innerHTML = '<option value="">Select Doctor (Optional)</option>' +
                 currentData.doctors.map(d => `<option value="${d.doctorId}">${d.doctorName} - ${d.specialization || 'General'}</option>`).join('');
-
-            // Populate visit type select
             const visitTypeSelect = document.getElementById('visitType');
             visitTypeSelect.innerHTML = '<option value="">Select Visit Type</option>' +
                 currentData.visitTypes.map(vt => `<option value="${vt.visitTypeId}">${vt.visitTypeName} - ${vt.baseRate.toFixed(2)}</option>`).join('');
         }
 
-        // Auto-populate fee based on visit type selection
-        document.getElementById('visitType').addEventListener('change', function() {
+        document.getElementById('visitType').addEventListener('change', function () {
             const visitTypeId = this.value;
             if (visitTypeId) {
                 const visitType = currentData.visitTypes.find(vt => vt.visitTypeId == visitTypeId);
@@ -1171,11 +1141,10 @@
         function showAlert(section, message, type) {
             const alertContainer = document.getElementById(`${section}Alert`);
             alertContainer.innerHTML = `
-                <div class="alert alert-${type}">
-                    ${message}
-                </div>
-            `;
-            
+        <div class="alert alert-${type}">
+            ${message}
+        </div>
+    `;
             setTimeout(() => {
                 alertContainer.innerHTML = '';
             }, 5000);
@@ -1184,7 +1153,6 @@
         function filterTable(tableId, searchValue) {
             const table = document.getElementById(tableId);
             const rows = table.querySelectorAll('tbody tr');
-            
             rows.forEach(row => {
                 const text = row.textContent.toLowerCase();
                 if (text.includes(searchValue.toLowerCase())) {
@@ -1195,16 +1163,14 @@
             });
         }
 
-        // Click outside modal to close
-        window.onclick = function(event) {
+        window.onclick = function (event) {
             if (event.target.classList.contains('modal')) {
                 event.target.style.display = 'none';
             }
-        }
+        };
 
-        // Load data when tabs are switched
         document.querySelectorAll('.nav-tab').forEach(tab => {
-            tab.addEventListener('click', function() {
+            tab.addEventListener('click', function () {
                 const tabName = this.textContent.toLowerCase().replace(' ', '');
                 if (tabName === 'doctors' && currentData.doctors.length === 0) {
                     loadDoctors();
@@ -1217,4 +1183,5 @@
         });
     </script>
 </body>
+
 </html>

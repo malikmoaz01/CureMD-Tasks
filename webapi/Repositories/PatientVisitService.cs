@@ -73,14 +73,12 @@ namespace webapi.Services
         public async Task<PatientVisit> CreateVisitAsync(PatientVisit patientVisit)
         {
             try
-            {
-                // Calculate fee if not already set
+            { 
                 if (patientVisit.Fee == 0)
                 {
                     patientVisit.Fee = await CalculateFeeAsync(patientVisit.VisitTypeId, patientVisit.DurationInMinutes);
                 }
-
-                // Set created date
+ 
                 patientVisit.CreatedDate = DateTime.Now;
 
                 var visitId = await _patientVisitRepository.AddAsync(patientVisit);
@@ -104,11 +102,9 @@ namespace webapi.Services
         public async Task<PatientVisit> UpdateVisitAsync(PatientVisit patientVisit)
         {
             try
-            {
-                // Recalculate fee if duration or visit type changed
+            { 
                 patientVisit.Fee = await CalculateFeeAsync(patientVisit.VisitTypeId, patientVisit.DurationInMinutes);
-                
-                // Set modified date
+                 
                 patientVisit.ModifiedDate = DateTime.Now;
 
                 var success = await _patientVisitRepository.UpdateAsync(patientVisit);
@@ -156,16 +152,14 @@ namespace webapi.Services
         public async Task<decimal> CalculateFeeAsync(int visitTypeId, int durationInMinutes)
         {
             try
-            {
-                // First try to get fee rate from FeeRates table
+            { 
                 var feeRates = await _feeRateRepository.GetAllAsync();
                 var feeRate = feeRates.FirstOrDefault(fr => fr.VisitTypeId == visitTypeId);
 
                 if (feeRate != null)
                 {
                     var baseAmount = feeRate.BaseRate;
-                    
-                    // Calculate extra time fee if duration exceeds threshold
+                     
                     if (durationInMinutes > feeRate.ExtraTimeThreshold)
                     {
                         var extraMinutes = durationInMinutes - feeRate.ExtraTimeThreshold;
@@ -175,14 +169,12 @@ namespace webapi.Services
                     
                     return baseAmount;
                 }
-
-                // Fallback to visit type base rate if no fee rate found
+ 
                 var visitType = await _visitTypeRepository.GetByIdAsync(visitTypeId);
                 if (visitType != null)
                 {
                     var baseAmount = visitType.BaseRate;
-                    
-                    // Apply default extra time calculation (25% per extra minute after 30 minutes)
+                     
                     if (durationInMinutes > 30)
                     {
                         var extraMinutes = durationInMinutes - 30;
@@ -192,8 +184,7 @@ namespace webapi.Services
                     
                     return baseAmount;
                 }
-
-                // Default fee if nothing found
+ 
                 return 500.00m;
             }
             catch (Exception ex)

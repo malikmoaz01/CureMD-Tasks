@@ -105,8 +105,7 @@ public async Task<int> AddAsync(Doctor doctor)
         using var command = connection.CreateCommand();
         command.CommandType = CommandType.StoredProcedure;
         command.CommandText = "stp_AddDoctor";
-
-        // Add parameters with proper null handling
+ 
         command.Parameters.Add(new SqlParameter("@DoctorName", SqlDbType.NVarChar, 100) 
         { 
             Value = string.IsNullOrWhiteSpace(doctor.DoctorName) ? (object)DBNull.Value : doctor.DoctorName.Trim() 
@@ -126,14 +125,12 @@ public async Task<int> AddAsync(Doctor doctor)
         { 
             Value = string.IsNullOrWhiteSpace(doctor.Email) ? (object)DBNull.Value : doctor.Email.Trim() 
         });
-
-        // Execute and get the new doctor ID
+ 
         var result = await command.ExecuteScalarAsync();
         return Convert.ToInt32(result);
     }
     catch (SqlException ex)
-    {
-        // Handle specific SQL Server errors
+    { 
         if (ex.Number == 50006)
             throw new ArgumentException("Doctor name is required.");
         if (ex.Number == 50007)
@@ -159,8 +156,7 @@ public async Task<bool> DeleteAsync(int doctorId)
         command.CommandText = "stp_DeleteDoctor";
 
         command.Parameters.Add(new SqlParameter("@DoctorId", SqlDbType.Int) { Value = doctorId });
-
-        // Execute and get result
+ 
         var result = await command.ExecuteScalarAsync();
         
         if (result != null && result != DBNull.Value)
@@ -172,8 +168,7 @@ public async Task<bool> DeleteAsync(int doctorId)
         return false;
     }
     catch (SqlException ex)
-    {
-        // Handle specific SQL Server errors
+    { 
         if (ex.Number == 50007)
             throw new ArgumentException("Doctor not found.");
         if (ex.Number == 50011)
@@ -222,8 +217,7 @@ public async Task<bool> UpdateAsync(Doctor doctor)
         { 
             Value = string.IsNullOrWhiteSpace(doctor.Email) ? (object)DBNull.Value : doctor.Email.Trim() 
         });
-
-        // Execute and get result
+ 
         var result = await command.ExecuteScalarAsync();
         
         if (result != null && result != DBNull.Value)

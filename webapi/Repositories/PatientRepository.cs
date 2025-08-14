@@ -111,8 +111,7 @@ namespace webapi.Repositories
             using var command = connection.CreateCommand();
             command.CommandType = CommandType.StoredProcedure;
             command.CommandText = "stp_AddPatient";
-
-            // Add parameters with proper null handling
+ 
             command.Parameters.Add(new SqlParameter("@PatientName", SqlDbType.NVarChar, 100) 
             { 
                 Value = string.IsNullOrWhiteSpace(patient.PatientName) ? (object)DBNull.Value : patient.PatientName.Trim() 
@@ -147,14 +146,12 @@ namespace webapi.Repositories
             { 
                 Value = string.IsNullOrWhiteSpace(patient.EmergencyContact) ? (object)DBNull.Value : patient.EmergencyContact.Trim() 
             });
-
-            // Execute and get the new patient ID
+ 
             var result = await command.ExecuteScalarAsync();
             return Convert.ToInt32(result);
         }
         catch (SqlException ex)
-        {
-            // Handle specific SQL Server errors
+        { 
             if (ex.Number == 50008)
                 throw new ArgumentException("Patient name is required.");
             if (ex.Number == 50009)
@@ -178,8 +175,7 @@ namespace webapi.Repositories
         using var command = connection.CreateCommand();
         command.CommandType = CommandType.StoredProcedure;
         command.CommandText = "stp_UpdatePatient";
-
-        // Add parameters with proper null handling
+ 
         command.Parameters.Add(new SqlParameter("@PatientId", SqlDbType.Int) 
         { 
             Value = patient.PatientId 
@@ -219,8 +215,7 @@ namespace webapi.Repositories
         { 
             Value = string.IsNullOrWhiteSpace(patient.EmergencyContact) ? (object)DBNull.Value : patient.EmergencyContact.Trim() 
         });
-
-        // Execute and get result
+ 
         var result = await command.ExecuteScalarAsync();
         
         if (result != null && result != DBNull.Value)
@@ -232,8 +227,7 @@ namespace webapi.Repositories
         return false;
     }
     catch (SqlException ex)
-    {
-        // Handle specific SQL Server errors
+    { 
         if (ex.Number == 50008)
             throw new ArgumentException("Patient name is required.");
         if (ex.Number == 50009)
@@ -261,8 +255,7 @@ public async Task<bool> DeleteAsync(int patientId)
         command.CommandText = "stp_DeletePatient";
 
         command.Parameters.Add(new SqlParameter("@PatientId", SqlDbType.Int) { Value = patientId });
-
-        // Execute and get result
+ 
         var result = await command.ExecuteScalarAsync();
         
         if (result != null && result != DBNull.Value)
@@ -274,8 +267,7 @@ public async Task<bool> DeleteAsync(int patientId)
         return false;
     }
     catch (SqlException ex)
-    {
-        // Handle specific SQL Server errors
+    { 
         if (ex.Number == 50010)
             throw new ArgumentException("Patient not found.");
         if (ex.Number == 50012)

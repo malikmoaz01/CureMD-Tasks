@@ -96,82 +96,123 @@ namespace webapi.Repositories
         }
 
         public async Task<int> AddAsync(FeeRate feeRate)
+{
+    try
+    {
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        using var command = connection.CreateCommand();
+        command.CommandType = CommandType.StoredProcedure;
+        command.CommandText = "stp_AddFeeRate";
+
+        command.Parameters.Add(new SqlParameter("@VisitTypeId", SqlDbType.Int) { Value = feeRate.VisitTypeId });
+        command.Parameters.Add(new SqlParameter("@BaseRate", SqlDbType.Decimal) { Value = feeRate.BaseRate });
+        command.Parameters.Add(new SqlParameter("@ExtraTimeRate", SqlDbType.Decimal) { Value = feeRate.ExtraTimeRate });
+        command.Parameters.Add(new SqlParameter("@ExtraTimeThreshold", SqlDbType.Int) { Value = feeRate.ExtraTimeThreshold });
+
+        var result = await command.ExecuteScalarAsync();
+        return Convert.ToInt32(result);
+    }
+    catch (SqlException sqlEx)
+    {
+        Console.WriteLine($"SQL Error in AddAsync: {sqlEx.Number} - {sqlEx.Message}");
+        throw sqlEx.Number switch
         {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
+            50021 => new ArgumentException("Valid VisitTypeId is required"),
+            50022 => new ArgumentException("Valid BaseRate is required"),
+            50023 => new ArgumentException("Valid ExtraTimeRate is required"),
+            50024 => new ArgumentException("Valid ExtraTimeThreshold is required"),
+            50025 => new ArgumentException("VisitType not found"),
+            _ => new InvalidOperationException($"Error adding fee rate: {sqlEx.Message}", sqlEx)
+        };
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"General Error in AddAsync: {ex.Message}");
+        throw new InvalidOperationException($"Error adding fee rate: {ex.Message}", ex);
+    }
+}
 
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_AddFeeRate";
+public async Task<bool> UpdateAsync(FeeRate feeRate)
+{
+    try
+    {
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
 
-                command.Parameters.Add(new SqlParameter("@VisitTypeId", SqlDbType.Int) { Value = feeRate.VisitTypeId });
-                command.Parameters.Add(new SqlParameter("@BaseRate", SqlDbType.Decimal) { Value = feeRate.BaseRate });
-                command.Parameters.Add(new SqlParameter("@ExtraTimeRate", SqlDbType.Decimal) { Value = feeRate.ExtraTimeRate });
-                command.Parameters.Add(new SqlParameter("@ExtraTimeThreshold", SqlDbType.Int) { Value = feeRate.ExtraTimeThreshold });
+        using var command = connection.CreateCommand();
+        command.CommandType = CommandType.StoredProcedure;
+        command.CommandText = "stp_UpdateFeeRate";
 
-                await command.ExecuteNonQueryAsync();
+        command.Parameters.Add(new SqlParameter("@FeeRateId", SqlDbType.Int) { Value = feeRate.FeeRateId });
+        command.Parameters.Add(new SqlParameter("@VisitTypeId", SqlDbType.Int) { Value = feeRate.VisitTypeId });
+        command.Parameters.Add(new SqlParameter("@BaseRate", SqlDbType.Decimal) { Value = feeRate.BaseRate });
+        command.Parameters.Add(new SqlParameter("@ExtraTimeRate", SqlDbType.Decimal) { Value = feeRate.ExtraTimeRate });
+        command.Parameters.Add(new SqlParameter("@ExtraTimeThreshold", SqlDbType.Int) { Value = feeRate.ExtraTimeThreshold });
 
-                command.CommandText = "SELECT SCOPE_IDENTITY()";
-                command.CommandType = CommandType.Text;
-                command.Parameters.Clear();
-
-                var result = await command.ExecuteScalarAsync();
-                return Convert.ToInt32(result);
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error adding fee rate: {ex.Message}", ex);
-            }
-        }
-
-        public async Task<bool> UpdateAsync(FeeRate feeRate)
+        var result = await command.ExecuteScalarAsync();
+        var rowsAffected = Convert.ToInt32(result);
+        
+        Console.WriteLine($"UpdateAsync - Rows affected: {rowsAffected}");
+        return rowsAffected > 0;
+    }
+    catch (SqlException sqlEx)
+    {
+        Console.WriteLine($"SQL Error in UpdateAsync: {sqlEx.Number} - {sqlEx.Message}");
+        throw sqlEx.Number switch
         {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
+            50021 => new ArgumentException("Valid VisitTypeId is required"),
+            50022 => new ArgumentException("Valid BaseRate is required"),
+            50023 => new ArgumentException("Valid ExtraTimeRate is required"),
+            50024 => new ArgumentException("Valid ExtraTimeThreshold is required"),
+            50025 => new ArgumentException("VisitType not found"),
+            50026 => new ArgumentException("Valid FeeRateId is required"),
+            50027 => new ArgumentException("FeeRate not found"),
+            _ => new InvalidOperationException($"Error updating fee rate: {sqlEx.Message}", sqlEx)
+        };
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"General Error in UpdateAsync: {ex.Message}");
+        throw new InvalidOperationException($"Error updating fee rate: {ex.Message}", ex);
+    }
+}
 
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_UpdateFeeRate";
+public async Task<bool> DeleteAsync(int feeRateId)
+{
+    try
+    {
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
 
-                command.Parameters.Add(new SqlParameter("@FeeRateId", SqlDbType.Int) { Value = feeRate.FeeRateId });
-                command.Parameters.Add(new SqlParameter("@VisitTypeId", SqlDbType.Int) { Value = feeRate.VisitTypeId });
-                command.Parameters.Add(new SqlParameter("@BaseRate", SqlDbType.Decimal) { Value = feeRate.BaseRate });
-                command.Parameters.Add(new SqlParameter("@ExtraTimeRate", SqlDbType.Decimal) { Value = feeRate.ExtraTimeRate });
-                command.Parameters.Add(new SqlParameter("@ExtraTimeThreshold", SqlDbType.Int) { Value = feeRate.ExtraTimeThreshold });
+        using var command = connection.CreateCommand();
+        command.CommandType = CommandType.StoredProcedure;
+        command.CommandText = "stp_DeleteFeeRate";
 
-                var rowsAffected = await command.ExecuteNonQueryAsync();
-                return rowsAffected > 0;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error updating fee rate: {ex.Message}", ex);
-            }
-        }
+        command.Parameters.Add(new SqlParameter("@FeeRateId", SqlDbType.Int) { Value = feeRateId });
 
-        public async Task<bool> DeleteAsync(int feeRateId)
+        var result = await command.ExecuteScalarAsync();
+        var rowsAffected = Convert.ToInt32(result);
+        
+        Console.WriteLine($"DeleteAsync - Rows affected: {rowsAffected}");
+        return rowsAffected > 0;
+    }
+    catch (SqlException sqlEx)
+    {
+        Console.WriteLine($"SQL Error in DeleteAsync: {sqlEx.Number} - {sqlEx.Message}");
+        throw sqlEx.Number switch
         {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
-
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_DeleteFeeRate";
-
-                command.Parameters.Add(new SqlParameter("@FeeRateId", SqlDbType.Int) { Value = feeRateId });
-
-                var rowsAffected = await command.ExecuteNonQueryAsync();
-                return rowsAffected > 0;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error deleting fee rate: {ex.Message}", ex);
-            }
-        }
+            50026 => new ArgumentException("Valid FeeRateId is required"),
+            50027 => new ArgumentException("FeeRate not found"),
+            _ => new InvalidOperationException($"Error deleting fee rate: {sqlEx.Message}", sqlEx)
+        };
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"General Error in DeleteAsync: {ex.Message}");
+        throw new InvalidOperationException($"Error deleting fee rate: {ex.Message}", ex);
+    }
+}
     }
 }

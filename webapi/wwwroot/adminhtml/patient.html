@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Visit MS - Patients</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body data-page="patients">
+    <div class="header">
+        <h1>Patient Visit MS 6606 CureMD</h1>
+        <div class="user-info">
+            <span id="userInfo">Welcome, User</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="nav-tabs">
+            <a class="nav-tab" data-tab="patients" href="patient.html">Patients</a>
+            <a class="nav-tab" data-tab="doctors" href="doctor.html">Doctors</a>
+            <a class="nav-tab" data-tab="visits" href="visits.html">Visits</a>
+            <a class="nav-tab" data-tab="visitTypes" href="visittype.html">Visit Types</a>
+            <a class="nav-tab" data-tab="activity" href="activity.html">Activity Log</a>
+        </div>
+
+        <div class="tab-content">
+            <div id="patients" class="tab-pane active">
+                <div class="actions">
+                    <div>
+                        <input type="text" class="search-box" id="patientSearch" placeholder="Search patients..." onkeyup="filterTable('patientsTable', this.value)">
+                    </div>
+                    <button class="btn btn-success" onclick="showAddPatientModal()">Add Patient</button>
+                </div>
+                <div id="patientsAlert"></div>
+                <div id="patientsLoading" class="loading">Loading patients...</div>
+                <table class="table" id="patientsTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Date of Birth</th>
+                            <th>Gender</th>
+                            <th>Contact</th>
+                            <th>Email</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="patientModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="patientModalTitle">Add Patient</h2>
+                <span class="close" onclick="closeModal('patientModal')">&times;</span>
+            </div>
+            <form id="patientForm">
+                <input type="hidden" id="patientId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="patientName">Name:</label>
+                        <input type="text" id="patientName" maxlength="100" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="patientDob">Date of Birth:</label>
+                        <input type="date" id="patientDob">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="patientGender">Gender:</label>
+                        <select id="patientGender">
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="patientContact">Contact Number:</label>
+                        <input type="text" id="patientContact" maxlength="15">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="patientEmail">Email:</label>
+                    <input type="email" id="patientEmail" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label for="patientAddress">Address:</label>
+                    <textarea id="patientAddress" rows="3" maxlength="255"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="patientEmergencyContact">Emergency Contact:</label>
+                    <input type="text" id="patientEmergencyContact" maxlength="15">
+                </div>
+                <button type="submit" class="btn">Save Patient</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/app.js"></script>
+</body>
+
+</html>

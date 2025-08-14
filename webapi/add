@@ -1,884 +1,636 @@
-// DoctorRepository.cs
-using System.Data;
-using Microsoft.Data.SqlClient;
-using webapi.Models;
-using webapi.Data;
+<script>
+        const API_BASE_URL = '/api';
+        let currentData = {
+            patients: [],
+            doctors: [],
+            visits: [],
+            visitTypes: []
+        };
+ 
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            initializeUserInfo();
+            loadAllData();
+        });
 
-namespace webapi.Repositories
-{
-    public interface IDoctorRepository
-    {
-        Task<Doctor> GetByIdAsync(int doctorId);
-        Task<IEnumerable<Doctor>> GetAllAsync();
-        Task<int> AddAsync(Doctor doctor);
-        Task<bool> UpdateAsync(Doctor doctor);
-        Task<bool> DeleteAsync(int doctorId);
-    }
-
-    public class DoctorRepository : IDoctorRepository
-    {
-        private readonly IDbConnectionFactory _connectionFactory;
-
-        public DoctorRepository(IDbConnectionFactory connectionFactory)
-        {
-            _connectionFactory = connectionFactory;
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
         }
 
-        public async Task<Doctor> GetByIdAsync(int doctorId)
-        {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
+        function initializeUserInfo() {
+            const username = localStorage.getItem('username');
+            const userRole = localStorage.getItem('userRole');
+            document.getElementById('userInfo').textContent = `Welcome, ${username} (${userRole})`;
+             
+            if (userRole === 'Admin') {
+                document.querySelectorAll('.admin-only').forEach(el => {
+                    el.classList.add('show');
+                });
+            }
+        }
 
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_GetDoctorById";
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
 
-                command.Parameters.Add(new SqlParameter("@DoctorId", SqlDbType.Int) { Value = doctorId });
+        function showTab(tabName) { 
+            document.querySelectorAll('.tab-pane').forEach(tab => {
+                tab.classList.remove('active');
+            });
+             
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+             
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+             
+            if (tabName === 'patients' && currentData.patients.length === 0) {
+                loadPatients();
+            } else if (tabName === 'doctors' && currentData.doctors.length === 0) {
+                loadDoctors();
+            } else if (tabName === 'visits' && currentData.visits.length === 0) {
+                loadVisits();
+            } else if (tabName === 'visitTypes' && currentData.visitTypes.length === 0) {
+                loadVisitTypes();
+            }
+        }
 
-                using var reader = await command.ExecuteReaderAsync();
+        async function loadAllData() {
+            await loadPatients();
+        }
 
-                if (await reader.ReadAsync())
-                {
-                    return new Doctor
-                    {
-                        DoctorId = reader.GetInt32("DoctorId"),
-                        DoctorName = reader.GetString("DoctorName"),
-                        Specialization = reader.IsDBNull("Specialization") ? null : reader.GetString("Specialization"),
-                        ContactNumber = reader.IsDBNull("ContactNumber") ? null : reader.GetString("ContactNumber"),
-                        Email = reader.IsDBNull("Email") ? null : reader.GetString("Email"),
-                        CreatedDate = reader.GetDateTime("CreatedDate")
-                    };
+        async function makeApiRequest(endpoint, options = {}) {
+            const token = localStorage.getItem('token');
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                ...options.headers
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    ...options,
+                    headers
+                });
+
+                if (response.status === 401) {
+                    logout();
+                    return null;
                 }
 
-                return null;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error retrieving doctor: {ex.Message}", ex);
+                return await response.json();
+            } catch (error) {
+                console.error('API request failed:', error);
+                throw error;
             }
         }
-
-        public async Task<IEnumerable<Doctor>> GetAllAsync()
-        {
-            try
-            {
-                var doctors = new List<Doctor>();
-
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
-
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_GetAllDoctors";
-
-                using var reader = await command.ExecuteReaderAsync();
-
-                while (await reader.ReadAsync())
-                {
-                    doctors.Add(new Doctor
-                    {
-                        DoctorId = reader.GetInt32("DoctorId"),
-                        DoctorName = reader.GetString("DoctorName"),
-                        Specialization = reader.IsDBNull("Specialization") ? null : reader.GetString("Specialization"),
-                        ContactNumber = reader.IsDBNull("ContactNumber") ? null : reader.GetString("ContactNumber"),
-                        Email = reader.IsDBNull("Email") ? null : reader.GetString("Email"),
-                        CreatedDate = reader.GetDateTime("CreatedDate")
-                    });
+ 
+        async function loadPatients() {
+            showLoading('patients');
+            try {
+                const response = await makeApiRequest('/patient');
+                if (response && response.success) {
+                    currentData.patients = response.data;
+                    renderPatientsTable();
+                } else {
+                    showAlert('patients', 'Failed to load patients', 'error');
                 }
-
-                return doctors;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error retrieving all doctors: {ex.Message}", ex);
+            } catch (error) {
+                showAlert('patients', 'Error loading patients', 'error');
+            } finally {
+                hideLoading('patients');
             }
         }
 
-        public async Task<int> AddAsync(Doctor doctor)
-        {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
+        function renderPatientsTable() {
+            const tbody = document.querySelector('#patientsTable tbody');
+            const userRole = localStorage.getItem('userRole');
+            
+            tbody.innerHTML = currentData.patients.map(patient => `
+                <tr>
+                    <td>${patient.patientId}</td>
+                    <td>${patient.patientName}</td>
+                    <td>${patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
+                    <td>${patient.gender || 'N/A'}</td>
+                    <td>${patient.contactNumber || 'N/A'}</td>
+                    <td>${patient.email || 'N/A'}</td>
+                    <td class="table-actions">
+                        <button class="btn btn-small" onclick="editPatient(${patient.patientId})">Edit</button>
+                        ${userRole === 'Admin' ? `<button class="btn btn-danger btn-small" onclick="deletePatient(${patient.patientId})">Delete</button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
+        }
 
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_AddDoctor";
+        function showAddPatientModal() {
+            document.getElementById('patientModalTitle').textContent = 'Add Patient';
+            document.getElementById('patientForm').reset();
+            document.getElementById('patientId').value = '';
+            document.getElementById('patientModal').style.display = 'block';
+        }
 
-                command.Parameters.Add(new SqlParameter("@DoctorName", SqlDbType.NVarChar, 100) { Value = doctor.DoctorName });
-                command.Parameters.Add(new SqlParameter("@Specialization", SqlDbType.NVarChar, 100) { Value = doctor.Specialization ?? (object)DBNull.Value });
-                command.Parameters.Add(new SqlParameter("@ContactNumber", SqlDbType.NVarChar, 15) { Value = doctor.ContactNumber ?? (object)DBNull.Value });
-                command.Parameters.Add(new SqlParameter("@Email", SqlDbType.NVarChar, 100) { Value = doctor.Email ?? (object)DBNull.Value });
-
-                await command.ExecuteNonQueryAsync();
-
-                command.CommandText = "SELECT SCOPE_IDENTITY()";
-                command.CommandType = CommandType.Text;
-                command.Parameters.Clear();
-
-                var result = await command.ExecuteScalarAsync();
-                return Convert.ToInt32(result);
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error adding doctor: {ex.Message}", ex);
+        function editPatient(id) {
+            const patient = currentData.patients.find(p => p.patientId === id);
+            if (patient) {
+                document.getElementById('patientModalTitle').textContent = 'Edit Patient';
+                document.getElementById('patientId').value = patient.patientId;
+                document.getElementById('patientName').value = patient.patientName;
+                document.getElementById('patientDob').value = patient.dateOfBirth ? patient.dateOfBirth.split('T')[0] : '';
+                document.getElementById('patientGender').value = patient.gender || '';
+                document.getElementById('patientContact').value = patient.contactNumber || '';
+                document.getElementById('patientEmail').value = patient.email || '';
+                document.getElementById('patientAddress').value = patient.address || '';
+                document.getElementById('patientEmergencyContact').value = patient.emergencyContact || '';
+                document.getElementById('patientModal').style.display = 'block';
             }
         }
 
-        public async Task<bool> UpdateAsync(Doctor doctor)
-        {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
-
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_UpdateDoctor";
-
-                command.Parameters.Add(new SqlParameter("@DoctorId", SqlDbType.Int) { Value = doctor.DoctorId });
-                command.Parameters.Add(new SqlParameter("@DoctorName", SqlDbType.NVarChar, 100) { Value = doctor.DoctorName });
-                command.Parameters.Add(new SqlParameter("@Specialization", SqlDbType.NVarChar, 100) { Value = doctor.Specialization ?? (object)DBNull.Value });
-                command.Parameters.Add(new SqlParameter("@ContactNumber", SqlDbType.NVarChar, 15) { Value = doctor.ContactNumber ?? (object)DBNull.Value });
-                command.Parameters.Add(new SqlParameter("@Email", SqlDbType.NVarChar, 100) { Value = doctor.Email ?? (object)DBNull.Value });
-
-                var rowsAffected = await command.ExecuteNonQueryAsync();
-                return rowsAffected > 0;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error updating doctor: {ex.Message}", ex);
-            }
-        }
-
-        public async Task<bool> DeleteAsync(int doctorId)
-        {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
-
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_DeleteDoctor";
-
-                command.Parameters.Add(new SqlParameter("@DoctorId", SqlDbType.Int) { Value = doctorId });
-
-                var rowsAffected = await command.ExecuteNonQueryAsync();
-                return rowsAffected > 0;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error deleting doctor: {ex.Message}", ex);
-            }
-        }
-    }
-}
-
-// VisitTypeRepository.cs
-using System.Data;
-using Microsoft.Data.SqlClient;
-using webapi.Models;
-using webapi.Data;
-
-namespace webapi.Repositories
-{
-    public interface IVisitTypeRepository
-    {
-        Task<VisitType> GetByIdAsync(int visitTypeId);
-        Task<IEnumerable<VisitType>> GetAllAsync();
-        Task<int> AddAsync(VisitType visitType);
-        Task<bool> UpdateAsync(VisitType visitType);
-        Task<bool> DeleteAsync(int visitTypeId);
-    }
-
-    public class VisitTypeRepository : IVisitTypeRepository
-    {
-        private readonly IDbConnectionFactory _connectionFactory;
-
-        public VisitTypeRepository(IDbConnectionFactory connectionFactory)
-        {
-            _connectionFactory = connectionFactory;
-        }
-
-        public async Task<VisitType> GetByIdAsync(int visitTypeId)
-        {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
-
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_GetVisitTypeById";
-
-                command.Parameters.Add(new SqlParameter("@VisitTypeId", SqlDbType.Int) { Value = visitTypeId });
-
-                using var reader = await command.ExecuteReaderAsync();
-
-                if (await reader.ReadAsync())
-                {
-                    return new VisitType
-                    {
-                        VisitTypeId = reader.GetInt32("VisitTypeId"),
-                        VisitTypeName = reader.GetString("VisitTypeName"),
-                        BaseRate = reader.GetDecimal("BaseRate"),
-                        Description = reader.IsDBNull("Description") ? null : reader.GetString("Description")
-                    };
+        async function deletePatient(id) {
+            if (confirm('Are you sure you want to delete this patient?')) {
+                try {
+                    const response = await makeApiRequest(`/patient/${id}`, { method: 'DELETE' });
+                    if (response && response.success) {
+                        showAlert('patients', 'Patient deleted successfully', 'success');
+                        loadPatients();
+                    } else {
+                        showAlert('patients', response?.message || 'Failed to delete patient', 'error');
+                    }
+                } catch (error) {
+                    showAlert('patients', 'Error deleting patient', 'error');
                 }
-
-                return null;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error retrieving visit type: {ex.Message}", ex);
             }
         }
 
-        public async Task<IEnumerable<VisitType>> GetAllAsync()
-        {
-            try
-            {
-                var visitTypes = new List<VisitType>();
+        document.getElementById('patientForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const patientId = document.getElementById('patientId').value;
+            const isEdit = !!patientId;
+            
+            const patientData = {
+                patientName: document.getElementById('patientName').value.trim(),
+                dateOfBirth: document.getElementById('patientDob').value || null,
+                gender: document.getElementById('patientGender').value || null,
+                contactNumber: document.getElementById('patientContact').value.trim() || null,
+                email: document.getElementById('patientEmail').value.trim() || null,
+                address: document.getElementById('patientAddress').value.trim() || null,
+                emergencyContact: document.getElementById('patientEmergencyContact').value.trim() || null
+            };
 
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
+            if (isEdit) {
+                patientData.patientId = parseInt(patientId);
+            }
 
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_GetAllVisitTypes";
+            try {
+                const endpoint = isEdit ? `/patient/${patientId}` : '/patient';
+                const method = isEdit ? 'PUT' : 'POST';
+                
+                const response = await makeApiRequest(endpoint, {
+                    method,
+                    body: JSON.stringify(patientData)
+                });
 
-                using var reader = await command.ExecuteReaderAsync();
-
-                while (await reader.ReadAsync())
-                {
-                    visitTypes.Add(new VisitType
-                    {
-                        VisitTypeId = reader.GetInt32("VisitTypeId"),
-                        VisitTypeName = reader.GetString("VisitTypeName"),
-                        BaseRate = reader.GetDecimal("BaseRate"),
-                        Description = reader.IsDBNull("Description") ? null : reader.GetString("Description")
-                    });
+                if (response && response.success) {
+                    showAlert('patients', `Patient ${isEdit ? 'updated' : 'created'} successfully`, 'success');
+                    closeModal('patientModal');
+                    loadPatients();
+                } else {
+                    showAlert('patients', response?.message || `Failed to ${isEdit ? 'update' : 'create'} patient`, 'error');
                 }
-
-                return visitTypes;
+            } catch (error) {
+                showAlert('patients', `Error ${isEdit ? 'updating' : 'creating'} patient`, 'error');
             }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error retrieving all visit types: {ex.Message}", ex);
-            }
-        }
-
-        public async Task<int> AddAsync(VisitType visitType)
-        {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
-
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_AddVisitType";
-
-                command.Parameters.Add(new SqlParameter("@VisitTypeName", SqlDbType.NVarChar, 50) { Value = visitType.VisitTypeName });
-                command.Parameters.Add(new SqlParameter("@BaseRate", SqlDbType.Decimal) { Value = visitType.BaseRate });
-                command.Parameters.Add(new SqlParameter("@Description", SqlDbType.NVarChar, 255) { Value = visitType.Description ?? (object)DBNull.Value });
-
-                await command.ExecuteNonQueryAsync();
-
-                command.CommandText = "SELECT SCOPE_IDENTITY()";
-                command.CommandType = CommandType.Text;
-                command.Parameters.Clear();
-
-                var result = await command.ExecuteScalarAsync();
-                return Convert.ToInt32(result);
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error adding visit type: {ex.Message}", ex);
-            }
-        }
-
-        public async Task<bool> UpdateAsync(VisitType visitType)
-        {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
-
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_UpdateVisitType";
-
-                command.Parameters.Add(new SqlParameter("@VisitTypeId", SqlDbType.Int) { Value = visitType.VisitTypeId });
-                command.Parameters.Add(new SqlParameter("@VisitTypeName", SqlDbType.NVarChar, 50) { Value = visitType.VisitTypeName });
-                command.Parameters.Add(new SqlParameter("@BaseRate", SqlDbType.Decimal) { Value = visitType.BaseRate });
-                command.Parameters.Add(new SqlParameter("@Description", SqlDbType.NVarChar, 255) { Value = visitType.Description ?? (object)DBNull.Value });
-
-                var rowsAffected = await command.ExecuteNonQueryAsync();
-                return rowsAffected > 0;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error updating visit type: {ex.Message}", ex);
-            }
-        }
-
-        public async Task<bool> DeleteAsync(int visitTypeId)
-        {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
-
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_DeleteVisitType";
-
-                command.Parameters.Add(new SqlParameter("@VisitTypeId", SqlDbType.Int) { Value = visitTypeId });
-
-                var rowsAffected = await command.ExecuteNonQueryAsync();
-                return rowsAffected > 0;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error deleting visit type: {ex.Message}", ex);
-            }
-        }
-    }
-}
-
-// PatientVisitRepository.cs
-using System.Data;
-using Microsoft.Data.SqlClient;
-using webapi.Models;
-using webapi.Data;
-
-namespace webapi.Repositories
-{
-    public interface IPatientVisitRepository
-    {
-        Task<PatientVisit> GetByIdAsync(int id);
-        Task<IEnumerable<PatientVisit>> GetAllAsync();
-        Task<int> AddAsync(PatientVisit patientVisit);
-        Task<bool> UpdateAsync(PatientVisit patientVisit);
-        Task<bool> DeleteAsync(int id);
-    }
-
-    public class PatientVisitRepository : IPatientVisitRepository
-    {
-        private readonly IDbConnectionFactory _connectionFactory;
-
-        public PatientVisitRepository(IDbConnectionFactory connectionFactory)
-        {
-            _connectionFactory = connectionFactory;
-        }
-
-        public async Task<PatientVisit> GetByIdAsync(int id)
-        {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
-
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_GetPatientVisitById";
-
-                command.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Value = id });
-
-                using var reader = await command.ExecuteReaderAsync();
-
-                if (await reader.ReadAsync())
-                {
-                    return new PatientVisit
-                    {
-                        Id = reader.GetInt32("Id"),
-                        PatientId = reader.GetInt32("PatientId"),
-                        DoctorId = reader.IsDBNull("DoctorId") ? null : reader.GetInt32("DoctorId"),
-                        VisitTypeId = reader.GetInt32("VisitTypeId"),
-                        VisitDate = reader.GetDateTime("VisitDate"),
-                        Note = reader.IsDBNull("Note") ? null : reader.GetString("Note"),
-                        DurationInMinutes = reader.GetInt32("DurationInMinutes"),
-                        Fee = reader.GetDecimal("Fee"),
-                        CreatedDate = reader.GetDateTime("CreatedDate"),
-                        CreatedBy = reader.IsDBNull("CreatedBy") ? null : reader.GetInt32("CreatedBy"),
-                        ModifiedDate = reader.IsDBNull("ModifiedDate") ? null : reader.GetDateTime("ModifiedDate"),
-                        ModifiedBy = reader.IsDBNull("ModifiedBy") ? null : reader.GetInt32("ModifiedBy")
-                    };
+        });
+ 
+        async function loadDoctors() {
+            showLoading('doctors');
+            try {
+                const response = await makeApiRequest('/doctor');
+                if (response && response.success) {
+                    currentData.doctors = response.data;
+                    renderDoctorsTable();
+                    populateSelectOptions();
+                } else {
+                    showAlert('doctors', 'Failed to load doctors', 'error');
                 }
-
-                return null;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error retrieving patient visit: {ex.Message}", ex);
+            } catch (error) {
+                showAlert('doctors', 'Error loading doctors', 'error');
+            } finally {
+                hideLoading('doctors');
             }
         }
 
-        public async Task<IEnumerable<PatientVisit>> GetAllAsync()
-        {
-            try
-            {
-                var patientVisits = new List<PatientVisit>();
+        function renderDoctorsTable() {
+            const tbody = document.querySelector('#doctorsTable tbody');
+            const userRole = localStorage.getItem('userRole');
+            
+            tbody.innerHTML = currentData.doctors.map(doctor => `
+                <tr>
+                    <td>${doctor.doctorId}</td>
+                    <td>${doctor.doctorName}</td>
+                    <td>${doctor.specialization || 'N/A'}</td>
+                    <td>${doctor.contactNumber || 'N/A'}</td>
+                    <td>${doctor.email || 'N/A'}</td>
+                    <td class="table-actions">
+                        <button class="btn btn-small" onclick="editDoctor(${doctor.doctorId})">Edit</button>
+                        ${userRole === 'Admin' ? `<button class="btn btn-danger btn-small" onclick="deleteDoctor(${doctor.doctorId})">Delete</button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
+        }
 
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
+        function showAddDoctorModal() {
+            document.getElementById('doctorModalTitle').textContent = 'Add Doctor';
+            document.getElementById('doctorForm').reset();
+            document.getElementById('doctorId').value = '';
+            document.getElementById('doctorModal').style.display = 'block';
+        }
 
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_GetAllPatientVisits";
+        function editDoctor(id) {
+            const doctor = currentData.doctors.find(d => d.doctorId === id);
+            if (doctor) {
+                document.getElementById('doctorModalTitle').textContent = 'Edit Doctor';
+                document.getElementById('doctorId').value = doctor.doctorId;
+                document.getElementById('doctorName').value = doctor.doctorName;
+                document.getElementById('doctorSpecialization').value = doctor.specialization || '';
+                document.getElementById('doctorContact').value = doctor.contactNumber || '';
+                document.getElementById('doctorEmail').value = doctor.email || '';
+                document.getElementById('doctorModal').style.display = 'block';
+            }
+        }
 
-                using var reader = await command.ExecuteReaderAsync();
-
-                while (await reader.ReadAsync())
-                {
-                    patientVisits.Add(new PatientVisit
-                    {
-                        Id = reader.GetInt32("Id"),
-                        PatientId = reader.GetInt32("PatientId"),
-                        DoctorId = reader.IsDBNull("DoctorId") ? null : reader.GetInt32("DoctorId"),
-                        VisitTypeId = reader.GetInt32("VisitTypeId"),
-                        VisitDate = reader.GetDateTime("VisitDate"),
-                        Note = reader.IsDBNull("Note") ? null : reader.GetString("Note"),
-                        DurationInMinutes = reader.GetInt32("DurationInMinutes"),
-                        Fee = reader.GetDecimal("Fee"),
-                        CreatedDate = reader.GetDateTime("CreatedDate"),
-                        CreatedBy = reader.IsDBNull("CreatedBy") ? null : reader.GetInt32("CreatedBy"),
-                        ModifiedDate = reader.IsDBNull("ModifiedDate") ? null : reader.GetDateTime("ModifiedDate"),
-                        ModifiedBy = reader.IsDBNull("ModifiedBy") ? null : reader.GetInt32("ModifiedBy")
-                    });
+        async function deleteDoctor(id) {
+            if (confirm('Are you sure you want to delete this doctor?')) {
+                try {
+                    const response = await makeApiRequest(`/doctor/${id}`, { method: 'DELETE' });
+                    if (response && response.success) {
+                        showAlert('doctors', 'Doctor deleted successfully', 'success');
+                        loadDoctors();
+                    } else {
+                        showAlert('doctors', response?.message || 'Failed to delete doctor', 'error');
+                    }
+                } catch (error) {
+                    showAlert('doctors', 'Error deleting doctor', 'error');
                 }
-
-                return patientVisits;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error retrieving all patient visits: {ex.Message}", ex);
             }
         }
 
-        public async Task<int> AddAsync(PatientVisit patientVisit)
-        {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
+        document.getElementById('doctorForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const doctorId = document.getElementById('doctorId').value;
+            const isEdit = !!doctorId;
+            
+            const doctorData = {
+                doctorName: document.getElementById('doctorName').value.trim(),
+                specialization: document.getElementById('doctorSpecialization').value.trim() || null,
+                contactNumber: document.getElementById('doctorContact').value.trim() || null,
+                email: document.getElementById('doctorEmail').value.trim() || null
+            };
 
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_AddPatientVisit";
-
-                command.Parameters.Add(new SqlParameter("@PatientId", SqlDbType.Int) { Value = patientVisit.PatientId });
-                command.Parameters.Add(new SqlParameter("@DoctorId", SqlDbType.Int) { Value = patientVisit.DoctorId ?? (object)DBNull.Value });
-                command.Parameters.Add(new SqlParameter("@VisitTypeId", SqlDbType.Int) { Value = patientVisit.VisitTypeId });
-                command.Parameters.Add(new SqlParameter("@VisitDate", SqlDbType.DateTime2) { Value = patientVisit.VisitDate });
-                command.Parameters.Add(new SqlParameter("@Note", SqlDbType.NVarChar, 500) { Value = patientVisit.Note ?? (object)DBNull.Value });
-                command.Parameters.Add(new SqlParameter("@DurationInMinutes", SqlDbType.Int) { Value = patientVisit.DurationInMinutes });
-                command.Parameters.Add(new SqlParameter("@Fee", SqlDbType.Decimal) { Value = patientVisit.Fee });
-                command.Parameters.Add(new SqlParameter("@CreatedBy", SqlDbType.Int) { Value = patientVisit.CreatedBy ?? (object)DBNull.Value });
-
-                await command.ExecuteNonQueryAsync();
-
-                command.CommandText = "SELECT SCOPE_IDENTITY()";
-                command.CommandType = CommandType.Text;
-                command.Parameters.Clear();
-
-                var result = await command.ExecuteScalarAsync();
-                return Convert.ToInt32(result);
+            if (isEdit) {
+                doctorData.doctorId = parseInt(doctorId);
             }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error adding patient visit: {ex.Message}", ex);
-            }
-        }
 
-        public async Task<bool> UpdateAsync(PatientVisit patientVisit)
-        {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
+            try {
+                const endpoint = isEdit ? `/doctor/${doctorId}` : '/doctor';
+                const method = isEdit ? 'PUT' : 'POST';
+                
+                const response = await makeApiRequest(endpoint, {
+                    method,
+                    body: JSON.stringify(doctorData)
+                });
 
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_UpdatePatientVisit";
-
-                command.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Value = patientVisit.Id });
-                command.Parameters.Add(new SqlParameter("@PatientId", SqlDbType.Int) { Value = patientVisit.PatientId });
-                command.Parameters.Add(new SqlParameter("@DoctorId", SqlDbType.Int) { Value = patientVisit.DoctorId ?? (object)DBNull.Value });
-                command.Parameters.Add(new SqlParameter("@VisitTypeId", SqlDbType.Int) { Value = patientVisit.VisitTypeId });
-                command.Parameters.Add(new SqlParameter("@VisitDate", SqlDbType.DateTime2) { Value = patientVisit.VisitDate });
-                command.Parameters.Add(new SqlParameter("@Note", SqlDbType.NVarChar, 500) { Value = patientVisit.Note ?? (object)DBNull.Value });
-                command.Parameters.Add(new SqlParameter("@DurationInMinutes", SqlDbType.Int) { Value = patientVisit.DurationInMinutes });
-                command.Parameters.Add(new SqlParameter("@Fee", SqlDbType.Decimal) { Value = patientVisit.Fee });
-                command.Parameters.Add(new SqlParameter("@ModifiedBy", SqlDbType.Int) { Value = patientVisit.ModifiedBy ?? (object)DBNull.Value });
-
-                var rowsAffected = await command.ExecuteNonQueryAsync();
-                return rowsAffected > 0;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error updating patient visit: {ex.Message}", ex);
-            }
-        }
-
-        public async Task<bool> DeleteAsync(int id)
-        {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
-
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_DeletePatientVisit";
-
-                command.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Value = id });
-
-                var rowsAffected = await command.ExecuteNonQueryAsync();
-                return rowsAffected > 0;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error deleting patient visit: {ex.Message}", ex);
-            }
-        }
-    }
-}
-
-// FeeRateRepository.cs
-using System.Data;
-using Microsoft.Data.SqlClient;
-using webapi.Models;
-using webapi.Data;
-
-namespace webapi.Repositories
-{
-    public interface IFeeRateRepository
-    {
-        Task<FeeRate> GetByIdAsync(int feeRateId);
-        Task<IEnumerable<FeeRate>> GetAllAsync();
-        Task<int> AddAsync(FeeRate feeRate);
-        Task<bool> UpdateAsync(FeeRate feeRate);
-        Task<bool> DeleteAsync(int feeRateId);
-    }
-
-    public class FeeRateRepository : IFeeRateRepository
-    {
-        private readonly IDbConnectionFactory _connectionFactory;
-
-        public FeeRateRepository(IDbConnectionFactory connectionFactory)
-        {
-            _connectionFactory = connectionFactory;
-        }
-
-        public async Task<FeeRate> GetByIdAsync(int feeRateId)
-        {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
-
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_GetFeeRateById";
-
-                command.Parameters.Add(new SqlParameter("@FeeRateId", SqlDbType.Int) { Value = feeRateId });
-
-                using var reader = await command.ExecuteReaderAsync();
-
-                if (await reader.ReadAsync())
-                {
-                    return new FeeRate
-                    {
-                        FeeRateId = reader.GetInt32("FeeRateId"),
-                        VisitTypeId = reader.GetInt32("VisitTypeId"),
-                        BaseRate = reader.GetDecimal("BaseRate"),
-                        ExtraTimeRate = reader.GetDecimal("ExtraTimeRate"),
-                        ExtraTimeThreshold = reader.GetInt32("ExtraTimeThreshold"),
-                        EffectiveDate = reader.GetDateTime("EffectiveDate")
-                    };
+                if (response && response.success) {
+                    showAlert('doctors', `Doctor ${isEdit ? 'updated' : 'created'} successfully`, 'success');
+                    closeModal('doctorModal');
+                    loadDoctors();
+                } else {
+                    showAlert('doctors', response?.message || `Failed to ${isEdit ? 'update' : 'create'} doctor`, 'error');
                 }
-
-                return null;
+            } catch (error) {
+                showAlert('doctors', `Error ${isEdit ? 'updating' : 'creating'} doctor`, 'error');
             }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error retrieving fee rate: {ex.Message}", ex);
-            }
-        }
+        });
 
-        public async Task<IEnumerable<FeeRate>> GetAllAsync()
-        {
-            try
-            {
-                var feeRates = new List<FeeRate>();
-
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
-
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_GetAllFeeRates";
-
-                using var reader = await command.ExecuteReaderAsync();
-
-                while (await reader.ReadAsync())
-                {
-                    feeRates.Add(new FeeRate
-                    {
-                        FeeRateId = reader.GetInt32("FeeRateId"),
-                        VisitTypeId = reader.GetInt32("VisitTypeId"),
-                        BaseRate = reader.GetDecimal("BaseRate"),
-                        ExtraTimeRate = reader.GetDecimal("ExtraTimeRate"),
-                        ExtraTimeThreshold = reader.GetInt32("ExtraTimeThreshold"),
-                        EffectiveDate = reader.GetDateTime("EffectiveDate")
-                    });
+        // Visit Functions
+        async function loadVisits() {
+            showLoading('visits');
+            try {
+                const response = await makeApiRequest('/patientvisit');
+                if (response && response.success) {
+                    currentData.visits = response.data;
+                    renderVisitsTable();
+                } else {
+                    showAlert('visits', 'Failed to load visits', 'error');
                 }
-
-                return feeRates;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error retrieving all fee rates: {ex.Message}", ex);
+            } catch (error) {
+                showAlert('visits', 'Error loading visits', 'error');
+            } finally {
+                hideLoading('visits');
             }
         }
 
-        public async Task<int> AddAsync(FeeRate feeRate)
-        {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
+        function renderVisitsTable() {
+            const tbody = document.querySelector('#visitsTable tbody');
+            const userRole = localStorage.getItem('userRole');
+            
+            tbody.innerHTML = currentData.visits.map(visit => {
+                const patient = currentData.patients.find(p => p.patientId === visit.patientId);
+                const doctor = currentData.doctors.find(d => d.doctorId === visit.doctorId);
+                const visitType = currentData.visitTypes.find(vt => vt.visitTypeId === visit.visitTypeId);
+                
+                return `
+                    <tr>
+                        <td>${visit.id}</td>
+                        <td>${patient ? patient.patientName : 'Unknown'}</td>
+                        <td>${doctor ? doctor.doctorName : 'N/A'}</td>
+                        <td>${visitType ? visitType.visitTypeName : 'Unknown'}</td>
+                        <td>${new Date(visit.visitDate).toLocaleString()}</td>
+                        <td>${visit.durationInMinutes} mins</td>
+                        <td>${visit.fee.toFixed(2)}</td>
+                        <td class="table-actions">
+                            <button class="btn btn-small" onclick="editVisit(${visit.id})">Edit</button>
+                            ${userRole === 'Admin' ? `<button class="btn btn-danger btn-small" onclick="deleteVisit(${visit.id})">Delete</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
 
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_AddFeeRate";
+        async function showAddVisitModal() {
+            // Load required data first
+            if (currentData.patients.length === 0) await loadPatients();
+            if (currentData.doctors.length === 0) await loadDoctors();
+            if (currentData.visitTypes.length === 0) await loadVisitTypes();
+            
+            populateSelectOptions();
+            
+            document.getElementById('visitModalTitle').textContent = 'Add Visit';
+            document.getElementById('visitForm').reset();
+            document.getElementById('visitId').value = '';
+            document.getElementById('visitDuration').value = '30';
+            document.getElementById('visitModal').style.display = 'block';
+        }
 
-                command.Parameters.Add(new SqlParameter("@VisitTypeId", SqlDbType.Int) { Value = feeRate.VisitTypeId });
-                command.Parameters.Add(new SqlParameter("@BaseRate", SqlDbType.Decimal) { Value = feeRate.BaseRate });
-                command.Parameters.Add(new SqlParameter("@ExtraTimeRate", SqlDbType.Decimal) { Value = feeRate.ExtraTimeRate });
-                command.Parameters.Add(new SqlParameter("@ExtraTimeThreshold", SqlDbType.Int) { Value = feeRate.ExtraTimeThreshold });
-
-                await command.ExecuteNonQueryAsync();
-
-                command.CommandText = "SELECT SCOPE_IDENTITY()";
-                command.CommandType = CommandType.Text;
-                command.Parameters.Clear();
-
-                var result = await command.ExecuteScalarAsync();
-                return Convert.ToInt32(result);
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error adding fee rate: {ex.Message}", ex);
+        function editVisit(id) {
+            const visit = currentData.visits.find(v => v.id === id);
+            if (visit) {
+                populateSelectOptions();
+                
+                document.getElementById('visitModalTitle').textContent = 'Edit Visit';
+                document.getElementById('visitId').value = visit.id;
+                document.getElementById('visitPatient').value = visit.patientId;
+                document.getElementById('visitDoctor').value = visit.doctorId || '';
+                document.getElementById('visitType').value = visit.visitTypeId;
+                document.getElementById('visitDate').value = visit.visitDate.slice(0, 16);
+                document.getElementById('visitDuration').value = visit.durationInMinutes;
+                document.getElementById('visitFee').value = visit.fee;
+                document.getElementById('visitNote').value = visit.note || '';
+                document.getElementById('visitModal').style.display = 'block';
             }
         }
 
-        public async Task<bool> UpdateAsync(FeeRate feeRate)
-        {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
-
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_UpdateFeeRate";
-
-                command.Parameters.Add(new SqlParameter("@FeeRateId", SqlDbType.Int) { Value = feeRate.FeeRateId });
-                command.Parameters.Add(new SqlParameter("@VisitTypeId", SqlDbType.Int) { Value = feeRate.VisitTypeId });
-                command.Parameters.Add(new SqlParameter("@BaseRate", SqlDbType.Decimal) { Value = feeRate.BaseRate });
-                command.Parameters.Add(new SqlParameter("@ExtraTimeRate", SqlDbType.Decimal) { Value = feeRate.ExtraTimeRate });
-                command.Parameters.Add(new SqlParameter("@ExtraTimeThreshold", SqlDbType.Int) { Value = feeRate.ExtraTimeThreshold });
-
-                var rowsAffected = await command.ExecuteNonQueryAsync();
-                return rowsAffected > 0;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error updating fee rate: {ex.Message}", ex);
-            }
-        }
-
-        public async Task<bool> DeleteAsync(int feeRateId)
-        {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
-
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_DeleteFeeRate";
-
-                command.Parameters.Add(new SqlParameter("@FeeRateId", SqlDbType.Int) { Value = feeRateId });
-
-                var rowsAffected = await command.ExecuteNonQueryAsync();
-                return rowsAffected > 0;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error deleting fee rate: {ex.Message}", ex);
-            }
-        }
-    }
-}
-
-// ActivityLogRepository.cs
-using System.Data;
-using Microsoft.Data.SqlClient;
-using webapi.Models;
-using webapi.Data;
-
-namespace webapi.Repositories
-{
-    public interface IActivityLogRepository
-    {
-        Task<ActivityLog> GetByIdAsync(int logId);
-        Task<IEnumerable<ActivityLog>> GetAllAsync();
-        Task<int> AddAsync(ActivityLog activityLog);
-        Task<bool> DeleteAsync(int logId);
-    }
-
-    public class ActivityLogRepository : IActivityLogRepository
-    {
-        private readonly IDbConnectionFactory _connectionFactory;
-
-        public ActivityLogRepository(IDbConnectionFactory connectionFactory)
-        {
-            _connectionFactory = connectionFactory;
-        }
-
-        public async Task<ActivityLog> GetByIdAsync(int logId)
-        {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
-
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_GetActivityLogById";
-
-                command.Parameters.Add(new SqlParameter("@LogId", SqlDbType.Int) { Value = logId });
-
-                using var reader = await command.ExecuteReaderAsync();
-
-                if (await reader.ReadAsync())
-                {
-                    return new ActivityLog
-                    {
-                        LogId = reader.GetInt32("LogId"),
-                        LogDateTime = reader.GetDateTime("LogDateTime"),
-                        Action = reader.GetString("Action"),
-                        Success = reader.GetBoolean("Success"),
-                        Details = reader.IsDBNull("Details") ? null : reader.GetString("Details"),
-                        UserId = reader.IsDBNull("UserId") ? null : reader.GetInt32("UserId"),
-                        VisitId = reader.IsDBNull("VisitId") ? null : reader.GetInt32("VisitId")
-                    };
+        async function deleteVisit(id) {
+            if (confirm('Are you sure you want to delete this visit?')) {
+                try {
+                    const response = await makeApiRequest(`/patientvisit/${id}`, { method: 'DELETE' });
+                    if (response && response.success) {
+                        showAlert('visits', 'Visit deleted successfully', 'success');
+                        loadVisits();
+                    } else {
+                        showAlert('visits', response?.message || 'Failed to delete visit', 'error');
+                    }
+                } catch (error) {
+                    showAlert('visits', 'Error deleting visit', 'error');
                 }
-
-                return null;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error retrieving activity log: {ex.Message}", ex);
             }
         }
 
-        public async Task<IEnumerable<ActivityLog>> GetAllAsync()
-        {
-            try
-            {
-                var activityLogs = new List<ActivityLog>();
+        document.getElementById('visitForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const visitId = document.getElementById('visitId').value;
+            const isEdit = !!visitId;
+            
+            const visitData = {
+                patientId: parseInt(document.getElementById('visitPatient').value),
+                doctorId: document.getElementById('visitDoctor').value ? parseInt(document.getElementById('visitDoctor').value) : null,
+                visitTypeId: parseInt(document.getElementById('visitType').value),
+                visitDate: document.getElementById('visitDate').value,
+                durationInMinutes: parseInt(document.getElementById('visitDuration').value),
+                fee: parseFloat(document.getElementById('visitFee').value),
+                note: document.getElementById('visitNote').value.trim() || null
+            };
 
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
+            if (isEdit) {
+                visitData.id = parseInt(visitId);
+            }
 
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_GetAllActivityLogs";
+            try {
+                const endpoint = isEdit ? `/patientvisit/${visitId}` : '/patientvisit';
+                const method = isEdit ? 'PUT' : 'POST';
+                
+                const response = await makeApiRequest(endpoint, {
+                    method,
+                    body: JSON.stringify(visitData)
+                });
 
-                using var reader = await command.ExecuteReaderAsync();
-
-                while (await reader.ReadAsync())
-                {
-                    activityLogs.Add(new ActivityLog
-                    {
-                        LogId = reader.GetInt32("LogId"),
-                        LogDateTime = reader.GetDateTime("LogDateTime"),
-                        Action = reader.GetString("Action"),
-                        Success = reader.GetBoolean("Success"),
-                        Details = reader.IsDBNull("Details") ? null : reader.GetString("Details"),
-                        UserId = reader.IsDBNull("UserId") ? null : reader.GetInt32("UserId"),
-                        VisitId = reader.IsDBNull("VisitId") ? null : reader.GetInt32("VisitId")
-                    });
+                if (response && response.success) {
+                    showAlert('visits', `Visit ${isEdit ? 'updated' : 'created'} successfully`, 'success');
+                    closeModal('visitModal');
+                    loadVisits();
+                } else {
+                    showAlert('visits', response?.message || `Failed to ${isEdit ? 'update' : 'create'} visit`, 'error');
                 }
-
-                return activityLogs;
+            } catch (error) {
+                showAlert('visits', `Error ${isEdit ? 'updating' : 'creating'} visit`, 'error');
             }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error retrieving all activity logs: {ex.Message}", ex);
-            }
-        }
-
-        public async Task<int> AddAsync(ActivityLog activityLog)
-        {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
-
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_AddActivityLog";
-
-                command.Parameters.Add(new SqlParameter("@Action", SqlDbType.NVarChar, 100) { Value = activityLog.Action });
-                command.Parameters.Add(new SqlParameter("@Success", SqlDbType.Bit) { Value = activityLog.Success });
-                command.Parameters.Add(new SqlParameter("@Details", SqlDbType.NVarChar, 500) { Value = activityLog.Details ?? (object)DBNull.Value });
-                command.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int) { Value = activityLog.UserId ?? (object)DBNull.Value });
-                command.Parameters.Add(new SqlParameter("@VisitId", SqlDbType.Int) { Value = activityLog.VisitId ?? (object)DBNull.Value });
-
-                await command.ExecuteNonQueryAsync();
-
-                command.CommandText = "SELECT SCOPE_IDENTITY()";
-                command.CommandType = CommandType.Text;
-                command.Parameters.Clear();
-
-                var result = await command.ExecuteScalarAsync();
-                return Convert.ToInt32(result);
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error adding activity log: {ex.Message}", ex);
+        });
+ 
+        async function loadVisitTypes() {
+            showLoading('visitTypes');
+            try {
+                const response = await makeApiRequest('/visittype');
+                if (response && response.success) {
+                    currentData.visitTypes = response.data;
+                    renderVisitTypesTable();
+                    populateSelectOptions();
+                } else {
+                    showAlert('visitTypes', 'Failed to load visit types', 'error');
+                }
+            } catch (error) {
+                showAlert('visitTypes', 'Error loading visit types', 'error');
+            } finally {
+                hideLoading('visitTypes');
             }
         }
 
-        public async Task<bool> DeleteAsync(int logId)
-        {
-            try
-            {
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
-
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_DeleteActivityLog";
-
-                command.Parameters.Add(new SqlParameter("@LogId", SqlDbType.Int) { Value = logId });
-
-                var rowsAffected = await command.ExecuteNonQueryAsync();
-                return rowsAffected > 0;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error deleting activity log: {ex.Message}", ex);
+        function renderVisitTypesTable() {
+            const tbody = document.querySelector('#visitTypesTable tbody');
+            const userRole = localStorage.getItem('userRole');
+            
+            tbody.innerHTML = currentData.visitTypes.map(visitType => `
+                <tr>
+                    <td>${visitType.visitTypeId}</td>
+                    <td>${visitType.visitTypeName}</td>
+                    <td>${visitType.baseRate.toFixed(2)}</td>
+                    <td>${visitType.description || 'N/A'}</td>
+                    <td class="admin-only table-actions">
+                        <button class="btn btn-danger btn-small" onclick="deleteVisitType(${visitType.visitTypeId})">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+             
+            if (userRole === 'Admin') {
+                document.querySelectorAll('#visitTypesTable .admin-only').forEach(el => {
+                    el.style.display = 'table-cell';
+                });
             }
         }
-    }
-}
+
+        function showAddVisitTypeModal() {
+            document.getElementById('visitTypeForm').reset();
+            document.getElementById('visitTypeModal').style.display = 'block';
+        }
+
+        async function deleteVisitType(id) {
+            if (confirm('Are you sure you want to delete this visit type?')) {
+                try {
+                    const response = await makeApiRequest(`/visittype/${id}`, { method: 'DELETE' });
+                    if (response && response.success) {
+                        showAlert('visitTypes', 'Visit type deleted successfully', 'success');
+                        loadVisitTypes();
+                    } else {
+                        showAlert('visitTypes', response?.message || 'Failed to delete visit type', 'error');
+                    }
+                } catch (error) {
+                    showAlert('visitTypes', 'Error deleting visit type', 'error');
+                }
+            }
+        }
+
+        document.getElementById('visitTypeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const visitTypeData = {
+                visitTypeName: document.getElementById('visitTypeName').value.trim(),
+                baseRate: parseFloat(document.getElementById('visitTypeRate').value),
+                description: document.getElementById('visitTypeDescription').value.trim() || null
+            };
+
+            try {
+                const response = await makeApiRequest('/visittype', {
+                    method: 'POST',
+                    body: JSON.stringify(visitTypeData)
+                });
+
+                if (response && response.success) {
+                    showAlert('visitTypes', 'Visit type created successfully', 'success');
+                    closeModal('visitTypeModal');
+                    loadVisitTypes();
+                } else {
+                    showAlert('visitTypes', response?.message || 'Failed to create visit type', 'error');
+                }
+            } catch (error) {
+                showAlert('visitTypes', 'Error creating visit type', 'error');
+            }
+        });
+
+        // Utility Functions
+        function populateSelectOptions() {
+            // Populate patient select
+            const patientSelect = document.getElementById('visitPatient');
+            patientSelect.innerHTML = '<option value="">Select Patient</option>' +
+                currentData.patients.map(p => `<option value="${p.patientId}">${p.patientName}</option>`).join('');
+
+            // Populate doctor select
+            const doctorSelect = document.getElementById('visitDoctor');
+            doctorSelect.innerHTML = '<option value="">Select Doctor (Optional)</option>' +
+                currentData.doctors.map(d => `<option value="${d.doctorId}">${d.doctorName} - ${d.specialization || 'General'}</option>`).join('');
+
+            // Populate visit type select
+            const visitTypeSelect = document.getElementById('visitType');
+            visitTypeSelect.innerHTML = '<option value="">Select Visit Type</option>' +
+                currentData.visitTypes.map(vt => `<option value="${vt.visitTypeId}">${vt.visitTypeName} - ${vt.baseRate.toFixed(2)}</option>`).join('');
+        }
+
+        // Auto-populate fee based on visit type selection
+        document.getElementById('visitType').addEventListener('change', function() {
+            const visitTypeId = this.value;
+            if (visitTypeId) {
+                const visitType = currentData.visitTypes.find(vt => vt.visitTypeId == visitTypeId);
+                if (visitType) {
+                    document.getElementById('visitFee').value = visitType.baseRate.toFixed(2);
+                }
+            }
+        });
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function showLoading(section) {
+            document.getElementById(`${section}Loading`).style.display = 'block';
+            document.getElementById(`${section}Table`).style.display = 'none';
+        }
+
+        function hideLoading(section) {
+            document.getElementById(`${section}Loading`).style.display = 'none';
+            document.getElementById(`${section}Table`).style.display = 'table';
+        }
+
+        function showAlert(section, message, type) {
+            const alertContainer = document.getElementById(`${section}Alert`);
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type}">
+                    ${message}
+                </div>
+            `;
+            
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        function filterTable(tableId, searchValue) {
+            const table = document.getElementById(tableId);
+            const rows = table.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchValue.toLowerCase())) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Click outside modal to close
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+
+        // Load data when tabs are switched
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabName = this.textContent.toLowerCase().replace(' ', '');
+                if (tabName === 'doctors' && currentData.doctors.length === 0) {
+                    loadDoctors();
+                } else if (tabName === 'visits' && currentData.visits.length === 0) {
+                    loadVisits();
+                } else if (tabName === 'visittypes' && currentData.visitTypes.length === 0) {
+                    loadVisitTypes();
+                }
+            });
+        });
+    </script>

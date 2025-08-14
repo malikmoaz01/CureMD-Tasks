@@ -145,8 +145,7 @@ public async Task<int> AddAsync(User user)
         command.Parameters.AddWithValue("@Username", user.Username);
         command.Parameters.AddWithValue("@Password", user.Password);
         command.Parameters.AddWithValue("@UserRole", user.UserRole);
-
-        // Add an output parameter to capture the new user ID
+ 
         var userIdParam = new SqlParameter("@NewUserId", SqlDbType.Int)
         {
             Direction = ParameterDirection.Output
@@ -154,8 +153,7 @@ public async Task<int> AddAsync(User user)
         command.Parameters.Add(userIdParam);
 
         await command.ExecuteNonQueryAsync();
-        
-        // Get the user ID from the output parameter
+         
         if (userIdParam.Value == null || userIdParam.Value == DBNull.Value)
         {
             throw new InvalidOperationException("Failed to create user - no ID returned from database.");
@@ -164,14 +162,13 @@ public async Task<int> AddAsync(User user)
         return Convert.ToInt32(userIdParam.Value);
     }
     catch (SqlException ex)
-    {
-        // Handle specific SQL Server errors
+    { 
         switch (ex.Number)
         {
-            case 2627: // Unique constraint violation
-            case 2601: // Duplicate key violation
+            case 2627:  
+            case 2601:  
                 throw new InvalidOperationException("Username already exists.", ex);
-            case 547: // Foreign key constraint violation
+            case 547:  
                 throw new InvalidOperationException("Invalid reference data.", ex);
             default:
                 throw new InvalidOperationException($"Database error occurred while adding user: {ex.Message}", ex);

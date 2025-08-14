@@ -117,8 +117,7 @@ namespace webapi.Repositories
         using var command = connection.CreateCommand();
         command.CommandType = CommandType.StoredProcedure;
         command.CommandText = "stp_AddPatientVisit";
-
-        // Add parameters with proper validation
+ 
         command.Parameters.Add(new SqlParameter("@PatientId", SqlDbType.Int) 
         { 
             Value = patientVisit.PatientId 
@@ -158,14 +157,12 @@ namespace webapi.Repositories
         { 
             Value = patientVisit.CreatedBy ?? (object)DBNull.Value 
         });
-
-        // Execute and get the new visit ID
+ 
         var result = await command.ExecuteScalarAsync();
         return Convert.ToInt32(result);
     }
     catch (SqlException ex)
-    {
-        // Handle specific SQL Server errors
+    { 
         if (ex.Number == 50013)
             throw new ArgumentException("Valid PatientId is required.");
         if (ex.Number == 50014)
@@ -199,8 +196,7 @@ public async Task<bool> UpdateAsync(PatientVisit patientVisit)
         using var command = connection.CreateCommand();
         command.CommandType = CommandType.StoredProcedure;
         command.CommandText = "stp_UpdatePatientVisit";
-
-        // Add parameters with proper validation
+ 
         command.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) 
         { 
             Value = patientVisit.Id 
@@ -245,8 +241,7 @@ public async Task<bool> UpdateAsync(PatientVisit patientVisit)
         { 
             Value = patientVisit.ModifiedBy ?? (object)DBNull.Value 
         });
-
-        // Execute and get result
+ 
         var result = await command.ExecuteScalarAsync();
         
         if (result != null && result != DBNull.Value)
@@ -258,8 +253,7 @@ public async Task<bool> UpdateAsync(PatientVisit patientVisit)
         return false;
     }
     catch (SqlException ex)
-    {
-        // Handle specific SQL Server errors
+    { 
         if (ex.Number == 50013)
             throw new ArgumentException("Valid PatientId is required.");
         if (ex.Number == 50014)
@@ -297,8 +291,7 @@ public async Task<bool> DeleteAsync(int id)
         command.CommandText = "stp_DeletePatientVisit";
 
         command.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Value = id });
-
-        // Execute and get result
+ 
         var result = await command.ExecuteScalarAsync();
         
         if (result != null && result != DBNull.Value)
@@ -310,8 +303,7 @@ public async Task<bool> DeleteAsync(int id)
         return false;
     }
     catch (SqlException ex)
-    {
-        // Handle specific SQL Server errors
+    { 
         if (ex.Number == 50020)
             throw new ArgumentException("Patient visit not found.");
             
