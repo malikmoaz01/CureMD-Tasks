@@ -3,7 +3,7 @@
 
 ## Prerequisites
 
-* .NET SDK (Latest LTS version)
+* .NET SDK (Latest LTS version) -> (Kindly dont use 7 version )
 * SQL Server or any compatible relational database
 * Postman 
 
