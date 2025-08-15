@@ -282,7 +282,7 @@ GO
 -- =================  Visit Type ======== 
 -- ===================================
 
-CREATE PROCEDURE stp_AddVisitType
+CREATE OR ALTER PROCEDURE stp_AddVisitType
     @VisitTypeName NVARCHAR(50), @BaseRate DECIMAL(10,2), @Description NVARCHAR(255)
 AS
 BEGIN
@@ -294,7 +294,7 @@ BEGIN
 END;
 GO
 
-CREATE PROCEDURE stp_UpdateVisitType
+CREATE OR ALTER PROCEDURE stp_UpdateVisitType
     @VisitTypeId INT, @VisitTypeName NVARCHAR(50), @BaseRate DECIMAL(10,2), @Description NVARCHAR(255)
 AS
 BEGIN
@@ -306,21 +306,21 @@ BEGIN
 END;
 GO
 
-CREATE PROCEDURE stp_DeleteVisitType @VisitTypeId INT
+CREATE OR ALTER PROCEDURE stp_DeleteVisitType @VisitTypeId INT
 AS
 BEGIN
     SET NOCOUNT ON; BEGIN TRY DELETE FROM VisitTypes WHERE VisitTypeId=@VisitTypeId; END TRY BEGIN CATCH THROW; END CATCH
 END;
 GO
 
-CREATE PROCEDURE stp_GetVisitTypeById @VisitTypeId INT
+CREATE OR ALTER PROCEDURE stp_GetVisitTypeById @VisitTypeId INT
 AS
 BEGIN
     SET NOCOUNT ON; SELECT * FROM VisitTypes WHERE VisitTypeId=@VisitTypeId;
 END;
 GO
 
-CREATE PROCEDURE stp_GetAllVisitTypes
+CREATE OR ALTER PROCEDURE stp_GetAllVisitTypes
 AS
 BEGIN
     SET NOCOUNT ON; SELECT * FROM VisitTypes;
@@ -331,7 +331,7 @@ GO
 -- =================  Patient Visit ======== 
 -- ===================================
 
-CREATE PROCEDURE stp_AddPatientVisit
+CREATE OR ALTER PROCEDURE stp_AddPatientVisit
     @PatientId INT, @DoctorId INT, @VisitTypeId INT, @VisitDate DATETIME2, @Note NVARCHAR(500),
     @DurationInMinutes INT, @Fee DECIMAL(10,2), @CreatedBy INT
 AS
@@ -344,7 +344,7 @@ BEGIN
 END;
 GO
 
-CREATE PROCEDURE stp_UpdatePatientVisit
+CREATE OR ALTER PROCEDURE stp_UpdatePatientVisit
     @Id INT, @PatientId INT, @DoctorId INT, @VisitTypeId INT, @VisitDate DATETIME2, @Note NVARCHAR(500),
     @DurationInMinutes INT, @Fee DECIMAL(10,2), @ModifiedBy INT
 AS
@@ -359,32 +359,32 @@ BEGIN
 END;
 GO
 
-CREATE PROCEDURE stp_DeletePatientVisit @Id INT
+CREATE OR ALTER PROCEDURE stp_DeletePatientVisit @Id INT
 AS
 BEGIN
     SET NOCOUNT ON; BEGIN TRY DELETE FROM PatientVisits WHERE Id=@Id; END TRY BEGIN CATCH THROW; END CATCH
 END;
 GO
 
-CREATE PROCEDURE stp_GetPatientVisitById @Id INT
+CREATE OR ALTER PROCEDURE stp_GetPatientVisitById @Id INT
 AS
 BEGIN
     SET NOCOUNT ON; SELECT * FROM PatientVisits WHERE Id=@Id;
 END;
 GO
 
-CREATE PROCEDURE stp_GetAllPatientVisits
+CREATE OR ALTER PROCEDURE stp_GetAllPatientVisits
 AS
 BEGIN
     SET NOCOUNT ON; SELECT * FROM PatientVisits;
 END;
 GO
+    
+-- =========================
+-- Fee Rate Procedures
+-- =========================
 
--- =================================== 
--- =================  Fee Rates ======== 
--- ===================================
-
-ALTER PROCEDURE stp_AddFeeRate
+CREATE OR ALTER PROCEDURE stp_AddFeeRate
     @VisitTypeId INT, 
     @BaseRate DECIMAL(10,2), 
     @ExtraTimeRate DECIMAL(5,4), 
@@ -419,7 +419,7 @@ BEGIN
 END;
 GO
 
-ALTER PROCEDURE stp_UpdateFeeRate
+CREATE OR ALTER PROCEDURE stp_UpdateFeeRate
     @FeeRateId INT, 
     @VisitTypeId INT, 
     @BaseRate DECIMAL(10,2), 
@@ -468,7 +468,7 @@ BEGIN
 END;
 GO
 
-ALTER PROCEDURE stp_DeleteFeeRate 
+CREATE OR ALTER PROCEDURE stp_DeleteFeeRate 
     @FeeRateId INT
 AS
 BEGIN
@@ -492,53 +492,70 @@ BEGIN
 END;
 GO
 
-CREATE PROCEDURE stp_GetFeeRateById @FeeRateId INT
+CREATE OR ALTER PROCEDURE stp_GetFeeRateById @FeeRateId INT
 AS
 BEGIN
-    SET NOCOUNT ON; SELECT * FROM FeeRates WHERE FeeRateId=@FeeRateId;
+    SET NOCOUNT ON;
+    SELECT * FROM FeeRates WHERE FeeRateId = @FeeRateId;
 END;
 GO
 
-CREATE PROCEDURE stp_GetAllFeeRates
+CREATE OR ALTER PROCEDURE stp_GetAllFeeRates
 AS
 BEGIN
-    SET NOCOUNT ON; SELECT * FROM FeeRates;
+    SET NOCOUNT ON;
+    SELECT * FROM FeeRates;
 END;
 GO
 
--- =================================== 
--- =================  Activity Log ======== 
--- ===================================
+-- =========================
+-- Activity Log Procedures
+-- =========================
 
-CREATE PROCEDURE stp_AddActivityLog
-    @Action NVARCHAR(100), @Success BIT, @Details NVARCHAR(500), @UserId INT, @VisitId INT
+CREATE OR ALTER PROCEDURE stp_AddActivityLog
+    @Action NVARCHAR(100),
+    @Success BIT,
+    @Details NVARCHAR(500),
+    @UserId INT,
+    @VisitId INT
 AS
 BEGIN
     SET NOCOUNT ON;
     BEGIN TRY
         INSERT INTO ActivityLog (Action, Success, Details, UserId, VisitId)
         VALUES (@Action, @Success, @Details, @UserId, @VisitId);
-    END TRY BEGIN CATCH THROW; END CATCH
+    END TRY
+    BEGIN CATCH
+        THROW;
+    END CATCH
 END;
 GO
 
-CREATE PROCEDURE stp_DeleteActivityLog @LogId INT
+CREATE OR ALTER PROCEDURE stp_DeleteActivityLog @LogId INT
 AS
 BEGIN
-    SET NOCOUNT ON; BEGIN TRY DELETE FROM ActivityLog WHERE LogId=@LogId; END TRY BEGIN CATCH THROW; END CATCH
+    SET NOCOUNT ON;
+    BEGIN TRY
+        DELETE FROM ActivityLog WHERE LogId = @LogId;
+    END TRY
+    BEGIN CATCH
+        THROW;
+    END CATCH
 END;
 GO
 
-CREATE PROCEDURE stp_GetActivityLogById @LogId INT
+CREATE OR ALTER PROCEDURE stp_GetActivityLogById @LogId INT
 AS
 BEGIN
-    SET NOCOUNT ON; SELECT * FROM ActivityLog WHERE LogId=@LogId;
+    SET NOCOUNT ON;
+    SELECT * FROM ActivityLog WHERE LogId = @LogId;
 END;
 GO
 
-CREATE PROCEDURE stp_GetAllActivityLogs
+CREATE OR ALTER PROCEDURE stp_GetAllActivityLogs
 AS
 BEGIN
-    SET NOCOUNT ON; SELECT * FROM ActivityLog;
+    SET NOCOUNT ON;
+    SELECT * FROM ActivityLog;
 END;
 GO
