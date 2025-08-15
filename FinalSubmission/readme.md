@@ -43,7 +43,7 @@
 
 ## Notes
 
-* The submission details were reviewed today, so **no JSON format for submissions** is available.
+* I reviewed submission detail today , so **no JSON format for this submissions** is available.
 * Kindly install and use the **latest versions** of all dependencies and SDKs.
 * **Dont run DML Script because i hashed my password so it will fail login**
 * Please **run the DDL scripts and stored procedures before running the code**.
