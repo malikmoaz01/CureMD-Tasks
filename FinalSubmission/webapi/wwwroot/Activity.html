@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Log - Patient Visit MS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        .back-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-btn:hover {
+            background-color: #545b62;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-content {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            min-height: 500px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 1rem;
+        }
+
+        .page-title {
+            color: #333;
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        .btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 1rem;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .btn-small {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.875rem;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .table th,
+        .table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .search-box {
+            width: 300px;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .alert {
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .success-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            color: white;
+        }
+
+        .success-true {
+            background-color: #28a745;
+        }
+
+        .success-false {
+            background-color: #dc3545;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .admin-only {
+            display: none;
+        }
+
+        .admin-only.show {
+            display: table-cell;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .close {
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Patient Visit Management System - Activity Log</h1>
+        <div class="user-info">
+            <span id="userInfo">Welcome, User</span> 
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="page-content">
+            <div class="page-header">
+                <h2 class="page-title">Activity Log</h2>
+                <button class="btn btn-success" onclick="showAddActivityModal()">Add Activity Log</button>
+            </div>
+
+            <div class="actions">
+                <div>
+                    <input type="text" class="search-box" id="activitySearch" placeholder="Search activity logs..." onkeyup="filterTable('activityTable', this.value)">
+                </div>
+            </div>
+
+            <div id="activityAlert"></div>
+            <div id="activityLoading" class="loading">Loading activity logs...</div>
+            
+            <table class="table" id="activityTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Log ID</th>
+                        <th>Date & Time</th>
+                        <th>Action</th>
+                        <th>Status</th>
+                        <th>Details</th>
+                        <th>User ID</th>
+                        <th>Visit ID</th>
+                        <th class="admin-only">Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="activityModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Activity Log</h2>
+                <span class="close" onclick="closeModal('activityModal')">&times;</span>
+            </div>
+            <form id="activityForm">
+                <div class="form-group">
+                    <label for="activityAction">Action:</label>
+                    <input type="text" id="activityAction" maxlength="100" required>
+                </div>
+                <div class="form-group">
+                    <label for="activitySuccess">Success:</label>
+                    <select id="activitySuccess" required>
+                        <option value="">Select Status</option>
+                        <option value="true">Success</option>
+                        <option value="false">Failed</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="activityDetails">Details:</label>
+                    <textarea id="activityDetails" rows="3" maxlength="500"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="activityVisitId">Visit ID (Optional):</label>
+                    <input type="number" id="activityVisitId" min="1">
+                </div>
+                <button type="submit" class="btn">Save Activity Log</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = '/api';
+        let currentData = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            initializeUserInfo();
+            loadActivityLogs();
+        });
+
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+        }
+
+        function initializeUserInfo() {
+            const username = localStorage.getItem('username');
+            const userRole = localStorage.getItem('userRole');
+            document.getElementById('userInfo').textContent = `Welcome, ${username} (${userRole})`;
+            
+            if (userRole === 'Admin') {
+                document.querySelectorAll('.admin-only').forEach(el => {
+                    el.classList.add('show');
+                    el.style.display = 'table-cell';
+                });
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        async function makeApiRequest(endpoint, options = {}) {
+            const token = localStorage.getItem('token');
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                ...options.headers
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    ...options,
+                    headers
+                });
+
+                if (response.status === 401) {
+                    logout();
+                    return null;
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('API request failed:', error);
+                throw error;
+            }
+        }
+
+        async function loadActivityLogs() {
+            showLoading();
+            try {
+                const response = await makeApiRequest('/activitylog');
+                if (response && response.success) {
+                    currentData = response.data;
+                    renderActivityTable();
+                } else {
+                    showAlert('Failed to load activity logs', 'error');
+                }
+            } catch (error) {
+                showAlert('Error loading activity logs', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function renderActivityTable() {
+            const tbody = document.querySelector('#activityTable tbody');
+            const userRole = localStorage.getItem('userRole');
+            
+            tbody.innerHTML = currentData.map(log => `
+                <tr>
+                    <td>${log.logId}</td>
+                    <td>${new Date(log.logDateTime).toLocaleString()}</td>
+                    <td>${log.action}</td>
+                    <td><span class="success-badge ${log.success ? 'success-true' : 'success-false'}">${log.success ? 'Success' : 'Failed'}</span></td>
+                    <td>${log.details || 'N/A'}</td>
+                    <td>${log.userId || 'N/A'}</td>
+                    <td>${log.visitId || 'N/A'}</td>
+                    <td class="admin-only table-actions" style="display: ${userRole === 'Admin' ? 'table-cell' : 'none'}">
+                        <button class="btn btn-danger btn-small" onclick="deleteActivityLog(${log.logId})">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function showAddActivityModal() {
+            document.getElementById('activityForm').reset();
+            document.getElementById('activityModal').style.display = 'block';
+        }
+
+        async function deleteActivityLog(id) {
+            if (confirm('Are you sure you want to delete this activity log?')) {
+                try {
+                    const response = await makeApiRequest(`/activitylog/${id}`, { method: 'DELETE' });
+                    if (response && response.success) {
+                        showAlert('Activity log deleted successfully', 'success');
+                        loadActivityLogs();
+                    } else {
+                        showAlert(response?.message || 'Failed to delete activity log', 'error');
+                    }
+                } catch (error) {
+                    showAlert('Error deleting activity log', 'error');
+                }
+            }
+        }
+
+        document.getElementById('activityForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const activityData = {
+                action: document.getElementById('activityAction').value.trim(),
+                success: document.getElementById('activitySuccess').value === 'true',
+                details: document.getElementById('activityDetails').value.trim() || null,
+                visitId: document.getElementById('activityVisitId').value ? parseInt(document.getElementById('activityVisitId').value) : null
+            };
+
+            try {
+                const response = await makeApiRequest('/activitylog', {
+                    method: 'POST',
+                    body: JSON.stringify(activityData)
+                });
+
+                if (response && response.success) {
+                    showAlert('Activity log created successfully', 'success');
+                    closeModal('activityModal');
+                    loadActivityLogs();
+                } else {
+                    showAlert(response?.message || 'Failed to create activity log', 'error');
+                }
+            } catch (error) {
+                showAlert('Error creating activity log', 'error');
+            }
+        });
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function showLoading() {
+            document.getElementById('activityLoading').style.display = 'block';
+            document.getElementById('activityTable').style.display = 'none';
+        }
+
+        function hideLoading() {
+            document.getElementById('activityLoading').style.display = 'none';
+            document.getElementById('activityTable').style.display = 'table';
+        }
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('activityAlert');
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type}">
+                    ${message}
+                </div>
+            `;
+            
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        function filterTable(tableId, searchValue) {
+            const table = document.getElementById(tableId);
+            const rows = table.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchValue.toLowerCase())) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
