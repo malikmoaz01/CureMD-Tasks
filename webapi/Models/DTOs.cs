@@ -5,7 +5,7 @@ namespace webapi.Models
     public class LoginDto
     {
         [Required]
-        public string Username { get; set; }
+        public string Email { get; set; }
         
         [Required]
         public string Password { get; set; }
@@ -15,7 +15,7 @@ namespace webapi.Models
     {
         [Required]
         [StringLength(50)]
-        public string Username { get; set; }
+        public string Email { get; set; }
         
         [Required]
         [StringLength(255)]
@@ -124,7 +124,43 @@ public class UpdatePatientDto
     public string? EmergencyContact { get; set; }
 }
 
+    public class ForgotPasswordRequestDto
+    {
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email format")]
+        public string Email { get; set; }
+    }
 
+    public class VerifyOtpDto
+    {
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email format")]
+        public string Email { get; set; }
+
+        [Required(ErrorMessage = "OTP is required")]
+        [StringLength(6, MinimumLength = 6, ErrorMessage = "OTP must be 6 digits")]
+        public string Otp { get; set; }
+    }
+
+    public class ResetPasswordDto
+    {
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email format")]
+        public string Email { get; set; }
+
+        [Required(ErrorMessage = "OTP is required")]
+        [StringLength(6, MinimumLength = 6, ErrorMessage = "OTP must be 6 digits")]
+        public string Otp { get; set; }
+
+        [Required(ErrorMessage = "New password is required")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters long")]
+        public string NewPassword { get; set; }
+
+        [Required(ErrorMessage = "Confirm password is required")]
+        [Compare("NewPassword", ErrorMessage = "Passwords do not match")]
+        public string ConfirmPassword { get; set; }
+    }
+    
     public class CreateVisitTypeDto
     {
         [Required]
@@ -200,21 +236,22 @@ public class UpdatePatientVisitDto
     {
         public string Token { get; set; }
         public string UserRole { get; set; }
-        public string Username { get; set; }
+        public string Email { get; set; }
         public int UserId { get; set; }
     }
+    
 
     public class ApiResponse<T>
     {
         public bool Success { get; set; }
         public string Message { get; set; }
         public T Data { get; set; }
-        
+
         public static ApiResponse<T> SuccessResult(T data, string message = "Success")
         {
             return new ApiResponse<T> { Success = true, Data = data, Message = message };
         }
-        
+
         public static ApiResponse<T> ErrorResult(string message)
         {
             return new ApiResponse<T> { Success = false, Message = message };

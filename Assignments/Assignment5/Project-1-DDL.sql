@@ -5,9 +5,9 @@
 -- Users table 
 CREATE TABLE Users (
     UserId INT IDENTITY(1,1) PRIMARY KEY,
-    Username NVARCHAR(50) NOT NULL UNIQUE,
+    Email NVARCHAR(50) NOT NULL UNIQUE,
     Password NVARCHAR(255) NOT NULL,
-    UserRole NVARCHAR(20) NOT NULL CHECK (UserRole IN ('Admin', 'Receptionist')),
+    UserRole NVARCHAR(20) NOT NULL CHECK (UserRole IN ('Admin', 'Receptionist' , 'Doctor')),
     CreatedDate DATETIME2 DEFAULT GETDATE()
 );
 

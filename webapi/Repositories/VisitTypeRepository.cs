@@ -42,10 +42,12 @@ namespace webapi.Repositories
                 {
                     return new VisitType
                     {
-                        VisitTypeId = reader.GetInt32("VisitTypeId"),
-                        VisitTypeName = reader.GetString("VisitTypeName"),
-                        BaseRate = reader.GetDecimal("BaseRate"),
-                        Description = reader.IsDBNull("Description") ? null : reader.GetString("Description")
+                        VisitTypeId = reader.GetInt32(reader.GetOrdinal("VisitTypeId")),
+                        VisitTypeName = reader.GetString(reader.GetOrdinal("VisitTypeName")),
+                        BaseRate = reader.GetDecimal(reader.GetOrdinal("BaseRate")),
+                        Description = reader.IsDBNull(reader.GetOrdinal("Description"))
+                                        ? null
+                                        : reader.GetString(reader.GetOrdinal("Description"))
                     };
                 }
 
@@ -76,10 +78,12 @@ namespace webapi.Repositories
                 {
                     visitTypes.Add(new VisitType
                     {
-                        VisitTypeId = reader.GetInt32("VisitTypeId"),
-                        VisitTypeName = reader.GetString("VisitTypeName"),
-                        BaseRate = reader.GetDecimal("BaseRate"),
-                        Description = reader.IsDBNull("Description") ? null : reader.GetString("Description")
+                        VisitTypeId = reader.GetInt32(reader.GetOrdinal("VisitTypeId")),
+                        VisitTypeName = reader.GetString(reader.GetOrdinal("VisitTypeName")),
+                        BaseRate = reader.GetDecimal(reader.GetOrdinal("BaseRate")),
+                        Description = reader.IsDBNull(reader.GetOrdinal("Description"))
+                                        ? null
+                                        : reader.GetString(reader.GetOrdinal("Description"))
                     });
                 }
 
@@ -102,21 +106,49 @@ namespace webapi.Repositories
                 command.CommandType = CommandType.StoredProcedure;
                 command.CommandText = "stp_AddVisitType";
 
-                command.Parameters.Add(new SqlParameter("@VisitTypeName", SqlDbType.NVarChar, 50) { Value = visitType.VisitTypeName });
-                command.Parameters.Add(new SqlParameter("@BaseRate", SqlDbType.Decimal) { Value = visitType.BaseRate });
-                command.Parameters.Add(new SqlParameter("@Description", SqlDbType.NVarChar, 255) { Value = visitType.Description ?? (object)DBNull.Value });
+                command.Parameters.Add(new SqlParameter("@VisitTypeName", SqlDbType.NVarChar, 50)
+                {
+                    Value = string.IsNullOrWhiteSpace(visitType.VisitTypeName) ? (object)DBNull.Value : visitType.VisitTypeName.Trim()
+                });
 
-                await command.ExecuteNonQueryAsync();
+                command.Parameters.Add(new SqlParameter("@BaseRate", SqlDbType.Decimal)
+                {
+                    Precision = 10,
+                    Scale = 2,
+                    Value = visitType.BaseRate
+                });
 
-                command.CommandText = "SELECT SCOPE_IDENTITY()";
-                command.CommandType = CommandType.Text;
-                command.Parameters.Clear();
+                command.Parameters.Add(new SqlParameter("@Description", SqlDbType.NVarChar, 255)
+                {
+                    Value = string.IsNullOrWhiteSpace(visitType.Description) ? (object)DBNull.Value : visitType.Description.Trim()
+                });
 
                 var result = await command.ExecuteScalarAsync();
+
+                if (result == null || result == DBNull.Value)
+                    throw new InvalidOperationException("Failed to get new visit type ID");
+
                 return Convert.ToInt32(result);
+            }
+            catch (SqlException ex)
+            {
+                // Log the full exception for debugging
+                Console.WriteLine($"SQL Exception: Number={ex.Number}, Message={ex.Message}");
+
+                if (ex.Number == 50011)
+                    throw new ArgumentException("Visit type name is required.");
+                if (ex.Number == 50013)
+                    throw new ArgumentException("Base rate must be a positive value.");
+                if (ex.Number == 50014)
+                    throw new ArgumentException("Visit type with this name already exists.");
+
+                throw new InvalidOperationException($"Database error adding visit type: {ex.Message}", ex);
             }
             catch (Exception ex)
             {
+                // Log the full exception for debugging
+                Console.WriteLine($"General Exception: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
                 throw new InvalidOperationException($"Error adding visit type: {ex.Message}", ex);
             }
         }
@@ -132,13 +164,48 @@ namespace webapi.Repositories
                 command.CommandType = CommandType.StoredProcedure;
                 command.CommandText = "stp_UpdateVisitType";
 
-                command.Parameters.Add(new SqlParameter("@VisitTypeId", SqlDbType.Int) { Value = visitType.VisitTypeId });
-                command.Parameters.Add(new SqlParameter("@VisitTypeName", SqlDbType.NVarChar, 50) { Value = visitType.VisitTypeName });
-                command.Parameters.Add(new SqlParameter("@BaseRate", SqlDbType.Decimal) { Value = visitType.BaseRate });
-                command.Parameters.Add(new SqlParameter("@Description", SqlDbType.NVarChar, 255) { Value = visitType.Description ?? (object)DBNull.Value });
+                command.Parameters.Add(new SqlParameter("@VisitTypeId", SqlDbType.Int)
+                {
+                    Value = visitType.VisitTypeId
+                });
 
-                var rowsAffected = await command.ExecuteNonQueryAsync();
-                return rowsAffected > 0;
+                command.Parameters.Add(new SqlParameter("@VisitTypeName", SqlDbType.NVarChar, 50)
+                {
+                    Value = string.IsNullOrWhiteSpace(visitType.VisitTypeName) ? (object)DBNull.Value : visitType.VisitTypeName.Trim()
+                });
+
+                command.Parameters.Add(new SqlParameter("@BaseRate", SqlDbType.Decimal)
+                {
+                    Value = visitType.BaseRate
+                });
+
+                command.Parameters.Add(new SqlParameter("@Description", SqlDbType.NVarChar, 255)
+                {
+                    Value = string.IsNullOrWhiteSpace(visitType.Description) ? (object)DBNull.Value : visitType.Description.Trim()
+                });
+
+                var result = await command.ExecuteScalarAsync();
+
+                if (result != null && result != DBNull.Value)
+                {
+                    int rowsAffected = Convert.ToInt32(result);
+                    return rowsAffected > 0;
+                }
+
+                return false;
+            }
+            catch (SqlException ex)
+            {
+                if (ex.Number == 50011)
+                    throw new ArgumentException("Visit type name is required.");
+                if (ex.Number == 50012)
+                    throw new ArgumentException("Visit type not found.");
+                if (ex.Number == 50013)
+                    throw new ArgumentException("Base rate must be a positive value.");
+                if (ex.Number == 50014)
+                    throw new ArgumentException("Visit type with this name already exists.");
+
+                throw new InvalidOperationException($"Database error updating visit type: {ex.Message}", ex);
             }
             catch (Exception ex)
             {
@@ -159,8 +226,22 @@ namespace webapi.Repositories
 
                 command.Parameters.Add(new SqlParameter("@VisitTypeId", SqlDbType.Int) { Value = visitTypeId });
 
-                var rowsAffected = await command.ExecuteNonQueryAsync();
-                return rowsAffected > 0;
+                var result = await command.ExecuteScalarAsync();
+
+                if (result != null && result != DBNull.Value)
+                {
+                    int rowsAffected = Convert.ToInt32(result);
+                    return rowsAffected > 0;
+                }
+
+                return false;
+            }
+            catch (SqlException ex)
+            {
+                if (ex.Number == 50012)
+                    throw new ArgumentException("Visit type not found.");
+
+                throw new InvalidOperationException($"Database error deleting visit type: {ex.Message}", ex);
             }
             catch (Exception ex)
             {

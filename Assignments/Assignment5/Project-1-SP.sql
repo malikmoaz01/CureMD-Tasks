@@ -2,33 +2,32 @@
 
 
 
-GO
 CREATE OR ALTER PROCEDURE stp_AddUser
-    @Username NVARCHAR(50),
+    @Email NVARCHAR(100),
     @Password NVARCHAR(255),
     @UserRole NVARCHAR(20),
     @NewUserId INT OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
-    
+   
     BEGIN TRY
         BEGIN TRANSACTION;
-        
-        IF EXISTS (SELECT 1 FROM Users WHERE Username = @Username)
+       
+        IF EXISTS (SELECT 1 FROM Users WHERE Email = @Email)
         BEGIN
             ROLLBACK TRANSACTION;
-            RAISERROR('Username already exists', 16, 1);
+            RAISERROR('Email already exists', 16, 1);
             RETURN;
         END
-        
-        INSERT INTO Users (Username, Password, UserRole, CreatedDate)
-        VALUES (@Username, @Password, @UserRole, GETUTCDATE());
-        
+       
+        INSERT INTO Users (Email, Password, UserRole, CreatedDate)
+        VALUES (@Email, @Password, @UserRole, GETUTCDATE());
+       
         SET @NewUserId = SCOPE_IDENTITY();
-        
+       
         COMMIT TRANSACTION;
-        
+       
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT > 0
@@ -37,7 +36,7 @@ BEGIN
         DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
         DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
         DECLARE @ErrorState INT = ERROR_STATE();
-        
+       
         RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
     END CATCH
 END
@@ -276,56 +275,139 @@ BEGIN
     SET NOCOUNT ON; 
     SELECT * FROM Patients ORDER BY CreatedDate DESC;
 END;
-GO
 
--- =================================== 
--- =================  Visit Type ======== 
--- ===================================
+
+
+-- ============================
+-- ======= Visit Type =========
+-- ============================
 
 CREATE OR ALTER PROCEDURE stp_AddVisitType
-    @VisitTypeName NVARCHAR(50), @BaseRate DECIMAL(10,2), @Description NVARCHAR(255)
+    @VisitTypeName NVARCHAR(50), 
+    @BaseRate DECIMAL(10,2), 
+    @Description NVARCHAR(255)
 AS
 BEGIN
     SET NOCOUNT ON;
-    BEGIN TRY
-        IF @VisitTypeName IS NULL OR LTRIM(RTRIM(@VisitTypeName))='' THROW 50011, 'VisitTypeName is required', 1;
-        INSERT INTO VisitTypes (VisitTypeName, BaseRate, Description) VALUES (@VisitTypeName, @BaseRate, @Description);
-    END TRY BEGIN CATCH THROW; END CATCH
+    BEGIN TRY 
+        IF @VisitTypeName IS NULL OR LTRIM(RTRIM(@VisitTypeName)) = '' 
+            THROW 50011, 'VisitTypeName is required', 1;
+            
+        IF @BaseRate IS NULL OR @BaseRate < 0
+            THROW 50013, 'BaseRate must be a positive value', 1;
+            
+        IF EXISTS (SELECT 1 FROM VisitTypes WHERE VisitTypeName = @VisitTypeName)
+            THROW 50014, 'VisitType with this name already exists', 1;
+         
+        INSERT INTO VisitTypes (VisitTypeName, BaseRate, Description)
+        VALUES (@VisitTypeName, @BaseRate, @Description);
+        
+        SELECT CAST(SCOPE_IDENTITY() AS INT) AS NewVisitTypeId;
+        
+    END TRY 
+    BEGIN CATCH 
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+        THROW @ErrorNumber, @ErrorMessage, 1;
+    END CATCH
 END;
 GO
+
 
 CREATE OR ALTER PROCEDURE stp_UpdateVisitType
-    @VisitTypeId INT, @VisitTypeName NVARCHAR(50), @BaseRate DECIMAL(10,2), @Description NVARCHAR(255)
+    @VisitTypeId INT, 
+    @VisitTypeName NVARCHAR(50), 
+    @BaseRate DECIMAL(10,2), 
+    @Description NVARCHAR(255)
 AS
 BEGIN
     SET NOCOUNT ON;
-    BEGIN TRY
-        IF NOT EXISTS (SELECT 1 FROM VisitTypes WHERE VisitTypeId=@VisitTypeId) THROW 50012, 'VisitType not found', 1;
-        UPDATE VisitTypes SET VisitTypeName=@VisitTypeName, BaseRate=@BaseRate, Description=@Description WHERE VisitTypeId=@VisitTypeId;
-    END TRY BEGIN CATCH THROW; END CATCH
+    
+    DECLARE @RowsAffected INT = 0;
+    
+    BEGIN TRY 
+        IF NOT EXISTS (SELECT 1 FROM VisitTypes WHERE VisitTypeId = @VisitTypeId) 
+        BEGIN
+            THROW 50012, 'VisitType not found', 1;
+        END
+        
+        IF @VisitTypeName IS NULL OR LTRIM(RTRIM(@VisitTypeName)) = '' 
+        BEGIN
+            THROW 50011, 'VisitTypeName is required', 1;
+        END
+        
+        IF @BaseRate IS NULL OR @BaseRate < 0
+        BEGIN
+            THROW 50013, 'BaseRate must be a positive value', 1;
+        END
+        
+        IF EXISTS (SELECT 1 FROM VisitTypes WHERE VisitTypeName = @VisitTypeName AND VisitTypeId != @VisitTypeId)
+        BEGIN
+            THROW 50014, 'VisitType with this name already exists', 1;
+        END
+        
+        UPDATE VisitTypes 
+        SET VisitTypeName = @VisitTypeName, 
+            BaseRate = @BaseRate, 
+            Description = @Description 
+        WHERE VisitTypeId = @VisitTypeId;
+        
+        SET @RowsAffected = @@ROWCOUNT;
+        
+        SELECT @RowsAffected as RowsAffected;
+        
+    END TRY 
+    BEGIN CATCH 
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+        THROW @ErrorNumber, @ErrorMessage, 1;
+    END CATCH
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp_DeleteVisitType @VisitTypeId INT
+CREATE OR ALTER PROCEDURE stp_DeleteVisitType 
+    @VisitTypeId INT
 AS
 BEGIN
-    SET NOCOUNT ON; BEGIN TRY DELETE FROM VisitTypes WHERE VisitTypeId=@VisitTypeId; END TRY BEGIN CATCH THROW; END CATCH
+    SET NOCOUNT ON; 
+    
+    DECLARE @RowsAffected INT = 0;
+    
+    BEGIN TRY  
+        IF NOT EXISTS (SELECT 1 FROM VisitTypes WHERE VisitTypeId = @VisitTypeId)
+        BEGIN
+            THROW 50012, 'VisitType not found', 1;
+        END 
+        
+        DELETE FROM VisitTypes WHERE VisitTypeId = @VisitTypeId;
+        SET @RowsAffected = @@ROWCOUNT;
+        
+        SELECT @RowsAffected as RowsAffected;
+        
+    END TRY 
+    BEGIN CATCH 
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+        THROW @ErrorNumber, @ErrorMessage, 1;
+    END CATCH
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp_GetVisitTypeById @VisitTypeId INT
+CREATE OR ALTER PROCEDURE stp_GetVisitTypeById 
+    @VisitTypeId INT
 AS
 BEGIN
-    SET NOCOUNT ON; SELECT * FROM VisitTypes WHERE VisitTypeId=@VisitTypeId;
+    SET NOCOUNT ON; 
+    SELECT * FROM VisitTypes WHERE VisitTypeId = @VisitTypeId;
 END;
 GO
 
 CREATE OR ALTER PROCEDURE stp_GetAllVisitTypes
 AS
 BEGIN
-    SET NOCOUNT ON; SELECT * FROM VisitTypes;
+    SET NOCOUNT ON; 
+    SELECT * FROM VisitTypes ORDER BY CreatedDate DESC;
 END;
-GO
 
 -- =================================== 
 -- =================  Patient Visit ======== 
@@ -515,15 +597,18 @@ GO
 CREATE OR ALTER PROCEDURE stp_AddActivityLog
     @Action NVARCHAR(100),
     @Success BIT,
-    @Details NVARCHAR(500),
-    @UserId INT,
-    @VisitId INT
+    @Details NVARCHAR(500) = NULL,
+    @UserId INT = NULL,
+    @VisitId INT = NULL,
+    @NewLogId INT OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
     BEGIN TRY
-        INSERT INTO ActivityLog (Action, Success, Details, UserId, VisitId)
-        VALUES (@Action, @Success, @Details, @UserId, @VisitId);
+        INSERT INTO ActivityLog (LogDateTime, Action, Success, Details, UserId, VisitId)
+        VALUES (GETUTCDATE(), @Action, @Success, @Details, @UserId, @VisitId);
+        
+        SET @NewLogId = SCOPE_IDENTITY();
     END TRY
     BEGIN CATCH
         THROW;
@@ -531,12 +616,18 @@ BEGIN
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp_DeleteActivityLog @LogId INT
+CREATE OR ALTER PROCEDURE stp_DeleteActivityLog 
+    @LogId INT
 AS
 BEGIN
     SET NOCOUNT ON;
     BEGIN TRY
         DELETE FROM ActivityLog WHERE LogId = @LogId;
+        
+        IF @@ROWCOUNT = 0
+        BEGIN
+            THROW 50001, 'Activity log not found or already deleted', 1;
+        END
     END TRY
     BEGIN CATCH
         THROW;
@@ -544,11 +635,14 @@ BEGIN
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp_GetActivityLogById @LogId INT
+CREATE OR ALTER PROCEDURE stp_GetActivityLogById 
+    @LogId INT
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT * FROM ActivityLog WHERE LogId = @LogId;
+    SELECT LogId, LogDateTime, Action, Success, Details, UserId, VisitId 
+    FROM ActivityLog 
+    WHERE LogId = @LogId;
 END;
 GO
 
@@ -556,6 +650,40 @@ CREATE OR ALTER PROCEDURE stp_GetAllActivityLogs
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT * FROM ActivityLog;
+    SELECT LogId, LogDateTime, Action, Success, Details, UserId, VisitId 
+    FROM ActivityLog 
+    ORDER BY LogDateTime DESC;
 END;
 GO
+
+-- Stored Procedure to check if email exists
+-- USE PVMS6606
+CREATE OR ALTER PROCEDURE stp_CheckEmailExists
+    @Email NVARCHAR(100)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF EXISTS (SELECT 1 FROM Users WHERE Email = @Email)
+        SELECT 1;
+    ELSE
+        SELECT 0;
+END
+
+
+CREATE OR ALTER PROCEDURE stp_ResetPassword
+    @Email NVARCHAR(100),
+    @NewPassword NVARCHAR(255)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE Users
+    SET Password = @NewPassword
+    WHERE Email = @Email;
+
+    IF @@ROWCOUNT > 0
+        SELECT 1;  
+    ELSE
+        SELECT 0;   
+END

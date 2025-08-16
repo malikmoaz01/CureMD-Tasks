@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Visit MS - Doctors</title>
+    <title>Patient Visit MS - Fee Rates</title>
     <link rel="stylesheet" href="../css/style.css">
     <style>
         * {
@@ -95,7 +95,6 @@
             font-weight: 600;
             transition: all 0.3s ease;
             white-space: nowrap;
-
             position: relative;
         }
 
@@ -111,12 +110,6 @@
             box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
         }
 
-        #doctorsTable th {
-            background-color: #ffffff;
-            color: #000000; 
-            font-weight: 600;
-        }
-
         .tab-content {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 24px;
@@ -124,6 +117,12 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        #feeRatesTable th {
+            background-color: #ffffff; 
+            color: #000000; 
+            font-weight: 600;
         }
 
         .actions {
@@ -273,13 +272,8 @@
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .modal-content {
@@ -300,7 +294,6 @@
                 opacity: 0;
                 transform: translateY(-50px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -369,8 +362,7 @@
         }
 
         .form-group input,
-        .form-group select,
-        .form-group textarea {
+        .form-group select {
             width: 100%;
             padding: 0.8rem 1.2rem;
             border: 2px solid rgba(102, 126, 234, 0.2);
@@ -382,16 +374,10 @@
         }
 
         .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
+        .form-group select:focus {
             border-color: #667eea;
             box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
             background: white;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
         }
 
         .loading {
@@ -447,11 +433,6 @@
             box-shadow: 0 10px 40px rgba(245, 158, 11, 0.3);
         }
 
-        .toast-info {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            box-shadow: 0 10px 40px rgba(59, 130, 246, 0.3);
-        }
-
         .toast-close {
             background: none;
             border: none;
@@ -482,8 +463,7 @@
         }
 
         input.error,
-        select.error,
-        textarea.error {
+        select.error {
             border-color: #ef4444 !important;
             box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15) !important;
             background: rgba(239, 68, 68, 0.05) !important;
@@ -578,17 +558,11 @@
             form {
                 padding: 1rem;
             }
-
-            #doctorsTable th {
-                background-color: #ffffff;
-                color: #000000;
-                font-weight: 600;
-            }
         }
     </style>
 </head>
 
-<body data-page="doctors">
+<body data-page="fee">
     <div class="header">
         <h1>PVMS - 6606</h1>
         <div class="user-info">
@@ -596,6 +570,7 @@
             <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
     </div>
+
     <div class="container">
         <div class="nav-tabs">
             <a class="nav-tab" data-tab="patients" href="patient.html">Patients</a>
@@ -605,25 +580,27 @@
             <a class="nav-tab" data-tab="visitTypes" href="visittype.html">Visit Types</a>
             <a class="nav-tab" data-tab="activity" href="activity.html">Activity Log</a>
         </div>
+
         <div class="tab-content">
-            <div id="doctors" class="tab-pane active">
+            <div id="feeRates" class="tab-pane active">
                 <div class="actions">
                     <div>
-                        <input type="text" class="search-box" id="doctorSearch" placeholder="Search doctors..."
-                            onkeyup="filterTable('doctorsTable', this.value)">
+                        <input type="text" class="search-box" id="feeRateSearch" placeholder="Search fee rates..."
+                            onkeyup="filterTable('feeRatesTable', this.value)">
                     </div>
-                    <button class="btn btn-success" onclick="showAddDoctorModal()">Add Doctor</button>
+                    <button class="btn btn-success" onclick="showAddFeeRateModal()">Add Fee Rate</button>
                 </div>
-                <div id="doctorsAlert"></div>
-                <div id="doctorsLoading" class="loading">Loading doctors...</div>
-                <table class="table" id="doctorsTable" style="display: none;">
+                <div id="feeRatesAlert"></div>
+                <div id="feeRatesLoading" class="loading">Loading fee rates...</div>
+                <table class="table" id="feeRatesTable" style="display: none;">
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Name</th>
-                            <th>Specialization</th>
-                            <th>Contact</th>
-                            <th>Email</th>
+                            <th>Visit Type</th>
+                            <th>Base Rate</th>
+                            <th>Extra Time Rate</th>
+                            <th>Threshold (min)</th>
+                            <th>Effective Date</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -632,53 +609,60 @@
             </div>
         </div>
     </div>
-    <div id="doctorModal" class="modal">
+
+    <div id="feeRateModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="doctorModalTitle">Add Doctor</h2>
-                <span class="close" onclick="closeModal('doctorModal')">&times;</span>
+                <h2 id="feeRateModalTitle">Add Fee Rate</h2>
+                <span class="close" onclick="closeModal('feeRateModal')">&times;</span>
             </div>
-            <form id="doctorForm">
-                <input type="hidden" id="doctorId">
-                <div class="form-group">
-                    <label for="doctorName">Name:</label>
-                    <input type="text" id="doctorName" maxlength="100" required>
+            <form id="feeRateForm">
+                <input type="hidden" id="feeRateId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="visitTypeId">Visit Type:</label>
+                        <select id="visitTypeId" required>
+                            <option value="">Select Visit Type</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="baseRate">Base Rate:</label>
+                        <input type="number" id="baseRate" step="0.01" min="0" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="doctorSpecialization">Specialization:</label>
-                    <input type="text" id="doctorSpecialization" maxlength="100">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="extraTimeRate">Extra Time Rate:</label>
+                        <input type="number" id="extraTimeRate" step="0.0001" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="extraTimeThreshold">Extra Time Threshold (minutes):</label>
+                        <input type="number" id="extraTimeThreshold" min="1" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="doctorContact">Contact Number:</label>
-                    <input type="text" id="doctorContact" maxlength="15">
-                </div>
-                <div class="form-group">
-                    <label for="doctorEmail">Email:</label>
-                    <input type="email" id="doctorEmail" maxlength="100">
-                </div>
-                <button type="submit" class="btn">Save Doctor</button>
+                <button type="submit" class="btn">Save Fee Rate</button>
             </form>
         </div>
     </div>
 
     <script>
-        console.log("JS Script is working")
         const API_BASE_URL = '/api';
-        let currentData = { doctors: [] };
+        let currentData = { feeRates: [], visitTypes: [] };
 
         document.addEventListener('DOMContentLoaded', async function () {
             checkAuth();
             initializeUserInfo();
             highlightActiveTab();
             initializeValidation();
-            await loadDoctors();
-            wireDoctorForm();
+            await loadVisitTypes();
+            await loadFeeRates();
+            wireFeeRateForm();
         });
 
         function checkAuth() {
             const token = localStorage.getItem('token');
             if (!token) {
-                window.location.href = '../login.html';
+                window.location.href = 'login.html';
                 return;
             }
         }
@@ -709,22 +693,16 @@
         }
 
         function makeApiRequest(endpoint, options = {}) {
-            const token = localStorage.getItem('token');
-            const method = options.method || 'GET';
-            const headers = {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-                ...options.headers
-            };
-            const body = options.body || null;
-
             return new Promise((resolve, reject) => {
                 const xhr = new XMLHttpRequest();
-                xhr.open(method, `${API_BASE_URL}${endpoint}`, true);
+                const token = localStorage.getItem('token');
+                const method = options.method || 'GET';
 
-                Object.entries(headers).forEach(([k, v]) => {
-                    if (v != null) xhr.setRequestHeader(k, v);
-                });
+                xhr.open(method, `${API_BASE_URL}${endpoint}`, true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                if (token) {
+                    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+                }
 
                 xhr.onload = function () {
                     if (xhr.status === 401) {
@@ -750,8 +728,8 @@
 
                 xhr.timeout = 30000;
 
-                if (body) {
-                    xhr.send(body);
+                if (options.body) {
+                    xhr.send(options.body);
                 } else {
                     xhr.send();
                 }
@@ -825,62 +803,33 @@
             }, 4000);
         }
 
-        function validateName(value) {
-            if (!value || !value.trim()) return { valid: false, message: 'Name is required' };
-            const trimmed = value.trim();
-            if (trimmed.length < 2) return { valid: false, message: 'Name must be at least 2 characters' };
-            if (trimmed.length > 100) return { valid: false, message: 'Name cannot exceed 100 characters' };
-            if (!/^[a-zA-Z\s'-]+$/.test(trimmed)) return { valid: false, message: 'Name can only contain letters, spaces, hyphens and apostrophes' };
+        function validateBaseRate(value) {
+            if (!value || value.trim() === '') return { valid: false, message: 'Base rate is required' };
+            const num = parseFloat(value);
+            if (isNaN(num)) return { valid: false, message: 'Base rate must be a valid number' };
+            if (num <= 0) return { valid: false, message: 'Base rate must be greater than 0' };
             return { valid: true };
         }
 
-        function validateEmail(value) {
-            if (!value || !value.trim()) return { valid: true };
-            const trimmed = value.trim();
-            if (trimmed.length > 100) return { valid: false, message: 'Email cannot exceed 100 characters' };
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return { valid: false, message: 'Please enter a valid email address' };
+        function validateExtraTimeRate(value) {
+            if (!value || value.trim() === '') return { valid: false, message: 'Extra time rate is required' };
+            const num = parseFloat(value);
+            if (isNaN(num)) return { valid: false, message: 'Extra time rate must be a valid number' };
+            if (num < 0) return { valid: false, message: 'Extra time rate cannot be negative' };
             return { valid: true };
         }
 
-        function validatePhone(value) {
-            if (!value || !value.trim()) return { valid: true };
-            const trimmed = value.trim();
-            if (!/^\+?[\d\s\-\(\)]{10,15}$/.test(trimmed)) return { valid: false, message: 'Phone number must be 10-15 digits' };
+        function validateThreshold(value) {
+            if (!value || value.trim() === '') return { valid: false, message: 'Extra time threshold is required' };
+            const num = parseInt(value);
+            if (isNaN(num)) return { valid: false, message: 'Threshold must be a valid number' };
+            if (num <= 0) return { valid: false, message: 'Threshold must be greater than 0' };
             return { valid: true };
         }
 
-        function validateSpecialization(value) {
-            if (!value || !value.trim()) return { valid: true };
-            const trimmed = value.trim();
-            if (trimmed.length > 100) return { valid: false, message: 'Specialization cannot exceed 100 characters' };
-            if (!/^[a-zA-Z\s&,-]+$/.test(trimmed)) return { valid: false, message: 'Specialization contains invalid characters' };
+        function validateVisitType(value) {
+            if (!value) return { valid: false, message: 'Visit type is required' };
             return { valid: true };
-        }
-
-        function restrictNumericInput(fieldId) {
-            const field = document.getElementById(fieldId);
-            if (!field) return;
-
-            field.addEventListener('keypress', function (e) {
-                if (e.ctrlKey || e.altKey || e.metaKey) return;
-                if (['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) return;
-
-                if (/[0-9]/.test(e.key)) {
-                    e.preventDefault();
-                    showToast('Numbers are not allowed in this field', 'warning');
-                }
-            });
-
-            field.addEventListener('paste', function (e) {
-                setTimeout(() => {
-                    const originalValue = this.value;
-                    const cleanValue = originalValue.replace(/[0-9]/g, '');
-                    if (cleanValue !== originalValue) {
-                        this.value = cleanValue;
-                        showToast('Numbers were removed from pasted text', 'warning');
-                    }
-                }, 0);
-            });
         }
 
         function addFieldValidation(fieldId, validator) {
@@ -908,36 +857,36 @@
             return validate;
         }
 
-        function validateDoctorForm() {
+        function validateFeeRateForm() {
             let isValid = true;
             const errors = [];
 
-            const name = document.getElementById('doctorName')?.value || '';
-            const specialization = document.getElementById('doctorSpecialization')?.value || '';
-            const contact = document.getElementById('doctorContact')?.value || '';
-            const email = document.getElementById('doctorEmail')?.value || '';
+            const visitTypeId = document.getElementById('visitTypeId')?.value || '';
+            const baseRate = document.getElementById('baseRate')?.value || '';
+            const extraTimeRate = document.getElementById('extraTimeRate')?.value || '';
+            const extraTimeThreshold = document.getElementById('extraTimeThreshold')?.value || '';
 
-            const nameResult = validateName(name);
-            if (!nameResult.valid) {
-                errors.push(nameResult.message);
+            const visitTypeResult = validateVisitType(visitTypeId);
+            if (!visitTypeResult.valid) {
+                errors.push(visitTypeResult.message);
                 isValid = false;
             }
 
-            const specializationResult = validateSpecialization(specialization);
-            if (!specializationResult.valid) {
-                errors.push(specializationResult.message);
+            const baseRateResult = validateBaseRate(baseRate);
+            if (!baseRateResult.valid) {
+                errors.push(baseRateResult.message);
                 isValid = false;
             }
 
-            const contactResult = validatePhone(contact);
-            if (!contactResult.valid) {
-                errors.push(contactResult.message);
+            const extraTimeRateResult = validateExtraTimeRate(extraTimeRate);
+            if (!extraTimeRateResult.valid) {
+                errors.push(extraTimeRateResult.message);
                 isValid = false;
             }
 
-            const emailResult = validateEmail(email);
-            if (!emailResult.valid) {
-                errors.push(emailResult.message);
+            const thresholdResult = validateThreshold(extraTimeThreshold);
+            if (!thresholdResult.valid) {
+                errors.push(thresholdResult.message);
                 isValid = false;
             }
 
@@ -949,139 +898,166 @@
         }
 
         function initializeValidation() {
-            restrictNumericInput('doctorName');
-            restrictNumericInput('doctorSpecialization');
-
-            addFieldValidation('doctorName', validateName);
-            addFieldValidation('doctorEmail', validateEmail);
-            addFieldValidation('doctorContact', validatePhone);
-            addFieldValidation('doctorSpecialization', validateSpecialization);
+            addFieldValidation('visitTypeId', validateVisitType);
+            addFieldValidation('baseRate', validateBaseRate);
+            addFieldValidation('extraTimeRate', validateExtraTimeRate);
+            addFieldValidation('extraTimeThreshold', validateThreshold);
         }
 
-        async function loadDoctors() {
-            showLoading('doctors');
+        async function loadVisitTypes() {
             try {
-                const response = await makeApiRequest('/doctor');
+                const response = await makeApiRequest('/visittype');
                 if (response && response.success) {
-                    currentData.doctors = response.data || [];
-                    renderDoctorsTable();
-                } else {
-                    showToast('Failed to load doctors', 'error');
+                    currentData.visitTypes = response.data || [];
+                    renderVisitTypeOptions();
                 }
             } catch (error) {
-                console.error('Error loading doctors:', error);
-                showToast('Error loading doctors', 'error');
-            } finally {
-                hideLoading('doctors');
+                console.error('Error loading visit types:', error);
             }
         }
 
-        function renderDoctorsTable() {
-            const tbody = document.querySelector('#doctorsTable tbody');
+        function renderVisitTypeOptions() {
+            const select = document.getElementById('visitTypeId');
+            if (!select) return;
+            
+            select.innerHTML = '<option value="">Select Visit Type</option>';
+            currentData.visitTypes.forEach(vt => {
+                const option = document.createElement('option');
+                option.value = vt.visitTypeId;
+                option.textContent = vt.visitTypeName;
+                select.appendChild(option);
+            });
+        }
+
+        async function loadFeeRates() {
+            showLoading('feeRates');
+            try {
+                const response = await makeApiRequest('/feerate');
+                if (response && response.success) {
+                    currentData.feeRates = response.data || [];
+                    renderFeeRatesTable();
+                } else {
+                    showToast('Failed to load fee rates', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading fee rates:', error);
+                showToast('Error loading fee rates', 'error');
+            } finally {
+                hideLoading('feeRates');
+            }
+        }
+
+        function getVisitTypeName(visitTypeId) {
+            const visitType = currentData.visitTypes.find(vt => vt.visitTypeId === visitTypeId);
+            return visitType ? visitType.visitTypeName : 'Unknown';
+        }
+
+        function renderFeeRatesTable() {
+            const tbody = document.querySelector('#feeRatesTable tbody');
             if (!tbody) return;
             const userRole = localStorage.getItem('userRole');
-            tbody.innerHTML = currentData.doctors.map(doctor => `
+            tbody.innerHTML = currentData.feeRates.map(feeRate => `
                 <tr>
-                    <td>${doctor.doctorId}</td>
-                    <td>${doctor.doctorName}</td>
-                    <td>${doctor.specialization || 'N/A'}</td>
-                    <td>${doctor.contactNumber || 'N/A'}</td>
-                    <td>${doctor.email || 'N/A'}</td>
+                    <td>${feeRate.feeRateId}</td>
+                    <td>${getVisitTypeName(feeRate.visitTypeId)}</td>
+                    <td>${parseFloat(feeRate.baseRate).toFixed(2)}</td>
+                    <td>${parseFloat(feeRate.extraTimeRate).toFixed(4)}</td>
+                    <td>${feeRate.extraTimeThreshold}</td>
+                    <td>${feeRate.effectiveDate ? new Date(feeRate.effectiveDate).toLocaleDateString() : 'N/A'}</td>
                     <td class="table-actions">
-                        <button class="btn btn-small" onclick="editDoctor(${doctor.doctorId})">Edit</button>
-                        ${userRole === 'Admin' ? `<button class="btn btn-danger btn-small" onclick="deleteDoctor(${doctor.doctorId})">Delete</button>` : ''}
+                        <button class="btn btn-small" onclick="editFeeRate(${feeRate.feeRateId})">Edit</button>
+                        ${userRole === 'Admin' ? `<button class="btn btn-danger btn-small" onclick="deleteFeeRate(${feeRate.feeRateId})">Delete</button>` : ''}
                     </td>
                 </tr>
             `).join('');
         }
 
-        function showAddDoctorModal() {
-            const title = document.getElementById('doctorModalTitle');
-            const form = document.getElementById('doctorForm');
-            const id = document.getElementById('doctorId');
+        function showAddFeeRateModal() {
+            const title = document.getElementById('feeRateModalTitle');
+            const form = document.getElementById('feeRateForm');
+            const id = document.getElementById('feeRateId');
             if (!form || !title || !id) return;
-            title.textContent = 'Add Doctor';
+            title.textContent = 'Add Fee Rate';
             form.reset();
             id.value = '';
-            document.getElementById('doctorModal').style.display = 'block';
+            document.getElementById('feeRateModal').style.display = 'block';
         }
 
-        function editDoctor(id) {
-            const doctor = currentData.doctors.find(d => d.doctorId === id);
-            if (doctor) {
-                document.getElementById('doctorModalTitle').textContent = 'Edit Doctor';
-                document.getElementById('doctorId').value = doctor.doctorId;
-                document.getElementById('doctorName').value = doctor.doctorName || '';
-                document.getElementById('doctorSpecialization').value = doctor.specialization || '';
-                document.getElementById('doctorContact').value = doctor.contactNumber || '';
-                document.getElementById('doctorEmail').value = doctor.email || '';
-                document.getElementById('doctorModal').style.display = 'block';
+        function editFeeRate(id) {
+            const feeRate = currentData.feeRates.find(fr => fr.feeRateId === id);
+            if (feeRate) {
+                document.getElementById('feeRateModalTitle').textContent = 'Edit Fee Rate';
+                document.getElementById('feeRateId').value = feeRate.feeRateId;
+                document.getElementById('visitTypeId').value = feeRate.visitTypeId || '';
+                document.getElementById('baseRate').value = feeRate.baseRate || '';
+                document.getElementById('extraTimeRate').value = feeRate.extraTimeRate || '';
+                document.getElementById('extraTimeThreshold').value = feeRate.extraTimeThreshold || '';
+                document.getElementById('feeRateModal').style.display = 'block';
             }
         }
 
-        async function deleteDoctor(id) {
-            if (confirm('Are you sure you want to delete this doctor?')) {
+        async function deleteFeeRate(id) {
+            if (confirm('Are you sure you want to delete this fee rate?')) {
                 try {
-                    const response = await makeApiRequest(`/doctor/${id}`, { method: 'DELETE' });
+                    const response = await makeApiRequest(`/feerate/${id}`, { method: 'DELETE' });
                     if (response && response.success) {
-                        showToast('Doctor deleted successfully', 'success');
-                        loadDoctors();
+                        showToast('Fee rate deleted successfully', 'success');
+                        loadFeeRates();
                     } else {
-                        showToast((response && response.message) || 'Failed to delete doctor', 'error');
+                        showToast((response && response.message) || 'Failed to delete fee rate', 'error');
                     }
                 } catch (error) {
-                    console.error('Error deleting doctor:', error);
-                    showToast('Error deleting doctor', 'error');
+                    console.error('Error deleting fee rate:', error);
+                    showToast('Error deleting fee rate', 'error');
                 }
             }
         }
 
-        function wireDoctorForm() {
-            const form = document.getElementById('doctorForm');
+        function wireFeeRateForm() {
+            const form = document.getElementById('feeRateForm');
             if (!form) return;
 
             form.addEventListener('submit', async function (e) {
                 e.preventDefault();
 
-                if (!validateDoctorForm()) {
+                if (!validateFeeRateForm()) {
                     return;
                 }
 
-                const doctorId = document.getElementById('doctorId').value;
-                const isEdit = !!doctorId;
-                const doctorData = {
-                    doctorName: document.getElementById('doctorName').value.trim(),
-                    specialization: document.getElementById('doctorSpecialization').value.trim() || null,
-                    contactNumber: document.getElementById('doctorContact').value.trim() || null,
-                    email: document.getElementById('doctorEmail').value.trim() || null
+                const feeRateId = document.getElementById('feeRateId').value;
+                const isEdit = !!feeRateId;
+                const feeRateData = {
+                    visitTypeId: parseInt(document.getElementById('visitTypeId').value),
+                    baseRate: parseFloat(document.getElementById('baseRate').value),
+                    extraTimeRate: parseFloat(document.getElementById('extraTimeRate').value),
+                    extraTimeThreshold: parseInt(document.getElementById('extraTimeThreshold').value)
                 };
 
                 if (isEdit) {
-                    doctorData.doctorId = parseInt(doctorId);
+                    feeRateData.feeRateId = parseInt(feeRateId);
                 }
 
                 try {
-                    const endpoint = isEdit ? `/doctor/${doctorId}` : '/doctor';
+                    const endpoint = isEdit ? `/feerate/${feeRateId}` : '/feerate';
                     const method = isEdit ? 'PUT' : 'POST';
                     const response = await makeApiRequest(endpoint, {
                         method,
-                        body: JSON.stringify(doctorData)
+                        body: JSON.stringify(feeRateData)
                     });
 
                     if (response && response.success) {
-                        showToast(`Doctor ${isEdit ? 'updated' : 'created'} successfully`, 'success');
-                        closeModal('doctorModal');
-                        loadDoctors();
+                        showToast(`Fee rate ${isEdit ? 'updated' : 'created'} successfully`, 'success');
+                        closeModal('feeRateModal');
+                        loadFeeRates();
                     } else {
-                        showToast((response && response.message) || `Failed to ${isEdit ? 'update' : 'create'} doctor`, 'error');
+                        showToast((response && response.message) || `Failed to ${isEdit ? 'update' : 'create'} fee rate`, 'error');
                     }
                 } catch (error) {
-                    console.error(`Error ${isEdit ? 'updating' : 'creating'} doctor:`, error);
-                    showToast(`Error ${isEdit ? 'updating' : 'creating'} doctor`, 'error');
+                    console.error(`Error ${isEdit ? 'updating' : 'creating'} fee rate:`, error);
+                    showToast(`Error ${isEdit ? 'updating' : 'creating'} fee rate`, 'error');
                 }
             });
         }
-        console.log("JS Script is working")
     </script>
 </body>
 

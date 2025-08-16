@@ -1,12 +1,12 @@
 -- USE PatientVisitMS6606;
 
 -- Users Table
-INSERT INTO Users (Username, Password, UserRole) VALUES
-('admin1', 'pass123', 'Admin'),
-('admin2', 'pass456', 'Admin'),
-('reception1', 'pass789', 'Receptionist'),
-('reception2', 'pass321', 'Receptionist'),
-('reception3', 'pass654', 'Receptionist');
+INSERT INTO Users (Email, Password, UserRole) VALUES
+('admin1@gmail.com', 'pass123', 'Admin'),
+('admin2@gmail.com', 'pass456', 'Admin'),
+('reception1@gmail.com', 'pass789', 'Doctor'),
+('reception2@gmail.com', 'pass321', 'Doctor'),
+('reception3@gmail.com', 'pass654', 'Receptionist');
 
 -- Doctors Table
 INSERT INTO Doctors (DoctorName, Specialization, ContactNumber, Email) VALUES

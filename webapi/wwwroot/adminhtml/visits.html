@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Visit MS - Doctors</title>
+    <title>Patient Visit MS - Visits</title>
     <link rel="stylesheet" href="../css/style.css">
     <style>
         * {
@@ -111,9 +111,9 @@
             box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
         }
 
-        #doctorsTable th {
+        #visitsTable th {
             background-color: #ffffff;
-            color: #000000; 
+            color: #000000;
             font-weight: 600;
         }
 
@@ -578,17 +578,11 @@
             form {
                 padding: 1rem;
             }
-
-            #doctorsTable th {
-                background-color: #ffffff;
-                color: #000000;
-                font-weight: 600;
-            }
         }
     </style>
 </head>
 
-<body data-page="doctors">
+<body data-page="visits">
     <div class="header">
         <h1>PVMS - 6606</h1>
         <div class="user-info">
@@ -596,6 +590,7 @@
             <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
     </div>
+
     <div class="container">
         <div class="nav-tabs">
             <a class="nav-tab" data-tab="patients" href="patient.html">Patients</a>
@@ -605,25 +600,28 @@
             <a class="nav-tab" data-tab="visitTypes" href="visittype.html">Visit Types</a>
             <a class="nav-tab" data-tab="activity" href="activity.html">Activity Log</a>
         </div>
+
         <div class="tab-content">
-            <div id="doctors" class="tab-pane active">
+            <div id="visits" class="tab-pane active">
                 <div class="actions">
                     <div>
-                        <input type="text" class="search-box" id="doctorSearch" placeholder="Search doctors..."
-                            onkeyup="filterTable('doctorsTable', this.value)">
+                        <input type="text" class="search-box" id="visitSearch" placeholder="Search visits..."
+                            onkeyup="filterTable('visitsTable', this.value)">
                     </div>
-                    <button class="btn btn-success" onclick="showAddDoctorModal()">Add Doctor</button>
+                    <button class="btn btn-success" onclick="showAddVisitModal()">Add Visit</button>
                 </div>
-                <div id="doctorsAlert"></div>
-                <div id="doctorsLoading" class="loading">Loading doctors...</div>
-                <table class="table" id="doctorsTable" style="display: none;">
+                <div id="visitsAlert"></div>
+                <div id="visitsLoading" class="loading">Loading visits...</div>
+                <table class="table" id="visitsTable" style="display: none;">
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Name</th>
-                            <th>Specialization</th>
-                            <th>Contact</th>
-                            <th>Email</th>
+                            <th>Patient</th>
+                            <th>Doctor</th>
+                            <th>Visit Type</th>
+                            <th>Date</th>
+                            <th>Duration</th>
+                            <th>Fee</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -632,47 +630,79 @@
             </div>
         </div>
     </div>
-    <div id="doctorModal" class="modal">
+
+    <div id="visitModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="doctorModalTitle">Add Doctor</h2>
-                <span class="close" onclick="closeModal('doctorModal')">&times;</span>
+                <h2 id="visitModalTitle">Add Visit</h2>
+                <span class="close" onclick="closeModal('visitModal')">&times;</span>
             </div>
-            <form id="doctorForm">
-                <input type="hidden" id="doctorId">
-                <div class="form-group">
-                    <label for="doctorName">Name:</label>
-                    <input type="text" id="doctorName" maxlength="100" required>
+            <form id="visitForm">
+                <input type="hidden" id="visitId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="visitPatient">Patient:</label>
+                        <select id="visitPatient" required>
+                            <option value="">Select Patient</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="visitDoctor">Doctor:</label>
+                        <select id="visitDoctor">
+                            <option value="">Select Doctor (Optional)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <div class="form-group">
+                            <label for="visitType">Visit Type:</label>
+                            <input type="text" id="visitType" placeholder="Enter Visit Type" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="visitDate">Visit Date:</label>
+                        <input type="datetime-local" id="visitDate" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="visitDuration">Duration (minutes):</label>
+                        <input type="number" id="visitDuration" value="30" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="visitFee">Fee:</label>
+                        <input type="number" id="visitFee" step="0.01" min="0" required>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label for="doctorSpecialization">Specialization:</label>
-                    <input type="text" id="doctorSpecialization" maxlength="100">
+                    <label for="visitNote">Note:</label>
+                    <textarea id="visitNote" rows="3" maxlength="500"></textarea>
                 </div>
-                <div class="form-group">
-                    <label for="doctorContact">Contact Number:</label>
-                    <input type="text" id="doctorContact" maxlength="15">
-                </div>
-                <div class="form-group">
-                    <label for="doctorEmail">Email:</label>
-                    <input type="email" id="doctorEmail" maxlength="100">
-                </div>
-                <button type="submit" class="btn">Save Doctor</button>
+                <button type="submit" class="btn">Save Visit</button>
             </form>
         </div>
     </div>
 
     <script>
-        console.log("JS Script is working")
         const API_BASE_URL = '/api';
-        let currentData = { doctors: [] };
+        let currentData = {
+            patients: [],
+            doctors: [],
+            visits: [],
+            visitTypes: []
+        };
 
         document.addEventListener('DOMContentLoaded', async function () {
             checkAuth();
             initializeUserInfo();
             highlightActiveTab();
             initializeValidation();
+            await loadPatients();
             await loadDoctors();
-            wireDoctorForm();
+            await loadVisitTypes();
+            await loadVisits();
+            wireVisitForm();
         });
 
         function checkAuth() {
@@ -825,39 +855,43 @@
             }, 4000);
         }
 
-        function validateName(value) {
-            if (!value || !value.trim()) return { valid: false, message: 'Name is required' };
-            const trimmed = value.trim();
-            if (trimmed.length < 2) return { valid: false, message: 'Name must be at least 2 characters' };
-            if (trimmed.length > 100) return { valid: false, message: 'Name cannot exceed 100 characters' };
-            if (!/^[a-zA-Z\s'-]+$/.test(trimmed)) return { valid: false, message: 'Name can only contain letters, spaces, hyphens and apostrophes' };
+        function validateSelect(value, fieldName) {
+            if (!value) return { valid: false, message: `${fieldName} is required` };
             return { valid: true };
         }
 
-        function validateEmail(value) {
+        function validateDateTime(value) {
+            if (!value || !value.trim()) return { valid: false, message: 'Visit date and time is required' };
+            const date = new Date(value);
+            if (isNaN(date.getTime())) return { valid: false, message: 'Invalid date and time' };
+            return { valid: true };
+        }
+
+        function validateDuration(value) {
+            if (!value || value.trim() === '') return { valid: false, message: 'Duration is required' };
+            const duration = parseInt(value);
+            if (isNaN(duration)) return { valid: false, message: 'Duration must be a number' };
+            if (duration <= 0) return { valid: false, message: 'Duration must be greater than 0' };
+            if (duration > 1440) return { valid: false, message: 'Duration cannot exceed 1440 minutes' };
+            return { valid: true };
+        }
+
+        function validateFee(value) {
+            if (!value || value.trim() === '') return { valid: false, message: 'Fee is required' };
+            const fee = parseFloat(value);
+            if (isNaN(fee)) return { valid: false, message: 'Fee must be a number' };
+            if (fee < 0) return { valid: false, message: 'Fee cannot be negative' };
+            if (fee > 999999) return { valid: false, message: 'Fee cannot exceed 999999' };
+            return { valid: true };
+        }
+
+        function validateNote(value) {
             if (!value || !value.trim()) return { valid: true };
-            const trimmed = value.trim();
-            if (trimmed.length > 100) return { valid: false, message: 'Email cannot exceed 100 characters' };
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return { valid: false, message: 'Please enter a valid email address' };
+            if (value.trim().length > 500) return { valid: false, message: 'Note cannot exceed 500 characters' };
             return { valid: true };
         }
 
-        function validatePhone(value) {
-            if (!value || !value.trim()) return { valid: true };
-            const trimmed = value.trim();
-            if (!/^\+?[\d\s\-\(\)]{10,15}$/.test(trimmed)) return { valid: false, message: 'Phone number must be 10-15 digits' };
-            return { valid: true };
-        }
-
-        function validateSpecialization(value) {
-            if (!value || !value.trim()) return { valid: true };
-            const trimmed = value.trim();
-            if (trimmed.length > 100) return { valid: false, message: 'Specialization cannot exceed 100 characters' };
-            if (!/^[a-zA-Z\s&,-]+$/.test(trimmed)) return { valid: false, message: 'Specialization contains invalid characters' };
-            return { valid: true };
-        }
-
-        function restrictNumericInput(fieldId) {
+        function restrictToNumbers(fieldId, allowDecimal = false) {
             const field = document.getElementById(fieldId);
             if (!field) return;
 
@@ -865,21 +899,13 @@
                 if (e.ctrlKey || e.altKey || e.metaKey) return;
                 if (['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) return;
 
-                if (/[0-9]/.test(e.key)) {
-                    e.preventDefault();
-                    showToast('Numbers are not allowed in this field', 'warning');
-                }
-            });
+                const char = e.key;
+                const isNumber = /[0-9]/.test(char);
+                const isDecimal = char === '.' && allowDecimal && !this.value.includes('.');
 
-            field.addEventListener('paste', function (e) {
-                setTimeout(() => {
-                    const originalValue = this.value;
-                    const cleanValue = originalValue.replace(/[0-9]/g, '');
-                    if (cleanValue !== originalValue) {
-                        this.value = cleanValue;
-                        showToast('Numbers were removed from pasted text', 'warning');
-                    }
-                }, 0);
+                if (!isNumber && !isDecimal) {
+                    e.preventDefault();
+                }
             });
         }
 
@@ -908,36 +934,50 @@
             return validate;
         }
 
-        function validateDoctorForm() {
+        function validateVisitForm() {
             let isValid = true;
             const errors = [];
 
-            const name = document.getElementById('doctorName')?.value || '';
-            const specialization = document.getElementById('doctorSpecialization')?.value || '';
-            const contact = document.getElementById('doctorContact')?.value || '';
-            const email = document.getElementById('doctorEmail')?.value || '';
+            const patient = document.getElementById('visitPatient')?.value || '';
+            const visitType = document.getElementById('visitType')?.value || '';
+            const visitDate = document.getElementById('visitDate')?.value || '';
+            const duration = document.getElementById('visitDuration')?.value || '';
+            const fee = document.getElementById('visitFee')?.value || '';
+            const note = document.getElementById('visitNote')?.value || '';
 
-            const nameResult = validateName(name);
-            if (!nameResult.valid) {
-                errors.push(nameResult.message);
+            const patientResult = validateSelect(patient, 'Patient');
+            if (!patientResult.valid) {
+                errors.push(patientResult.message);
                 isValid = false;
             }
 
-            const specializationResult = validateSpecialization(specialization);
-            if (!specializationResult.valid) {
-                errors.push(specializationResult.message);
+            const visitTypeResult = validateSelect(visitType, 'Visit Type');
+            if (!visitTypeResult.valid) {
+                errors.push(visitTypeResult.message);
                 isValid = false;
             }
 
-            const contactResult = validatePhone(contact);
-            if (!contactResult.valid) {
-                errors.push(contactResult.message);
+            const dateResult = validateDateTime(visitDate);
+            if (!dateResult.valid) {
+                errors.push(dateResult.message);
                 isValid = false;
             }
 
-            const emailResult = validateEmail(email);
-            if (!emailResult.valid) {
-                errors.push(emailResult.message);
+            const durationResult = validateDuration(duration);
+            if (!durationResult.valid) {
+                errors.push(durationResult.message);
+                isValid = false;
+            }
+
+            const feeResult = validateFee(fee);
+            if (!feeResult.valid) {
+                errors.push(feeResult.message);
+                isValid = false;
+            }
+
+            const noteResult = validateNote(note);
+            if (!noteResult.valid) {
+                errors.push(noteResult.message);
                 isValid = false;
             }
 
@@ -949,139 +989,228 @@
         }
 
         function initializeValidation() {
-            restrictNumericInput('doctorName');
-            restrictNumericInput('doctorSpecialization');
+            restrictToNumbers('visitDuration');
+            restrictToNumbers('visitFee', true);
 
-            addFieldValidation('doctorName', validateName);
-            addFieldValidation('doctorEmail', validateEmail);
-            addFieldValidation('doctorContact', validatePhone);
-            addFieldValidation('doctorSpecialization', validateSpecialization);
+            addFieldValidation('visitFee', validateFee);
+            addFieldValidation('visitDuration', validateDuration);
+            addFieldValidation('visitNote', validateNote);
+            addFieldValidation('visitDate', validateDateTime);
+        }
+
+        function populateSelectOptions() {
+            const patientSelect = document.getElementById('visitPatient');
+            if (patientSelect && currentData.patients) {
+                patientSelect.innerHTML = '<option value="">Select Patient</option>' +
+                    currentData.patients.map(p => `<option value="${p.patientId}">${p.patientName}</option>`).join('');
+            }
+
+            const doctorSelect = document.getElementById('visitDoctor');
+            if (doctorSelect && currentData.doctors) {
+                doctorSelect.innerHTML = '<option value="">Select Doctor (Optional)</option>' +
+                    currentData.doctors.map(d => `<option value="${d.doctorId}">${d.doctorName} - ${d.specialization || 'General'}</option>`).join('');
+            }
+
+            const visitTypeSelect = document.getElementById('visitType');
+            if (visitTypeSelect && currentData.visitTypes) {
+                visitTypeSelect.innerHTML = '<option value="">Select Visit Type</option>' +
+                    currentData.visitTypes.map(vt => `<option value="${vt.visitTypeId}">${vt.visitTypeName} - ${vt.baseRate.toFixed(2)}</option>`).join('');
+            }
+        }
+
+        function wireVisitTypeSelectFeeAutofill() {
+            const visitTypeSelect = document.getElementById('visitType');
+            const visitFee = document.getElementById('visitFee');
+            if (visitTypeSelect && visitFee) {
+                visitTypeSelect.addEventListener('change', function () {
+                    const visitTypeId = this.value;
+                    if (visitTypeId) {
+                        const visitType = currentData.visitTypes.find(vt => vt.visitTypeId == visitTypeId);
+                        if (visitType) {
+                            visitFee.value = visitType.baseRate.toFixed(2);
+                        }
+                    }
+                });
+            }
+        }
+
+        async function loadPatients() {
+            try {
+                const response = await makeApiRequest('/patient');
+                if (response && response.success) {
+                    currentData.patients = response.data || [];
+                    populateSelectOptions();
+                }
+            } catch (error) {
+                console.error('Error loading patients:', error);
+            }
         }
 
         async function loadDoctors() {
-            showLoading('doctors');
             try {
                 const response = await makeApiRequest('/doctor');
                 if (response && response.success) {
                     currentData.doctors = response.data || [];
-                    renderDoctorsTable();
-                } else {
-                    showToast('Failed to load doctors', 'error');
+                    populateSelectOptions();
                 }
             } catch (error) {
                 console.error('Error loading doctors:', error);
-                showToast('Error loading doctors', 'error');
-            } finally {
-                hideLoading('doctors');
             }
         }
 
-        function renderDoctorsTable() {
-            const tbody = document.querySelector('#doctorsTable tbody');
+        async function loadVisitTypes() {
+            try {
+                const response = await makeApiRequest('/visittype');
+                if (response && response.success) {
+                    currentData.visitTypes = response.data || [];
+                    populateSelectOptions();
+                    wireVisitTypeSelectFeeAutofill();
+                }
+            } catch (error) {
+                console.error('Error loading visit types:', error);
+            }
+        }
+
+        async function loadVisits() {
+            showLoading('visits');
+            try {
+                const response = await makeApiRequest('/patientvisit');
+                if (response && response.success) {
+                    currentData.visits = response.data || [];
+                    renderVisitsTable();
+                } else {
+                    showToast('Failed to load visits', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading visits:', error);
+                showToast('Error loading visits', 'error');
+            } finally {
+                hideLoading('visits');
+            }
+        }
+
+        function renderVisitsTable() {
+            const tbody = document.querySelector('#visitsTable tbody');
             if (!tbody) return;
             const userRole = localStorage.getItem('userRole');
-            tbody.innerHTML = currentData.doctors.map(doctor => `
-                <tr>
-                    <td>${doctor.doctorId}</td>
-                    <td>${doctor.doctorName}</td>
-                    <td>${doctor.specialization || 'N/A'}</td>
-                    <td>${doctor.contactNumber || 'N/A'}</td>
-                    <td>${doctor.email || 'N/A'}</td>
-                    <td class="table-actions">
-                        <button class="btn btn-small" onclick="editDoctor(${doctor.doctorId})">Edit</button>
-                        ${userRole === 'Admin' ? `<button class="btn btn-danger btn-small" onclick="deleteDoctor(${doctor.doctorId})">Delete</button>` : ''}
-                    </td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = currentData.visits.map(visit => {
+                const patient = currentData.patients.find(p => p.patientId === visit.patientId);
+                const doctor = currentData.doctors.find(d => d.doctorId === visit.doctorId);
+                const visitType = currentData.visitTypes.find(vt => vt.visitTypeId === visit.visitTypeId);
+                return `
+                    <tr>
+                        <td>${visit.id}</td>
+                        <td>${patient ? patient.patientName : 'Unknown'}</td>
+                        <td>${doctor ? doctor.doctorName : 'N/A'}</td>
+                        <td>${visitType ? visitType.visitTypeName : 'Unknown'}</td>
+                        <td>${new Date(visit.visitDate).toLocaleString()}</td>
+                        <td>${visit.durationInMinutes} mins</td>
+                        <td>${Number(visit.fee).toFixed(2)}</td>
+                        <td class="table-actions">
+                            <button class="btn btn-small" onclick="editVisit(${visit.id})">Edit</button>
+                            ${userRole === 'Admin' ? `<button class="btn btn-danger btn-small" onclick="deleteVisit(${visit.id})">Delete</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
 
-        function showAddDoctorModal() {
-            const title = document.getElementById('doctorModalTitle');
-            const form = document.getElementById('doctorForm');
-            const id = document.getElementById('doctorId');
-            if (!form || !title || !id) return;
-            title.textContent = 'Add Doctor';
+        async function showAddVisitModal() {
+            await loadPatients();
+            await loadDoctors();
+            await loadVisitTypes();
+            populateSelectOptions();
+            const form = document.getElementById('visitForm');
+            if (!form) return;
+            document.getElementById('visitModalTitle').textContent = 'Add Visit';
             form.reset();
-            id.value = '';
-            document.getElementById('doctorModal').style.display = 'block';
+            document.getElementById('visitId').value = '';
+            document.getElementById('visitDuration').value = '30';
+            document.getElementById('visitModal').style.display = 'block';
         }
 
-        function editDoctor(id) {
-            const doctor = currentData.doctors.find(d => d.doctorId === id);
-            if (doctor) {
-                document.getElementById('doctorModalTitle').textContent = 'Edit Doctor';
-                document.getElementById('doctorId').value = doctor.doctorId;
-                document.getElementById('doctorName').value = doctor.doctorName || '';
-                document.getElementById('doctorSpecialization').value = doctor.specialization || '';
-                document.getElementById('doctorContact').value = doctor.contactNumber || '';
-                document.getElementById('doctorEmail').value = doctor.email || '';
-                document.getElementById('doctorModal').style.display = 'block';
+        function editVisit(id) {
+            const visit = currentData.visits.find(v => v.id === id);
+            if (visit) {
+                populateSelectOptions();
+                document.getElementById('visitModalTitle').textContent = 'Edit Visit';
+                document.getElementById('visitId').value = visit.id;
+                document.getElementById('visitPatient').value = visit.patientId;
+                document.getElementById('visitDoctor').value = visit.doctorId || '';
+                document.getElementById('visitType').value = visit.visitTypeId;
+                document.getElementById('visitDate').value = String(visit.visitDate).slice(0, 16);
+                document.getElementById('visitDuration').value = visit.durationInMinutes;
+                document.getElementById('visitFee').value = visit.fee;
+                document.getElementById('visitNote').value = visit.note || '';
+                document.getElementById('visitModal').style.display = 'block';
             }
         }
 
-        async function deleteDoctor(id) {
-            if (confirm('Are you sure you want to delete this doctor?')) {
+        async function deleteVisit(id) {
+            if (confirm('Are you sure you want to delete this visit?')) {
                 try {
-                    const response = await makeApiRequest(`/doctor/${id}`, { method: 'DELETE' });
+                    const response = await makeApiRequest(`/patientvisit/${id}`, { method: 'DELETE' });
                     if (response && response.success) {
-                        showToast('Doctor deleted successfully', 'success');
-                        loadDoctors();
+                        showToast('Visit deleted successfully', 'success');
+                        loadVisits();
                     } else {
-                        showToast((response && response.message) || 'Failed to delete doctor', 'error');
+                        showToast((response && response.message) || 'Failed to delete visit', 'error');
                     }
                 } catch (error) {
-                    console.error('Error deleting doctor:', error);
-                    showToast('Error deleting doctor', 'error');
+                    console.error('Error deleting visit:', error);
+                    showToast('Error deleting visit', 'error');
                 }
             }
         }
 
-        function wireDoctorForm() {
-            const form = document.getElementById('doctorForm');
+        function wireVisitForm() {
+            const form = document.getElementById('visitForm');
             if (!form) return;
 
             form.addEventListener('submit', async function (e) {
                 e.preventDefault();
 
-                if (!validateDoctorForm()) {
+                if (!validateVisitForm()) {
                     return;
                 }
 
-                const doctorId = document.getElementById('doctorId').value;
-                const isEdit = !!doctorId;
-                const doctorData = {
-                    doctorName: document.getElementById('doctorName').value.trim(),
-                    specialization: document.getElementById('doctorSpecialization').value.trim() || null,
-                    contactNumber: document.getElementById('doctorContact').value.trim() || null,
-                    email: document.getElementById('doctorEmail').value.trim() || null
+                const visitId = document.getElementById('visitId').value;
+                const isEdit = !!visitId;
+                const visitData = {
+                    patientId: parseInt(document.getElementById('visitPatient').value),
+                    doctorId: document.getElementById('visitDoctor').value ? parseInt(document.getElementById('visitDoctor').value) : null,
+                    visitTypeId: parseInt(document.getElementById('visitType').value),
+                    visitDate: document.getElementById('visitDate').value,
+                    durationInMinutes: parseInt(document.getElementById('visitDuration').value),
+                    fee: parseFloat(document.getElementById('visitFee').value),
+                    note: document.getElementById('visitNote').value.trim() || null
                 };
 
                 if (isEdit) {
-                    doctorData.doctorId = parseInt(doctorId);
+                    visitData.id = parseInt(visitId);
                 }
 
                 try {
-                    const endpoint = isEdit ? `/doctor/${doctorId}` : '/doctor';
+                    const endpoint = isEdit ? `/patientvisit/${visitId}` : '/patientvisit';
                     const method = isEdit ? 'PUT' : 'POST';
                     const response = await makeApiRequest(endpoint, {
                         method,
-                        body: JSON.stringify(doctorData)
+                        body: JSON.stringify(visitData)
                     });
 
                     if (response && response.success) {
-                        showToast(`Doctor ${isEdit ? 'updated' : 'created'} successfully`, 'success');
-                        closeModal('doctorModal');
-                        loadDoctors();
+                        showToast(`Visit ${isEdit ? 'updated' : 'created'} successfully`, 'success');
+                        closeModal('visitModal');
+                        loadVisits();
                     } else {
-                        showToast((response && response.message) || `Failed to ${isEdit ? 'update' : 'create'} doctor`, 'error');
+                        showToast((response && response.message) || `Failed to ${isEdit ? 'update' : 'create'} visit`, 'error');
                     }
                 } catch (error) {
-                    console.error(`Error ${isEdit ? 'updating' : 'creating'} doctor:`, error);
-                    showToast(`Error ${isEdit ? 'updating' : 'creating'} doctor`, 'error');
+                    console.error(`Error ${isEdit ? 'updating' : 'creating'} visit:`, error);
+                    showToast(`Error ${isEdit ? 'updating' : 'creating'} visit`, 'error');
                 }
             });
         }
-        console.log("JS Script is working")
     </script>
 </body>
 

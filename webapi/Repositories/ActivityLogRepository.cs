@@ -55,6 +55,7 @@ namespace webapi.Repositories
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in GetByIdAsync: {ex.Message}");
                 throw new InvalidOperationException($"Error retrieving activity log: {ex.Message}", ex);
             }
         }
@@ -92,6 +93,7 @@ namespace webapi.Repositories
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in GetAllAsync: {ex.Message}");
                 throw new InvalidOperationException($"Error retrieving all activity logs: {ex.Message}", ex);
             }
         }
@@ -113,17 +115,18 @@ namespace webapi.Repositories
                 command.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int) { Value = activityLog.UserId ?? (object)DBNull.Value });
                 command.Parameters.Add(new SqlParameter("@VisitId", SqlDbType.Int) { Value = activityLog.VisitId ?? (object)DBNull.Value });
 
-                await command.ExecuteNonQueryAsync();
-
-                command.CommandText = "SELECT SCOPE_IDENTITY()";
-                command.CommandType = CommandType.Text;
-                command.Parameters.Clear();
-
                 var result = await command.ExecuteScalarAsync();
-                return Convert.ToInt32(result);
+                
+                if (result != null && result != DBNull.Value)
+                {
+                    return Convert.ToInt32(result);
+                }
+                
+                throw new InvalidOperationException("Failed to get the inserted activity log ID");
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in AddAsync: {ex.Message}");
                 throw new InvalidOperationException($"Error adding activity log: {ex.Message}", ex);
             }
         }
@@ -132,20 +135,28 @@ namespace webapi.Repositories
         {
             try
             {
+                Console.WriteLine($"Repository: Attempting to delete activity log ID: {logId}");
+                
                 using var connection = _connectionFactory.CreateConnection();
                 await connection.OpenAsync();
+                Console.WriteLine("Repository: Database connection opened");
 
                 using var command = connection.CreateCommand();
                 command.CommandType = CommandType.StoredProcedure;
                 command.CommandText = "stp_DeleteActivityLog";
 
                 command.Parameters.Add(new SqlParameter("@LogId", SqlDbType.Int) { Value = logId });
+                Console.WriteLine($"Repository: Executing delete for LogId: {logId}");
 
                 var rowsAffected = await command.ExecuteNonQueryAsync();
+                Console.WriteLine($"Repository: Rows affected: {rowsAffected}");
+                
                 return rowsAffected > 0;
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Repository Error in DeleteAsync: {ex.Message}");
+                Console.WriteLine($"Repository Stack trace: {ex.StackTrace}");
                 throw new InvalidOperationException($"Error deleting activity log: {ex.Message}", ex);
             }
         }

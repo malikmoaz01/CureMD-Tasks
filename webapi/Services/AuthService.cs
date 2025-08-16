@@ -31,12 +31,12 @@ namespace webapi.Services
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(loginDto.Username) || string.IsNullOrWhiteSpace(loginDto.Password))
+                if (string.IsNullOrWhiteSpace(loginDto.Email) || string.IsNullOrWhiteSpace(loginDto.Password))
                 {
-                    throw new ArgumentException("Username and password are required.");
+                    throw new ArgumentException("Email and password are required.");
                 }
 
-                var user = await _userRepository.GetByUsernameAsync(loginDto.Username);
+                var user = await _userRepository.GetByEmailAsync(loginDto.Email);
                 
                 if (user == null || !VerifyPassword(loginDto.Password, user.Password))
                 {
@@ -49,7 +49,7 @@ namespace webapi.Services
                 {
                     Token = token,
                     UserRole = user.UserRole,
-                    Username = user.Username,
+                    Email = user.Email,
                     UserId = user.UserId
                 };
             }
@@ -63,7 +63,7 @@ namespace webapi.Services
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(registerDto.Username) || 
+                if (string.IsNullOrWhiteSpace(registerDto.Email) || 
                     string.IsNullOrWhiteSpace(registerDto.Password) ||
                     string.IsNullOrWhiteSpace(registerDto.UserRole))
                 {
@@ -75,17 +75,17 @@ namespace webapi.Services
                     throw new ArgumentException("Invalid user role. Must be 'Admin' or 'Receptionist'.");
                 }
 
-                var existingUser = await _userRepository.GetByUsernameAsync(registerDto.Username);
+                var existingUser = await _userRepository.GetByEmailAsync(registerDto.Email);
                 if (existingUser != null)
                 {
-                    throw new InvalidOperationException("Username already exists.");
+                    throw new InvalidOperationException("Email already exists.");
                 }
 
                 var hashedPassword = HashPassword(registerDto.Password);
 
                 var user = new User
                 {
-                    Username = registerDto.Username.Trim(),
+                    Email = registerDto.Email.Trim(),
                     Password = hashedPassword,
                     UserRole = registerDto.UserRole.Trim()
                 };
@@ -116,7 +116,7 @@ namespace webapi.Services
 
                 var claims = new[]
                 {
-                    new Claim(ClaimTypes.Name, user.Username),
+                    new Claim(ClaimTypes.Name, user.Email),
                     new Claim(ClaimTypes.Role, user.UserRole),
                     new Claim("UserId", user.UserId.ToString()),
                     new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),

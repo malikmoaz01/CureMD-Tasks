@@ -7,7 +7,7 @@ namespace webapi.Repositories
 {
     public interface IUserRepository
     {
-        Task<User> GetByUsernameAsync(string username);
+        Task<User> GetByEmailAsync(string email);
         Task<User> GetByIdAsync(int userId);
         Task<IEnumerable<User>> GetAllAsync();
         Task<int> AddAsync(User user);
@@ -24,7 +24,7 @@ namespace webapi.Repositories
             _connectionFactory = connectionFactory;
         }
 
-        public async Task<User> GetByUsernameAsync(string username)
+        public async Task<User> GetByEmailAsync(string email)
         {
             try
             {
@@ -32,9 +32,9 @@ namespace webapi.Repositories
                 await connection.OpenAsync();
                 
                 using var command = connection.CreateCommand();
-                command.CommandText = "SELECT * FROM Users WHERE Username = @username";
+                command.CommandText = "SELECT * FROM Users WHERE Email = @email";
                 
-                var parameter = new SqlParameter("@username", SqlDbType.NVarChar, 50) { Value = username };
+                var parameter = new SqlParameter("@email", SqlDbType.NVarChar, 100) { Value = email };
                 command.Parameters.Add(parameter);
                 
                 using var reader = await command.ExecuteReaderAsync();
@@ -44,7 +44,7 @@ namespace webapi.Repositories
                     return new User
                     {
                         UserId = reader.GetInt32("UserId"),
-                        Username = reader.GetString("Username"),
+                        Email = reader.GetString("Email"),
                         Password = reader.GetString("Password"),
                         UserRole = reader.GetString("UserRole"),
                         CreatedDate = reader.GetDateTime("CreatedDate")
@@ -55,7 +55,7 @@ namespace webapi.Repositories
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"Error retrieving user by username: {ex.Message}", ex);
+                throw new InvalidOperationException($"Error retrieving user by email: {ex.Message}", ex);
             }
         }
 
@@ -80,7 +80,7 @@ namespace webapi.Repositories
                     return new User
                     {
                         UserId = reader.GetInt32("UserId"),
-                        Username = reader.GetString("Username"),
+                        Email = reader.GetString("Email"),
                         Password = reader.GetString("Password"),
                         UserRole = reader.GetString("UserRole"),
                         CreatedDate = reader.GetDateTime("CreatedDate")
@@ -115,7 +115,7 @@ namespace webapi.Repositories
                     users.Add(new User
                     {
                         UserId = reader.GetInt32("UserId"),
-                        Username = reader.GetString("Username"),
+                        Email = reader.GetString("Email"),
                         Password = reader.GetString("Password"),
                         UserRole = reader.GetString("UserRole"),
                         CreatedDate = reader.GetDateTime("CreatedDate")
@@ -142,7 +142,7 @@ public async Task<int> AddAsync(User user)
             CommandType = CommandType.StoredProcedure
         };
 
-        command.Parameters.AddWithValue("@Username", user.Username);
+        command.Parameters.AddWithValue("@Email", user.Email);
         command.Parameters.AddWithValue("@Password", user.Password);
         command.Parameters.AddWithValue("@UserRole", user.UserRole);
  
@@ -167,7 +167,7 @@ public async Task<int> AddAsync(User user)
         {
             case 2627:  
             case 2601:  
-                throw new InvalidOperationException("Username already exists.", ex);
+                throw new InvalidOperationException("Email already exists.", ex);
             case 547:  
                 throw new InvalidOperationException("Invalid reference data.", ex);
             default:
@@ -179,7 +179,6 @@ public async Task<int> AddAsync(User user)
         throw new InvalidOperationException($"Error adding user: {ex.Message}", ex);
     }
 }
-
 
         public async Task<bool> UpdateAsync(User user)
         {
@@ -193,7 +192,7 @@ public async Task<int> AddAsync(User user)
                 command.CommandText = "stp_UpdateUser";
                 
                 command.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int) { Value = user.UserId });
-                command.Parameters.Add(new SqlParameter("@Username", SqlDbType.NVarChar, 50) { Value = user.Username });
+                command.Parameters.Add(new SqlParameter("@Email", SqlDbType.NVarChar, 100) { Value = user.Email });
                 command.Parameters.Add(new SqlParameter("@Password", SqlDbType.NVarChar, 255) { Value = user.Password });
                 command.Parameters.Add(new SqlParameter("@UserRole", SqlDbType.NVarChar, 20) { Value = user.UserRole });
                 
