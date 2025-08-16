@@ -712,8 +712,10 @@
 
         function logout() {
             localStorage.clear();
-            window.location.href = 'login.html';
+            console.log("Log out is working");
+            window.location.href = '../login.html';
         }
+
 
         function highlightActiveTab() {
             const page = document.body.getAttribute('data-page');

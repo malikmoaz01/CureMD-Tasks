@@ -6,6 +6,8 @@ using Microsoft.IdentityModel.Tokens;
 using BCrypt.Net;
 using webapi.Models;
 using webapi.Repositories;
+using System.Security.Cryptography;
+
 
 namespace webapi.Services
 {
@@ -139,17 +141,26 @@ namespace webapi.Services
             }
         }
 
-        private bool VerifyPassword(string inputPassword, string hashedPassword)
-        {
-            try
-            {
-                return BCrypt.Net.BCrypt.Verify(inputPassword, hashedPassword);
-            }
-            catch (Exception)
-            {
-                return inputPassword == hashedPassword;
-            }
-        }
+private bool VerifyPassword(string inputPassword, string storedPassword)
+{
+    if (string.IsNullOrWhiteSpace(storedPassword)) return false;
+
+    if (IsBcryptHash(storedPassword))
+        return BCrypt.Net.BCrypt.Verify(inputPassword, storedPassword);
+ 
+    return ComputeSha256Base64(inputPassword) == storedPassword;
+}
+
+private static bool IsBcryptHash(string hash)
+{
+    return hash.StartsWith("$2a$") || hash.StartsWith("$2b$") || hash.StartsWith("$2y$");
+}
+
+private static string ComputeSha256Base64(string text)
+{
+    using var sha = SHA256.Create();
+    return Convert.ToBase64String(sha.ComputeHash(Encoding.UTF8.GetBytes(text)));
+}
 
         private string HashPassword(string password)
         {

@@ -3,15 +3,14 @@ using System.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 
 namespace webapi.Repositories
-{
-    // Interface
+{ 
     public interface IForgotPasswordRepository
     {
         Task<bool> CheckEmailExistsAsync(string email);
         Task<bool> ResetPasswordAsync(string email, string hashedPassword);
+        
     }
-
-    // Implementation
+ 
     public class ForgotPasswordRepository : IForgotPasswordRepository
     {
         private readonly string _connectionString;

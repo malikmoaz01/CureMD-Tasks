@@ -687,3 +687,16 @@ BEGIN
     ELSE
         SELECT 0;   
 END
+
+CREATE OR ALTER PROCEDURE stp_Login
+    @Email NVARCHAR(100),
+    @PasswordHash NVARCHAR(255)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF EXISTS (SELECT 1 FROM Users WHERE Email = @Email AND Password = @PasswordHash)
+        SELECT 1;
+    ELSE
+        SELECT 0;
+END

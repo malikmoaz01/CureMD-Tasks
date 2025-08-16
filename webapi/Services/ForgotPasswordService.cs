@@ -8,22 +8,19 @@ using webapi.Models;
 using webapi.Repositories;
 
 namespace webapi.Services
-{
-    // Interface
+{ 
     public interface IForgotPasswordService
     {
         Task<(bool Success, string Message)> SendOtpAsync(ForgotPasswordRequestDto request);
         Task<(bool Success, string Message)> VerifyOtpAsync(VerifyOtpDto request);
         Task<(bool Success, string Message)> ResetPasswordAsync(ResetPasswordDto request);
     }
-
-    // Implementation
+ 
     public class ForgotPasswordService : IForgotPasswordService
     {
         private readonly IForgotPasswordRepository _repository;
         private readonly IConfiguration _configuration;
-        
-        // In-memory storage for OTPs (for production, use Redis or database)
+         
         private static readonly ConcurrentDictionary<string, (string Otp, DateTime ExpiryTime)> _otpStore 
             = new ConcurrentDictionary<string, (string, DateTime)>();
 
@@ -36,8 +33,7 @@ namespace webapi.Services
         public async Task<(bool Success, string Message)> SendOtpAsync(ForgotPasswordRequestDto request)
         {
             try
-            {
-                // Check if email exists
+            { 
                 var emailExists = await _repository.CheckEmailExistsAsync(request.Email);
                 if (!emailExists)
                 {
@@ -101,16 +97,13 @@ namespace webapi.Services
                 {
                     return otpVerification;
                 }
-
-                // Hash the new password
+ 
                 var hashedPassword = HashPassword(request.NewPassword);
-
-                // Update password in database
+ 
                 var updateResult = await _repository.ResetPasswordAsync(request.Email, hashedPassword);
 
                 if (updateResult)
-                {
-                    // Remove OTP from store after successful password reset
+                { 
                     _otpStore.TryRemove(request.Email, out _);
                     return (true, "Password reset successfully.");
                 }
@@ -131,13 +124,12 @@ namespace webapi.Services
             return random.Next(100000, 999999).ToString();
         }
 
-        private string HashPassword(string password)
+        private static string HashPassword(string password)
         {
-            using (var sha256 = SHA256.Create())
-            {
-                var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-                return Convert.ToBase64String(hashedBytes);
-            }
+            using var sha256 = System.Security.Cryptography.SHA256.Create();
+            var bytes = System.Text.Encoding.UTF8.GetBytes(password);
+            var hash = sha256.ComputeHash(bytes);
+            return Convert.ToBase64String(hash);
         }
 
         private async Task SendEmailAsync(string toEmail, string otp)
@@ -146,10 +138,11 @@ namespace webapi.Services
             var smtpPort = int.Parse(_configuration["SmtpSettings:Port"]);
             var fromEmail = _configuration["SmtpSettings:Email"];
             var fromPassword = _configuration["SmtpSettings:Password"];
-            Console.WriteLine($"smtpHost: {_configuration["SmtpSettings:Host"]}");
-            Console.WriteLine($"smtpPort: {_configuration["SmtpSettings:Port"]}");
-            Console.WriteLine($"fromEmail: {_configuration["SmtpSettings:Email"]}");
-            Console.WriteLine($"fromPassword: {_configuration["SmtpSettings:Password"]}");
+            
+            // Console.WriteLine($"smtpHost: {_configuration["SmtpSettings:Host"]}");
+            // Console.WriteLine($"smtpPort: {_configuration["SmtpSettings:Port"]}");
+            // Console.WriteLine($"fromEmail: {_configuration["SmtpSettings:Email"]}");
+            // Console.WriteLine($"fromPassword: {_configuration["SmtpSettings:Password"]}");
 
             using (var client = new SmtpClient(smtpHost, smtpPort))
             {
