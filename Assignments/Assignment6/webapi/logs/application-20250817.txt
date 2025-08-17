@@ -1,0 +1,103 @@
+[2025-08-17 21:53:33.466 +05:00] [INF] [] Starting web application
+[2025-08-17 21:53:34.371 +05:00] [INF] [] Database connection successful
+[2025-08-17 21:53:34.554 +05:00] [INF] [Microsoft.Hosting.Lifetime] Now listening on: http://localhost:5000
+[2025-08-17 21:53:34.614 +05:00] [INF] [Microsoft.Hosting.Lifetime] Application started. Press Ctrl+C to shut down.
+[2025-08-17 21:53:34.619 +05:00] [INF] [Microsoft.Hosting.Lifetime] Hosting environment: Production
+[2025-08-17 21:53:34.620 +05:00] [INF] [Microsoft.Hosting.Lifetime] Content root path: D:\CureMD-Tasks\webapi
+[2025-08-17 21:53:45.549 +05:00] [INF] [] Request started: GET /login.html | User: Anonymous | TraceId: 00-f8bc56dd34a824b5c81e3604874adac3-1fee9ad5b841a888-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:53:45.556 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request started: GET /login.html | User: Anonymous | TraceId: 00-f8bc56dd34a824b5c81e3604874adac3-1fee9ad5b841a888-00
+[2025-08-17 21:53:45.590 +05:00] [WRN] [Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware] Failed to determine the https port for redirect.
+[2025-08-17 21:53:45.599 +05:00] [INF] [] Request completed: GET /login.html | Status: 304 | User: Anonymous | Duration: 54ms | TraceId: 00-f8bc56dd34a824b5c81e3604874adac3-1fee9ad5b841a888-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:53:45.607 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request completed: GET /login.html | Status: 304 | User: Anonymous | Duration: 54ms | TraceId: 00-f8bc56dd34a824b5c81e3604874adac3-1fee9ad5b841a888-00
+[2025-08-17 21:53:45.621 +05:00] [INF] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP GET /login.html responded 304 in 71.6770 ms
+[2025-08-17 21:53:47.396 +05:00] [INF] [] Request started: GET /login.html | User: Anonymous | TraceId: 00-2ca7bd50fcdb28c15dd46dd7ee75624f-5c857b76fd1b173f-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:53:47.403 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request started: GET /login.html | User: Anonymous | TraceId: 00-2ca7bd50fcdb28c15dd46dd7ee75624f-5c857b76fd1b173f-00
+[2025-08-17 21:53:47.409 +05:00] [INF] [] Request completed: GET /login.html | Status: 304 | User: Anonymous | Duration: 13ms | TraceId: 00-2ca7bd50fcdb28c15dd46dd7ee75624f-5c857b76fd1b173f-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:53:47.417 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request completed: GET /login.html | Status: 304 | User: Anonymous | Duration: 13ms | TraceId: 00-2ca7bd50fcdb28c15dd46dd7ee75624f-5c857b76fd1b173f-00
+[2025-08-17 21:53:47.433 +05:00] [INF] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP GET /login.html responded 304 in 36.8841 ms
+[2025-08-17 21:54:06.344 +05:00] [INF] [] Request started: POST /api/auth/login | User: Anonymous | TraceId: 00-f1a2a8465179dd78cd6ca60e1768adb0-2f258eb17c56194e-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:06.391 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request started: POST /api/auth/login | User: Anonymous | TraceId: 00-f1a2a8465179dd78cd6ca60e1768adb0-2f258eb17c56194e-00
+[2025-08-17 21:54:06.878 +05:00] [ERR] [] Request completed: POST /api/auth/login | Status: 500 | User: Anonymous | Duration: 534ms | TraceId: 00-f1a2a8465179dd78cd6ca60e1768adb0-2f258eb17c56194e-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:06.893 +05:00] [ERR] [webapi.Middleware.RequestLoggingMiddleware] Request completed: POST /api/auth/login | Status: 500 | User: Anonymous | Duration: 534ms | TraceId: 00-f1a2a8465179dd78cd6ca60e1768adb0-2f258eb17c56194e-00
+[2025-08-17 21:54:06.897 +05:00] [ERR] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP POST /api/auth/login responded 500 in 553.0496 ms
+[2025-08-17 21:54:22.257 +05:00] [INF] [] Request started: POST /api/auth/login | User: Anonymous | TraceId: 00-6baacaef1ea53b37106a9c9470c5052a-1cf0b38a67774605-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:22.263 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request started: POST /api/auth/login | User: Anonymous | TraceId: 00-6baacaef1ea53b37106a9c9470c5052a-1cf0b38a67774605-00
+[2025-08-17 21:54:23.047 +05:00] [INF] [] Request completed: POST /api/auth/login | Status: 200 | User: Anonymous | Duration: 789ms | TraceId: 00-6baacaef1ea53b37106a9c9470c5052a-1cf0b38a67774605-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:23.061 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request completed: POST /api/auth/login | Status: 200 | User: Anonymous | Duration: 789ms | TraceId: 00-6baacaef1ea53b37106a9c9470c5052a-1cf0b38a67774605-00
+[2025-08-17 21:54:23.065 +05:00] [INF] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP POST /api/auth/login responded 200 in 807.4963 ms
+[2025-08-17 21:54:24.706 +05:00] [INF] [] Request started: GET /adminhtml/patient.html | User: Anonymous | TraceId: 00-6b90488ce86fb9efc921098e3f0ab25b-cb7957b5f8dd16f6-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:24.711 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request started: GET /adminhtml/patient.html | User: Anonymous | TraceId: 00-6b90488ce86fb9efc921098e3f0ab25b-cb7957b5f8dd16f6-00
+[2025-08-17 21:54:24.717 +05:00] [INF] [] Request completed: GET /adminhtml/patient.html | Status: 304 | User: Anonymous | Duration: 10ms | TraceId: 00-6b90488ce86fb9efc921098e3f0ab25b-cb7957b5f8dd16f6-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:24.727 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request completed: GET /adminhtml/patient.html | Status: 304 | User: Anonymous | Duration: 10ms | TraceId: 00-6b90488ce86fb9efc921098e3f0ab25b-cb7957b5f8dd16f6-00
+[2025-08-17 21:54:24.742 +05:00] [INF] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP GET /adminhtml/patient.html responded 304 in 36.2546 ms
+[2025-08-17 21:54:24.835 +05:00] [INF] [] Request started: GET /css/style.css | User: Anonymous | TraceId: 00-c7e8af537d95ac357b386374824ff0b1-90150a4046cb5cd7-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:24.844 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request started: GET /css/style.css | User: Anonymous | TraceId: 00-c7e8af537d95ac357b386374824ff0b1-90150a4046cb5cd7-00
+[2025-08-17 21:54:24.862 +05:00] [WRN] [] Request completed: GET /css/style.css | Status: 404 | User: Anonymous | Duration: 27ms | TraceId: 00-c7e8af537d95ac357b386374824ff0b1-90150a4046cb5cd7-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:24.873 +05:00] [WRN] [webapi.Middleware.RequestLoggingMiddleware] Request completed: GET /css/style.css | Status: 404 | User: Anonymous | Duration: 27ms | TraceId: 00-c7e8af537d95ac357b386374824ff0b1-90150a4046cb5cd7-00
+[2025-08-17 21:54:24.891 +05:00] [WRN] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP GET /css/style.css responded 404 in 56.0553 ms
+[2025-08-17 21:54:24.942 +05:00] [INF] [] Request started: GET /api/patient | User: Anonymous | TraceId: 00-9d234187d7c7bcd9d4500d83c2514312-379bd4f9ad6f228e-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:24.961 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request started: GET /api/patient | User: Anonymous | TraceId: 00-9d234187d7c7bcd9d4500d83c2514312-379bd4f9ad6f228e-00
+[2025-08-17 21:54:25.245 +05:00] [INF] [] Request completed: GET /api/patient | Status: 200 | User: Anonymous | Duration: 302ms | TraceId: 00-9d234187d7c7bcd9d4500d83c2514312-379bd4f9ad6f228e-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:25.253 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request completed: GET /api/patient | Status: 200 | User: Anonymous | Duration: 302ms | TraceId: 00-9d234187d7c7bcd9d4500d83c2514312-379bd4f9ad6f228e-00
+[2025-08-17 21:54:25.258 +05:00] [INF] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP GET /api/patient responded 200 in 315.4045 ms
+[2025-08-17 21:54:27.288 +05:00] [INF] [] Request started: GET /adminhtml/doctor.html | User: Anonymous | TraceId: 00-9017496aedfe33e77702bb74b00d26b1-101ad7a013011b50-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:27.293 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request started: GET /adminhtml/doctor.html | User: Anonymous | TraceId: 00-9017496aedfe33e77702bb74b00d26b1-101ad7a013011b50-00
+[2025-08-17 21:54:27.301 +05:00] [INF] [] Request completed: GET /adminhtml/doctor.html | Status: 304 | User: Anonymous | Duration: 12ms | TraceId: 00-9017496aedfe33e77702bb74b00d26b1-101ad7a013011b50-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:27.309 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request completed: GET /adminhtml/doctor.html | Status: 304 | User: Anonymous | Duration: 12ms | TraceId: 00-9017496aedfe33e77702bb74b00d26b1-101ad7a013011b50-00
+[2025-08-17 21:54:27.320 +05:00] [INF] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP GET /adminhtml/doctor.html responded 304 in 32.2821 ms
+[2025-08-17 21:54:27.374 +05:00] [INF] [] Request started: GET /css/style.css | User: Anonymous | TraceId: 00-9f15d1d802927bf56931f35a5ef20ab3-a9cae93d8ce70f81-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:27.386 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request started: GET /css/style.css | User: Anonymous | TraceId: 00-9f15d1d802927bf56931f35a5ef20ab3-a9cae93d8ce70f81-00
+[2025-08-17 21:54:27.390 +05:00] [WRN] [] Request completed: GET /css/style.css | Status: 404 | User: Anonymous | Duration: 16ms | TraceId: 00-9f15d1d802927bf56931f35a5ef20ab3-a9cae93d8ce70f81-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:27.403 +05:00] [WRN] [webapi.Middleware.RequestLoggingMiddleware] Request completed: GET /css/style.css | Status: 404 | User: Anonymous | Duration: 16ms | TraceId: 00-9f15d1d802927bf56931f35a5ef20ab3-a9cae93d8ce70f81-00
+[2025-08-17 21:54:27.408 +05:00] [WRN] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP GET /css/style.css responded 404 in 33.9224 ms
+[2025-08-17 21:54:27.429 +05:00] [INF] [] Request started: GET /api/doctor | User: Anonymous | TraceId: 00-ec790086f0b6d61cf513cef7e60d2137-ae76d527e22f3005-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:27.437 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request started: GET /api/doctor | User: Anonymous | TraceId: 00-ec790086f0b6d61cf513cef7e60d2137-ae76d527e22f3005-00
+[2025-08-17 21:54:27.485 +05:00] [INF] [] Request completed: GET /api/doctor | Status: 200 | User: Anonymous | Duration: 56ms | TraceId: 00-ec790086f0b6d61cf513cef7e60d2137-ae76d527e22f3005-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:27.491 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request completed: GET /api/doctor | Status: 200 | User: Anonymous | Duration: 56ms | TraceId: 00-ec790086f0b6d61cf513cef7e60d2137-ae76d527e22f3005-00
+[2025-08-17 21:54:27.498 +05:00] [INF] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP GET /api/doctor responded 200 in 68.7058 ms
+[2025-08-17 21:54:28.358 +05:00] [INF] [] Request started: GET /adminhtml/visits.html | User: Anonymous | TraceId: 00-6c87c0b81da5383638b33e3bb7e75c7d-7c89f261bb6ec421-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:28.375 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request started: GET /adminhtml/visits.html | User: Anonymous | TraceId: 00-6c87c0b81da5383638b33e3bb7e75c7d-7c89f261bb6ec421-00
+[2025-08-17 21:54:28.388 +05:00] [INF] [] Request completed: GET /adminhtml/visits.html | Status: 304 | User: Anonymous | Duration: 29ms | TraceId: 00-6c87c0b81da5383638b33e3bb7e75c7d-7c89f261bb6ec421-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:28.394 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request completed: GET /adminhtml/visits.html | Status: 304 | User: Anonymous | Duration: 29ms | TraceId: 00-6c87c0b81da5383638b33e3bb7e75c7d-7c89f261bb6ec421-00
+[2025-08-17 21:54:28.403 +05:00] [INF] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP GET /adminhtml/visits.html responded 304 in 44.8031 ms
+[2025-08-17 21:54:28.471 +05:00] [INF] [] Request started: GET /api/patient | User: Anonymous | TraceId: 00-bffb907362654c2e05b27335e81d13ea-12ec94c556b0040f-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:28.476 +05:00] [INF] [] Request started: GET /api/doctor | User: Anonymous | TraceId: 00-6577231acddb0afbec3ddc2808ee8449-d5ed436693066c99-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:28.490 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request started: GET /api/doctor | User: Anonymous | TraceId: 00-6577231acddb0afbec3ddc2808ee8449-d5ed436693066c99-00
+[2025-08-17 21:54:28.485 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request started: GET /api/patient | User: Anonymous | TraceId: 00-bffb907362654c2e05b27335e81d13ea-12ec94c556b0040f-00
+[2025-08-17 21:54:28.476 +05:00] [INF] [] Request started: GET /api/visittype | User: Anonymous | TraceId: 00-016a10c28df4c569e6fe71666a46e692-63f07ab224eec7fc-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:28.516 +05:00] [INF] [] Request completed: GET /api/doctor | Status: 200 | User: Anonymous | Duration: 39ms | TraceId: 00-6577231acddb0afbec3ddc2808ee8449-d5ed436693066c99-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:28.529 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request completed: GET /api/doctor | Status: 200 | User: Anonymous | Duration: 39ms | TraceId: 00-6577231acddb0afbec3ddc2808ee8449-d5ed436693066c99-00
+[2025-08-17 21:54:28.519 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request started: GET /api/visittype | User: Anonymous | TraceId: 00-016a10c28df4c569e6fe71666a46e692-63f07ab224eec7fc-00
+[2025-08-17 21:54:28.537 +05:00] [INF] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP GET /api/doctor responded 200 in 60.6817 ms
+[2025-08-17 21:54:28.541 +05:00] [INF] [] Request completed: GET /api/patient | Status: 200 | User: Anonymous | Duration: 69ms | TraceId: 00-bffb907362654c2e05b27335e81d13ea-12ec94c556b0040f-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:28.566 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request completed: GET /api/patient | Status: 200 | User: Anonymous | Duration: 69ms | TraceId: 00-bffb907362654c2e05b27335e81d13ea-12ec94c556b0040f-00
+[2025-08-17 21:54:28.581 +05:00] [INF] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP GET /api/patient responded 200 in 109.6036 ms
+[2025-08-17 21:54:28.644 +05:00] [INF] [] Request completed: GET /api/visittype | Status: 200 | User: Anonymous | Duration: 168ms | TraceId: 00-016a10c28df4c569e6fe71666a46e692-63f07ab224eec7fc-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:28.657 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request completed: GET /api/visittype | Status: 200 | User: Anonymous | Duration: 168ms | TraceId: 00-016a10c28df4c569e6fe71666a46e692-63f07ab224eec7fc-00
+[2025-08-17 21:54:28.672 +05:00] [INF] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP GET /api/visittype responded 200 in 195.9625 ms
+[2025-08-17 21:54:28.712 +05:00] [INF] [] Request started: GET /api/patientvisit | User: Anonymous | TraceId: 00-a5ba6892066e924086719d1c9da3b27c-5a2b1a606cb6389d-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:28.739 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request started: GET /api/patientvisit | User: Anonymous | TraceId: 00-a5ba6892066e924086719d1c9da3b27c-5a2b1a606cb6389d-00
+[2025-08-17 21:54:28.867 +05:00] [INF] [] Request completed: GET /api/patientvisit | Status: 200 | User: Anonymous | Duration: 155ms | TraceId: 00-a5ba6892066e924086719d1c9da3b27c-5a2b1a606cb6389d-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:28.875 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request completed: GET /api/patientvisit | Status: 200 | User: Anonymous | Duration: 155ms | TraceId: 00-a5ba6892066e924086719d1c9da3b27c-5a2b1a606cb6389d-00
+[2025-08-17 21:54:28.882 +05:00] [INF] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP GET /api/patientvisit responded 200 in 170.0519 ms
+[2025-08-17 21:55:19.671 +05:00] [INF] [] Request started: GET /css/style.css | User: Anonymous | TraceId: 00-0ee6f61d825dde1398c4f072a0366c41-69d3b8b2a5d4a095-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:55:19.675 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request started: GET /css/style.css | User: Anonymous | TraceId: 00-0ee6f61d825dde1398c4f072a0366c41-69d3b8b2a5d4a095-00
+[2025-08-17 21:55:19.678 +05:00] [WRN] [] Request completed: GET /css/style.css | Status: 404 | User: Anonymous | Duration: 6ms | TraceId: 00-0ee6f61d825dde1398c4f072a0366c41-69d3b8b2a5d4a095-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:55:19.687 +05:00] [WRN] [webapi.Middleware.RequestLoggingMiddleware] Request completed: GET /css/style.css | Status: 404 | User: Anonymous | Duration: 6ms | TraceId: 00-0ee6f61d825dde1398c4f072a0366c41-69d3b8b2a5d4a095-00
+[2025-08-17 21:55:19.693 +05:00] [WRN] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP GET /css/style.css responded 404 in 21.3873 ms
+[2025-08-17 21:55:19.711 +05:00] [INF] [] Request started: GET /api/patient | User: Anonymous | TraceId: 00-dacedf36ee7d1d38c79a1e354f179574-8ab2142896b2d8d2-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:55:19.721 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request started: GET /api/patient | User: Anonymous | TraceId: 00-dacedf36ee7d1d38c79a1e354f179574-8ab2142896b2d8d2-00
+[2025-08-17 21:55:19.741 +05:00] [INF] [] Request completed: GET /api/patient | Status: 200 | User: Anonymous | Duration: 29ms | TraceId: 00-dacedf36ee7d1d38c79a1e354f179574-8ab2142896b2d8d2-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:55:19.751 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request completed: GET /api/patient | Status: 200 | User: Anonymous | Duration: 29ms | TraceId: 00-dacedf36ee7d1d38c79a1e354f179574-8ab2142896b2d8d2-00
+[2025-08-17 21:55:19.757 +05:00] [INF] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP GET /api/patient responded 200 in 45.4447 ms
+[2025-08-17 21:55:24.430 +05:00] [INF] [] Request started: PUT /api/patient/16 | User: Anonymous | TraceId: 00-a30d60f6aa00aba67e647e607f96c5b9-d4e1b79c7872a8b4-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:55:24.451 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request started: PUT /api/patient/16 | User: Anonymous | TraceId: 00-a30d60f6aa00aba67e647e607f96c5b9-d4e1b79c7872a8b4-00
+[2025-08-17 21:55:24.683 +05:00] [INF] [] Request completed: PUT /api/patient/16 | Status: 200 | User: Anonymous | Duration: 252ms | TraceId: 00-a30d60f6aa00aba67e647e607f96c5b9-d4e1b79c7872a8b4-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:55:24.688 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request completed: PUT /api/patient/16 | Status: 200 | User: Anonymous | Duration: 252ms | TraceId: 00-a30d60f6aa00aba67e647e607f96c5b9-d4e1b79c7872a8b4-00
+[2025-08-17 21:55:24.695 +05:00] [INF] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP PUT /api/patient/16 responded 200 in 264.1758 ms
+[2025-08-17 21:55:24.707 +05:00] [INF] [] Request started: GET /api/patient | User: Anonymous | TraceId: 00-991b6e2b8ca44a3ae164e4c39d097a81-63224858fea54ce4-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:55:24.722 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request started: GET /api/patient | User: Anonymous | TraceId: 00-991b6e2b8ca44a3ae164e4c39d097a81-63224858fea54ce4-00
+[2025-08-17 21:55:24.734 +05:00] [INF] [] Request completed: GET /api/patient | Status: 200 | User: Anonymous | Duration: 26ms | TraceId: 00-991b6e2b8ca44a3ae164e4c39d097a81-63224858fea54ce4-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:55:24.754 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request completed: GET /api/patient | Status: 200 | User: Anonymous | Duration: 26ms | TraceId: 00-991b6e2b8ca44a3ae164e4c39d097a81-63224858fea54ce4-00
+[2025-08-17 21:55:24.762 +05:00] [INF] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP GET /api/patient responded 200 in 55.1693 ms
+[2025-08-17 21:56:43.002 +05:00] [INF] [Microsoft.Hosting.Lifetime] Application is shutting down...

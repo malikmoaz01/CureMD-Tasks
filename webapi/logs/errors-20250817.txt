@@ -1,0 +1,3 @@
+[2025-08-17 21:54:06.878 +05:00] [ERR] [] Request completed: POST /api/auth/login | Status: 500 | User: Anonymous | Duration: 534ms | TraceId: 00-f1a2a8465179dd78cd6ca60e1768adb0-2f258eb17c56194e-00 | RemoteIP: 127.0.0.1
+[2025-08-17 21:54:06.893 +05:00] [ERR] [webapi.Middleware.RequestLoggingMiddleware] Request completed: POST /api/auth/login | Status: 500 | User: Anonymous | Duration: 534ms | TraceId: 00-f1a2a8465179dd78cd6ca60e1768adb0-2f258eb17c56194e-00
+[2025-08-17 21:54:06.897 +05:00] [ERR] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP POST /api/auth/login responded 500 in 553.0496 ms

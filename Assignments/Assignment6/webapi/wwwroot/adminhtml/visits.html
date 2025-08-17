@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Visit MS - Visits</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #1a202c;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: rgb(0, 0, 0);
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: -0.5px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: rgba(0, 0, 0, 0.9);
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(239, 68, 68, 0.4);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 0.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow-x: auto;
+            gap: 10px;
+        }
+
+        .nav-tab {
+            color: rgba(255, 0, 0, 0.7);
+            text-decoration: none;
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .nav-tab:hover {
+            color: rgb(1, 0, 0);
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: rgb(0, 0, 0);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        #visitsTable th {
+            background-color: #ffffff;
+            color: #000000;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .search-box {
+            padding: 0.8rem 1.5rem;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            font-size: 1rem;
+            min-width: 300px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .search-box:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            background: white;
+        }
+
+        .btn {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-small {
+            padding: 0.5rem 1.2rem;
+            font-size: 0.85rem;
+            border-radius: 12px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            background: white;
+        }
+
+        .table thead {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .table th {
+            padding: 1.2rem;
+            text-align: left;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.85rem;
+        }
+
+        .table td {
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+            vertical-align: middle;
+        }
+
+        .table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(102, 126, 234, 0.05);
+            transform: translateX(4px);
+        }
+
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            background: white;
+            margin: 2% auto;
+            padding: 0;
+            border-radius: 24px;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1.5rem 2rem;
+            border-radius: 24px 24px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .close {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            line-height: 1;
+            padding: 0.5rem;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        form {
+            padding: 2rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8rem 1.2rem;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            border-radius: 12px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            background: white;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group input[readonly] {
+            background-color: #f8f9fa !important;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            color: white;
+            font-weight: 600;
+            z-index: 9999;
+            max-width: 400px;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0) scale(1.02);
+        }
+
+        .toast-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3);
+        }
+
+        .toast-error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 10px 40px rgba(239, 68, 68, 0.3);
+        }
+
+        .toast-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 10px 40px rgba(245, 158, 11, 0.3);
+        }
+
+        .toast-info {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            box-shadow: 0 10px 40px rgba(59, 130, 246, 0.3);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            margin: 0;
+            line-height: 1;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .toast-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .toast-message {
+            flex: 1;
+            font-size: 0.95rem;
+        }
+
+        input.error,
+        select.error,
+        textarea.error {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15) !important;
+            background: rgba(239, 68, 68, 0.05) !important;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .nav-tab {
+                text-align: center;
+                padding: 0.8rem 1rem;
+            }
+
+            .actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                min-width: 100%;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .table-actions {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .modal-content {
+                margin: 5% auto;
+                max-width: 95%;
+            }
+
+            .table {
+                font-size: 0.85rem;
+            }
+
+            .table th,
+            .table td {
+                padding: 0.8rem;
+            }
+
+            .toast {
+                right: 10px;
+                left: 10px;
+                max-width: none;
+                transform: translateY(-100%);
+            }
+
+            .toast.show {
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.4rem;
+            }
+
+            .tab-content {
+                padding: 1rem;
+                border-radius: 16px;
+            }
+
+            .btn {
+                padding: 0.7rem 1.5rem;
+                font-size: 0.9rem;
+            }
+
+            .btn-small {
+                padding: 0.4rem 1rem;
+                font-size: 0.8rem;
+            }
+
+            form {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body data-page="visits">
+    <div class="header">
+        <h1>PVMS - 6606</h1>
+        <div class="user-info">
+            <span id="userInfo">Welcome, User</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="nav-tabs">
+            <a class="nav-tab" data-tab="patients" href="patient.html">Patients</a>
+            <a class="nav-tab" data-tab="doctors" href="doctor.html">Doctors</a>
+            <a class="nav-tab" data-tab="visits" href="visits.html">Visits</a>
+            <a class="nav-tab" data-tab="fee" href="fee.html">Fees</a>
+            <a class="nav-tab" data-tab="visitTypes" href="visittype.html">Visit Types</a>
+            <a class="nav-tab" data-tab="activity" href="activity.html">Activity Log</a>
+        </div>
+
+        <div class="tab-content">
+            <div id="visits" class="tab-pane active">
+                <div class="actions">
+                    <div>
+                        <input type="text" class="search-box" id="visitSearch" placeholder="Search visits..."
+                            onkeyup="filterTable('visitsTable', this.value)">
+                    </div>
+                    <button class="btn btn-success" onclick="showAddVisitModal()">Add Visit</button>
+                </div>
+                <div id="visitsAlert"></div>
+                <div id="visitsLoading" class="loading">Loading visits...</div>
+                <table class="table" id="visitsTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Patient</th>
+                            <th>Doctor</th>
+                            <th>Visit Type</th>
+                            <th>Date</th>
+                            <th>Duration</th>
+                            <th>Fee</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="visitModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="visitModalTitle">Add Visit</h2>
+                <span class="close" onclick="closeModal('visitModal')">&times;</span>
+            </div>
+            <form id="visitForm">
+                <input type="hidden" id="visitId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="visitPatient">Patient:</label>
+                        <select id="visitPatient" required>
+                            <option value="">Select Patient</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="visitDoctor">Doctor:</label>
+                        <select id="visitDoctor">
+                            <option value="">Select Doctor (Optional)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="visitType">Visit Type:</label>
+                        <select id="visitType" required>
+                            <option value="">Select Visit Type</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="visitDate">Visit Date:</label>
+                        <input type="datetime-local" id="visitDate" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="visitDuration">Duration (minutes):</label>
+                        <input type="number" id="visitDuration" value="30" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="visitFee">Fee:</label>
+                        <input type="number" id="visitFee" step="0.01" min="0" required readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="visitNote">Note:</label>
+                    <textarea id="visitNote" rows="3" maxlength="500"></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">Save Visit</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = '/api';
+        let currentData = {
+            patients: [],
+            doctors: [],
+            visits: [],
+            visitTypes: []
+        };
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            checkAuth();
+            initializeUserInfo();
+            highlightActiveTab();
+            initializeValidation();
+            await loadData();
+            wireVisitForm();
+        });
+
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '../login.html';
+                return;
+            }
+        }
+
+        function initializeUserInfo() {
+            const username = localStorage.getItem('username') || 'User';
+            const userRole = localStorage.getItem('userRole') || 'User';
+            const userInfo = document.getElementById('userInfo');
+            if (userInfo) {
+                userInfo.textContent = `Welcome, ${username} (${userRole})`;
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = '../login.html';
+        }
+
+        function highlightActiveTab() {
+            const page = document.body.getAttribute('data-page');
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                if (tab.dataset.tab === page) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+        }
+
+        function makeApiRequest(endpoint, options = {}) {
+            const token = localStorage.getItem('token');
+            const method = options.method || 'GET';
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                ...options.headers
+            };
+            const body = options.body || null;
+
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open(method, `${API_BASE_URL}${endpoint}`, true);
+
+                Object.entries(headers).forEach(([k, v]) => {
+                    if (v != null) xhr.setRequestHeader(k, v);
+                });
+
+                xhr.onload = function () {
+                    if (xhr.status === 401) {
+                        logout();
+                        resolve(null);
+                        return;
+                    }
+                    try {
+                        const json = xhr.responseText ? JSON.parse(xhr.responseText) : null;
+                        resolve(json);
+                    } catch (err) {
+                        reject(err);
+                    }
+                };
+
+                xhr.onerror = function () {
+                    reject(new Error('Network error'));
+                };
+
+                xhr.ontimeout = function () {
+                    reject(new Error('Request timeout'));
+                };
+
+                xhr.timeout = 30000;
+
+                if (body) {
+                    xhr.send(body);
+                } else {
+                    xhr.send();
+                }
+            });
+        }
+
+        function showLoading(section) {
+            const loading = document.getElementById(`${section}Loading`);
+            const table = document.getElementById(`${section}Table`);
+            if (loading) loading.style.display = 'block';
+            if (table) table.style.display = 'none';
+        }
+
+        function hideLoading(section) {
+            const loading = document.getElementById(`${section}Loading`);
+            const table = document.getElementById(`${section}Table`);
+            if (loading) loading.style.display = 'none';
+            if (table) table.style.display = 'table';
+        }
+
+        function filterTable(tableId, searchValue) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes((searchValue || '').toLowerCase())) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        window.addEventListener('click', function (event) {
+            if (event.target && event.target.classList && event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        });
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) modal.style.display = 'none';
+        }
+
+        function showToast(message, type = 'error') {
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <span class="toast-message">${message}</span>
+                <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+            `;
+
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+
+            setTimeout(() => {
+                if (toast && toast.parentElement) {
+                    toast.classList.remove('show');
+                    setTimeout(() => {
+                        if (toast && toast.parentElement) {
+                            toast.remove();
+                        }
+                    }, 300);
+                }
+            }, 4000);
+        }
+
+        function calculateFee(visitTypeId, durationInMinutes) {
+            const visitType = currentData.visitTypes.find(vt => vt.visitTypeId == visitTypeId);
+            if (!visitType) return 0;
+
+            const baseAmount = parseFloat(visitType.baseRate) || 0;
+            const extraTimeThreshold = parseInt(visitType.extraTimeThreshold) || 30;
+            const extraTimeRate = parseFloat(visitType.extraTimeRate) || 0.1;
+
+            if (durationInMinutes > extraTimeThreshold) {
+                const extraMinutes = durationInMinutes - extraTimeThreshold;
+                const extraFee = baseAmount * extraMinutes * extraTimeRate;
+                return baseAmount + extraFee;
+            }
+
+            return baseAmount;
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        function validateSelect(value, fieldName) {
+            if (!value) return { valid: false, message: `${fieldName} is required` };
+            return { valid: true };
+        }
+
+        function validateDateTime(value) {
+            if (!value || !value.trim()) return { valid: false, message: 'Visit date and time is required' };
+            const date = new Date(value);
+            if (isNaN(date.getTime())) return { valid: false, message: 'Invalid date and time' };
+            return { valid: true };
+        }
+
+        function validateDuration(value) {
+            if (!value || value.trim() === '') return { valid: false, message: 'Duration is required' };
+            const duration = parseInt(value);
+            if (isNaN(duration)) return { valid: false, message: 'Duration must be a number' };
+            if (duration <= 0) return { valid: false, message: 'Duration must be greater than 0' };
+            if (duration > 1440) return { valid: false, message: 'Duration cannot exceed 1440 minutes' };
+            return { valid: true };
+        }
+
+        function validateNote(value) {
+            if (!value || !value.trim()) return { valid: true };
+            if (value.trim().length > 500) return { valid: false, message: 'Note cannot exceed 500 characters' };
+            return { valid: true };
+        }
+
+        function restrictToNumbers(fieldId, allowDecimal = false) {
+            const field = document.getElementById(fieldId);
+            if (!field) return;
+
+            field.addEventListener('keypress', function (e) {
+                if (e.ctrlKey || e.altKey || e.metaKey) return;
+                if (['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) return;
+
+                const char = e.key;
+                const isNumber = /[0-9]/.test(char);
+                const isDecimal = char === '.' && allowDecimal && !this.value.includes('.');
+
+                if (!isNumber && !isDecimal) {
+                    e.preventDefault();
+                }
+            });
+        }
+
+        function addFieldValidation(fieldId, validator) {
+            const field = document.getElementById(fieldId);
+            if (!field) return null;
+
+            function validate() {
+                const result = validator(field.value);
+                if (!result.valid) {
+                    field.classList.add('error');
+                    return false;
+                } else {
+                    field.classList.remove('error');
+                    return true;
+                }
+            }
+
+            field.addEventListener('blur', validate);
+            field.addEventListener('input', () => {
+                if (field.classList.contains('error')) {
+                    validate();
+                }
+            });
+
+            return validate;
+        }
+
+        function validateVisitForm() {
+            let isValid = true;
+            const errors = [];
+
+            const patient = document.getElementById('visitPatient')?.value || '';
+            const visitType = document.getElementById('visitType')?.value || '';
+            const visitDate = document.getElementById('visitDate')?.value || '';
+            const duration = document.getElementById('visitDuration')?.value || '';
+            const note = document.getElementById('visitNote')?.value || '';
+
+            const patientResult = validateSelect(patient, 'Patient');
+            if (!patientResult.valid) {
+                errors.push(patientResult.message);
+                document.getElementById('visitPatient').classList.add('error');
+                isValid = false;
+            } else {
+                document.getElementById('visitPatient').classList.remove('error');
+            }
+
+            const visitTypeResult = validateSelect(visitType, 'Visit Type');
+            if (!visitTypeResult.valid) {
+                errors.push(visitTypeResult.message);
+                document.getElementById('visitType').classList.add('error');
+                isValid = false;
+            } else {
+                document.getElementById('visitType').classList.remove('error');
+            }
+
+            const dateResult = validateDateTime(visitDate);
+            if (!dateResult.valid) {
+                errors.push(dateResult.message);
+                document.getElementById('visitDate').classList.add('error');
+                isValid = false;
+            } else {
+                document.getElementById('visitDate').classList.remove('error');
+            }
+
+            const durationResult = validateDuration(duration);
+            if (!durationResult.valid) {
+                errors.push(durationResult.message);
+                document.getElementById('visitDuration').classList.add('error');
+                isValid = false;
+            } else {
+                document.getElementById('visitDuration').classList.remove('error');
+            }
+
+            const noteResult = validateNote(note);
+            if (!noteResult.valid) {
+                errors.push(noteResult.message);
+                document.getElementById('visitNote').classList.add('error');
+                isValid = false;
+            } else {
+                document.getElementById('visitNote').classList.remove('error');
+            }
+
+            if (!isValid && errors.length > 0) {
+                showToast(errors[0], 'error');
+            }
+
+            return isValid;
+        }
+
+        function initializeValidation() {
+            restrictToNumbers('visitDuration');
+
+            addFieldValidation('visitDuration', validateDuration);
+            addFieldValidation('visitNote', validateNote);
+            addFieldValidation('visitDate', validateDateTime);
+        }
+
+        function populateSelectOptions() {
+            const patientSelect = document.getElementById('visitPatient');
+            if (patientSelect && currentData.patients) {
+                patientSelect.innerHTML = '<option value="">Select Patient</option>' +
+                    currentData.patients.map(p => `<option value="${p.patientId}">${p.patientName}</option>`).join('');
+            }
+
+            const doctorSelect = document.getElementById('visitDoctor');
+            if (doctorSelect && currentData.doctors) {
+                doctorSelect.innerHTML = '<option value="">Select Doctor (Optional)</option>' +
+                    currentData.doctors.map(d => `<option value="${d.doctorId}">${d.doctorName} - ${d.specialization || 'General'}</option>`).join('');
+            }
+
+            const visitTypeSelect = document.getElementById('visitType');
+            if (visitTypeSelect && currentData.visitTypes) {
+                visitTypeSelect.innerHTML = '<option value="">Select Visit Type</option>' +
+                    currentData.visitTypes.map(vt => `<option value="${vt.visitTypeId}">${vt.visitTypeName} - ${parseFloat(vt.baseRate || 0).toFixed(2)}</option>`).join('');
+            }
+        }
+
+        function wireVisitTypeSelectFeeAutofill() {
+            const visitTypeSelect = document.getElementById('visitType');
+            const visitFee = document.getElementById('visitFee');
+            const durationInput = document.getElementById('visitDuration');
+
+            if (!visitTypeSelect || !visitFee || !durationInput) return;
+
+            function updateFee() {
+                const visitTypeId = visitTypeSelect.value;
+                const duration = parseInt(durationInput.value) || 30;
+
+                if (visitTypeId) {
+                    const calculatedFee = calculateFee(visitTypeId, duration);
+                    visitFee.value = calculatedFee.toFixed(2);
+                } else {
+                    visitFee.value = '';
+                }
+            }
+
+            visitTypeSelect.addEventListener('change', updateFee);
+            durationInput.addEventListener('input', debounce(updateFee, 300));
+            durationInput.addEventListener('blur', updateFee);
+        }
+
+        async function loadData() {
+            try {
+                await Promise.all([
+                    loadPatients(),
+                    loadDoctors(),
+                    loadVisitTypes()
+                ]);
+
+                await loadVisits();
+
+                wireVisitTypeSelectFeeAutofill();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showToast('Error loading data', 'error');
+            }
+        }
+
+        async function loadPatients() {
+            try {
+                const response = await makeApiRequest('/patient');
+                if (response && response.success && Array.isArray(response.data)) {
+                    currentData.patients = response.data;
+                    populateSelectOptions();
+                } else {
+                    currentData.patients = [];
+                }
+            } catch (error) {
+                console.error('Error loading patients:', error);
+                currentData.patients = [];
+            }
+        }
+
+        async function loadDoctors() {
+            try {
+                const response = await makeApiRequest('/doctor');
+                if (response && response.success && Array.isArray(response.data)) {
+                    currentData.doctors = response.data;
+                    populateSelectOptions();
+                } else {
+                    currentData.doctors = [];
+                }
+            } catch (error) {
+                console.error('Error loading doctors:', error);
+                currentData.doctors = [];
+            }
+        }
+
+        async function loadVisitTypes() {
+            try {
+                const response = await makeApiRequest('/visittype');
+                if (response && response.success && Array.isArray(response.data)) {
+                    currentData.visitTypes = response.data;
+                    populateSelectOptions();
+                } else {
+                    currentData.visitTypes = [];
+                }
+            } catch (error) {
+                console.error('Error loading visit types:', error);
+                currentData.visitTypes = [];
+            }
+        }
+
+        async function loadVisits() {
+            showLoading('visits');
+            const userRole = localStorage.getItem('userRole');
+            const addButton = document.querySelector('button[onclick="showAddVisitModal()"]');
+            if (addButton) {
+                if (userRole === 'Doctor') {
+                    addButton.style.display = 'none';
+                } else {
+                    addButton.style.display = 'inline-block';
+                }
+            }
+            try {
+                const response = await makeApiRequest('/patientvisit');
+                if (response && response.success && Array.isArray(response.data)) {
+                    currentData.visits = response.data;
+                    renderVisitsTable();
+                } else {
+                    currentData.visits = [];
+                    renderVisitsTable();
+                    showToast('No visits found or failed to load visits', 'warning');
+                }
+            } catch (error) {
+                console.error('Error loading visits:', error);
+                currentData.visits = [];
+                renderVisitsTable();
+                showToast('Error loading visits', 'error');
+            } finally {
+                hideLoading('visits');
+            }
+        }
+
+        function renderVisitsTable() {
+            const tbody = document.querySelector('#visitsTable tbody');
+            if (!tbody) return;
+
+            const userRole = localStorage.getItem('userRole');
+
+            if (currentData.visits.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem; color: #666;">No visits found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = currentData.visits.map(visit => {
+                const patient = currentData.patients.find(p => p.patientId === visit.patientId);
+                const doctor = currentData.doctors.find(d => d.doctorId === visit.doctorId);
+                const visitType = currentData.visitTypes.find(vt => vt.visitTypeId === visit.visitTypeId);
+
+                return `
+                    <tr>
+                        <td>${visit.id || 'N/A'}</td>
+                        <td>${patient ? patient.patientName : 'Unknown Patient'}</td>
+                        <td>${doctor ? doctor.doctorName : 'No Doctor Assigned'}</td>
+                        <td>${visitType ? visitType.visitTypeName : 'Unknown Type'}</td>
+                        <td>${visit.visitDate ? new Date(visit.visitDate).toLocaleString() : 'N/A'}</td>
+                        <td>${visit.durationInMinutes || 0} mins</td>
+                        <td>${parseFloat(visit.fee || 0).toFixed(2)}</td>
+                        <td class="table-actions">
+                            ${userRole === 'Admin' ? `<button class="btn btn-small" onclick="editVisit(${visit.id})">Edit</button>` : ''}
+                            ${userRole === 'Receptionist' ? `<button class="btn btn-small" onclick="editVisit(${visit.id})">Add</button>` : ''}
+                            ${userRole === 'Admin' ? `<button class="btn btn-danger btn-small" onclick="deleteVisit(${visit.id})">Delete</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function showAddVisitModal() {
+            const userRole = localStorage.getItem('userRole');
+            if (userRole === 'Doctor') {
+                showToast('Doctors can only view visit information', 'error');
+                return;
+            }
+            await loadData();
+            const form = document.getElementById('visitForm');
+            if (!form) return;
+
+            document.getElementById('visitModalTitle').textContent = 'Add Visit';
+            form.reset();
+            document.getElementById('visitId').value = '';
+            document.getElementById('visitDuration').value = '30';
+            document.getElementById('visitFee').value = '';
+
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('visitDate').value = now.toISOString().slice(0, 16);
+
+            document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
+            document.getElementById('visitModal').style.display = 'block';
+        }
+
+        async function editVisit(id) {
+            const userRole = localStorage.getItem('userRole');
+
+            if (userRole === 'Doctor') {
+                showToast('Doctors can only view visit information', 'error');
+                return;
+            }
+
+            if (userRole === 'Receptionist') {
+                showToast('Receptionists cannot edit visits', 'error');
+                return;
+            }
+            const visit = currentData.visits.find(v => v.id === id);
+            if (!visit) {
+                showToast('Visit not found', 'error');
+                return;
+            }
+
+            await loadData();
+
+            document.getElementById('visitModalTitle').textContent = 'Edit Visit';
+            document.getElementById('visitId').value = visit.id;
+            document.getElementById('visitPatient').value = visit.patientId || '';
+            document.getElementById('visitDoctor').value = visit.doctorId || '';
+            document.getElementById('visitType').value = visit.visitTypeId || '';
+
+            if (visit.visitDate) {
+                const visitDate = new Date(visit.visitDate);
+                visitDate.setMinutes(visitDate.getMinutes() - visitDate.getTimezoneOffset());
+                document.getElementById('visitDate').value = visitDate.toISOString().slice(0, 16);
+            }
+
+            document.getElementById('visitDuration').value = visit.durationInMinutes || 30;
+            document.getElementById('visitNote').value = visit.note || '';
+
+            const calculatedFee = calculateFee(visit.visitTypeId, visit.durationInMinutes || 30);
+            document.getElementById('visitFee').value = calculatedFee.toFixed(2);
+
+            document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
+            document.getElementById('visitModal').style.display = 'block';
+        }
+
+        async function deleteVisit(id) {
+            const userRole = localStorage.getItem('userRole');
+            if (userRole !== 'Admin') {
+                showToast('Only Admins can delete visits', 'error');
+                return;
+            }
+            if (!confirm('Are you sure you want to delete this visit?')) return;
+
+            try {
+                const response = await makeApiRequest(`/patientvisit/${id}`, { method: 'DELETE' });
+                if (response && response.success) {
+                    showToast('Visit deleted successfully', 'success');
+                    await loadVisits();
+                } else {
+                    showToast(response?.message || 'Failed to delete visit', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting visit:', error);
+                showToast('Error deleting visit', 'error');
+            }
+        }
+
+        function wireVisitForm() {
+            const form = document.getElementById('visitForm');
+            if (!form) return;
+
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                if (!validateVisitForm()) {
+                    return;
+                }
+
+                const submitButton = form.querySelector('button[type="submit"]');
+                const originalText = submitButton.textContent;
+                submitButton.textContent = 'Saving...';
+                submitButton.disabled = true;
+
+                try {
+                    const visitId = document.getElementById('visitId').value;
+                    const isEdit = !!visitId;
+
+                    const visitData = {
+                        patientId: parseInt(document.getElementById('visitPatient').value),
+                        doctorId: document.getElementById('visitDoctor').value ? parseInt(document.getElementById('visitDoctor').value) : null,
+                        visitTypeId: parseInt(document.getElementById('visitType').value),
+                        visitDate: document.getElementById('visitDate').value,
+                        durationInMinutes: parseInt(document.getElementById('visitDuration').value),
+                        fee: parseFloat(document.getElementById('visitFee').value),
+                        note: document.getElementById('visitNote').value.trim() || null
+                    };
+
+                    if (isEdit) {
+                        visitData.id = parseInt(visitId);
+                    }
+
+                    const endpoint = isEdit ? `/patientvisit/${visitId}` : '/patientvisit';
+                    const method = isEdit ? 'PUT' : 'POST';
+
+                    const response = await makeApiRequest(endpoint, {
+                        method,
+                        body: JSON.stringify(visitData)
+                    });
+
+                    if (response && response.success) {
+                        showToast(`Visit ${isEdit ? 'updated' : 'created'} successfully`, 'success');
+                        closeModal('visitModal');
+                        await loadVisits();
+                    } else {
+                        const errorMessage = response?.message || `Failed to ${isEdit ? 'update' : 'create'} visit`;
+                        showToast(errorMessage, 'error');
+                    }
+                } catch (error) {
+                    console.error('Error saving visit:', error);
+                    showToast('Network error occurred while saving visit', 'error');
+                } finally {
+                    submitButton.textContent = originalText;
+                    submitButton.disabled = false;
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

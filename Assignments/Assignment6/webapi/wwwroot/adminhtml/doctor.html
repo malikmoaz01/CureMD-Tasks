@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Visit MS - Doctors</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #1a202c;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: rgb(0, 0, 0);
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: -0.5px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: rgba(0, 0, 0, 0.9);
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(239, 68, 68, 0.4);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 0.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow-x: auto;
+            gap: 10px;
+        }
+
+        .nav-tab {
+            color: rgba(255, 0, 0, 0.7);
+            text-decoration: none;
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+
+            position: relative;
+        }
+
+        .nav-tab:hover {
+            color: rgb(1, 0, 0);
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: rgb(0, 0, 0);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        #doctorsTable th {
+            background-color: #ffffff;
+            color: #000000;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .search-box {
+            padding: 0.8rem 1.5rem;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            font-size: 1rem;
+            min-width: 300px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .search-box:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            background: white;
+        }
+
+        .btn {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-small {
+            padding: 0.5rem 1.2rem;
+            font-size: 0.85rem;
+            border-radius: 12px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            background: white;
+        }
+
+        .table thead {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .table th {
+            padding: 1.2rem;
+            text-align: left;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.85rem;
+        }
+
+        .table td {
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+            vertical-align: middle;
+        }
+
+        .table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(102, 126, 234, 0.05);
+            transform: translateX(4px);
+        }
+
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            background: white;
+            margin: 2% auto;
+            padding: 0;
+            border-radius: 24px;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1.5rem 2rem;
+            border-radius: 24px 24px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .close {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            line-height: 1;
+            padding: 0.5rem;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        form {
+            padding: 2rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8rem 1.2rem;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            border-radius: 12px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            background: white;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            color: white;
+            font-weight: 600;
+            z-index: 9999;
+            max-width: 400px;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0) scale(1.02);
+        }
+
+        .toast-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3);
+        }
+
+        .toast-error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 10px 40px rgba(239, 68, 68, 0.3);
+        }
+
+        .toast-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 10px 40px rgba(245, 158, 11, 0.3);
+        }
+
+        .toast-info {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            box-shadow: 0 10px 40px rgba(59, 130, 246, 0.3);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            margin: 0;
+            line-height: 1;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .toast-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .toast-message {
+            flex: 1;
+            font-size: 0.95rem;
+        }
+
+        input.error,
+        select.error,
+        textarea.error {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15) !important;
+            background: rgba(239, 68, 68, 0.05) !important;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .nav-tab {
+                text-align: center;
+                padding: 0.8rem 1rem;
+            }
+
+            .actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                min-width: 100%;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .table-actions {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .modal-content {
+                margin: 5% auto;
+                max-width: 95%;
+            }
+
+            .table {
+                font-size: 0.85rem;
+            }
+
+            .table th,
+            .table td {
+                padding: 0.8rem;
+            }
+
+            .toast {
+                right: 10px;
+                left: 10px;
+                max-width: none;
+                transform: translateY(-100%);
+            }
+
+            .toast.show {
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.4rem;
+            }
+
+            .tab-content {
+                padding: 1rem;
+                border-radius: 16px;
+            }
+
+            .btn {
+                padding: 0.7rem 1.5rem;
+                font-size: 0.9rem;
+            }
+
+            .btn-small {
+                padding: 0.4rem 1rem;
+                font-size: 0.8rem;
+            }
+
+            form {
+                padding: 1rem;
+            }
+
+            #doctorsTable th {
+                background-color: #ffffff;
+                color: #000000;
+                font-weight: 600;
+            }
+        }
+    </style>
+</head>
+
+<body data-page="doctors">
+    <div class="header">
+        <h1>PVMS - 6606</h1>
+        <div class="user-info">
+            <span id="userInfo">Welcome, User</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+    <div class="container">
+        <div class="nav-tabs">
+            <a class="nav-tab" data-tab="patients" href="patient.html">Patients</a>
+            <a class="nav-tab" data-tab="doctors" href="doctor.html">Doctors</a>
+            <a class="nav-tab" data-tab="visits" href="visits.html">Visits</a>
+            <a class="nav-tab" data-tab="fee" href="fee.html">Fees</a>
+            <a class="nav-tab" data-tab="visitTypes" href="visittype.html">Visit Types</a>
+            <a class="nav-tab" data-tab="activity" href="activity.html">Activity Log</a>
+        </div>
+        <div class="tab-content">
+            <div id="doctors" class="tab-pane active">
+                <div class="actions">
+                    <div>
+                        <input type="text" class="search-box" id="doctorSearch" placeholder="Search doctors..."
+                            onkeyup="filterTable('doctorsTable', this.value)">
+                    </div>
+                    <button class="btn btn-success" onclick="showAddDoctorModal()">Add Doctor</button>
+                </div>
+                <div id="doctorsAlert"></div>
+                <div id="doctorsLoading" class="loading">Loading doctors...</div>
+                <table class="table" id="doctorsTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Specialization</th>
+                            <th>Contact</th>
+                            <th>Email</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div id="doctorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="doctorModalTitle">Add Doctor</h2>
+                <span class="close" onclick="closeModal('doctorModal')">&times;</span>
+            </div>
+            <form id="doctorForm">
+                <input type="hidden" id="doctorId">
+                <div class="form-group">
+                    <label for="doctorName">Name:</label>
+                    <input type="text" id="doctorName" maxlength="100" required>
+                </div>
+                <div class="form-group">
+                    <label for="doctorSpecialization">Specialization:</label>
+                    <input type="text" id="doctorSpecialization" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label for="doctorContact">Contact Number:</label>
+                    <input type="text" id="doctorContact" maxlength="15">
+                </div>
+                <div class="form-group">
+                    <label for="doctorEmail">Email:</label>
+                    <input type="email" id="doctorEmail" maxlength="100">
+                </div>
+                <button type="submit" class="btn">Save Doctor</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        console.log("JS Script is working")
+        const API_BASE_URL = '/api';
+        let currentData = { doctors: [] };
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            checkAuth();
+            initializeUserInfo();
+            highlightActiveTab();
+            initializeValidation();
+            await loadDoctors();
+            wireDoctorForm();
+        });
+
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '../login.html';
+                return;
+            }
+        }
+
+        function initializeUserInfo() {
+            const username = localStorage.getItem('username') || 'User';
+            const userRole = localStorage.getItem('userRole') || 'User';
+            const userInfo = document.getElementById('userInfo');
+            if (userInfo) {
+                userInfo.textContent = `Welcome, ${username} (${userRole})`;
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = '../login.html';
+        }
+
+        function highlightActiveTab() {
+            const page = document.body.getAttribute('data-page');
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                if (tab.dataset.tab === page) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+        }
+
+        function makeApiRequest(endpoint, options = {}) {
+            const token = localStorage.getItem('token');
+            const method = options.method || 'GET';
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                ...options.headers
+            };
+            const body = options.body || null;
+
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open(method, `${API_BASE_URL}${endpoint}`, true);
+
+                Object.entries(headers).forEach(([k, v]) => {
+                    if (v != null) xhr.setRequestHeader(k, v);
+                });
+
+                xhr.onload = function () {
+                    if (xhr.status === 401) {
+                        logout();
+                        resolve(null);
+                        return;
+                    }
+                    try {
+                        const json = xhr.responseText ? JSON.parse(xhr.responseText) : null;
+                        resolve(json);
+                    } catch (err) {
+                        reject(err);
+                    }
+                };
+
+                xhr.onerror = function () {
+                    reject(new Error('Network error'));
+                };
+
+                xhr.ontimeout = function () {
+                    reject(new Error('Request timeout'));
+                };
+
+                xhr.timeout = 30000;
+
+                if (body) {
+                    xhr.send(body);
+                } else {
+                    xhr.send();
+                }
+            });
+        }
+
+        function showLoading(section) {
+            const loading = document.getElementById(`${section}Loading`);
+            const table = document.getElementById(`${section}Table`);
+            if (loading) loading.style.display = 'block';
+            if (table) table.style.display = 'none';
+        }
+
+        function hideLoading(section) {
+            const loading = document.getElementById(`${section}Loading`);
+            const table = document.getElementById(`${section}Table`);
+            if (loading) loading.style.display = 'none';
+            if (table) table.style.display = 'table';
+        }
+
+        function filterTable(tableId, searchValue) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes((searchValue || '').toLowerCase())) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        window.addEventListener('click', function (event) {
+            if (event.target && event.target.classList && event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        });
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) modal.style.display = 'none';
+        }
+
+        function showToast(message, type = 'error') {
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <span class="toast-message">${message}</span>
+                <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+            `;
+
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+
+            setTimeout(() => {
+                if (toast && toast.parentElement) {
+                    toast.classList.remove('show');
+                    setTimeout(() => {
+                        if (toast && toast.parentElement) {
+                            toast.remove();
+                        }
+                    }, 300);
+                }
+            }, 4000);
+        }
+
+        function validateName(value) {
+            if (!value || !value.trim()) return { valid: false, message: 'Name is required' };
+            const trimmed = value.trim();
+            if (trimmed.length < 2) return { valid: false, message: 'Name must be at least 2 characters' };
+            if (trimmed.length > 100) return { valid: false, message: 'Name cannot exceed 100 characters' };
+            if (!/^[a-zA-Z\s'-]+$/.test(trimmed)) return { valid: false, message: 'Name can only contain letters, spaces, hyphens and apostrophes' };
+            return { valid: true };
+        }
+
+        function validateEmail(value) {
+            if (!value || !value.trim()) return { valid: true };
+            const trimmed = value.trim();
+            if (trimmed.length > 100) return { valid: false, message: 'Email cannot exceed 100 characters' };
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return { valid: false, message: 'Please enter a valid email address' };
+            return { valid: true };
+        }
+
+        function validatePhone(value) {
+            if (!value || !value.trim()) return { valid: true };
+            const trimmed = value.trim();
+            if (!/^\+?[\d\s\-\(\)]{10,15}$/.test(trimmed)) return { valid: false, message: 'Phone number must be 10-15 digits' };
+            return { valid: true };
+        }
+
+        function validateSpecialization(value) {
+            if (!value || !value.trim()) return { valid: true };
+            const trimmed = value.trim();
+            if (trimmed.length > 100) return { valid: false, message: 'Specialization cannot exceed 100 characters' };
+            if (!/^[a-zA-Z\s&,-]+$/.test(trimmed)) return { valid: false, message: 'Specialization contains invalid characters' };
+            return { valid: true };
+        }
+
+        function restrictNumericInput(fieldId) {
+            const field = document.getElementById(fieldId);
+            if (!field) return;
+
+            field.addEventListener('keypress', function (e) {
+                if (e.ctrlKey || e.altKey || e.metaKey) return;
+                if (['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) return;
+
+                if (/[0-9]/.test(e.key)) {
+                    e.preventDefault();
+                    showToast('Numbers are not allowed in this field', 'warning');
+                }
+            });
+
+            field.addEventListener('paste', function (e) {
+                setTimeout(() => {
+                    const originalValue = this.value;
+                    const cleanValue = originalValue.replace(/[0-9]/g, '');
+                    if (cleanValue !== originalValue) {
+                        this.value = cleanValue;
+                        showToast('Numbers were removed from pasted text', 'warning');
+                    }
+                }, 0);
+            });
+        }
+
+        function addFieldValidation(fieldId, validator) {
+            const field = document.getElementById(fieldId);
+            if (!field) return null;
+
+            function validate() {
+                const result = validator(field.value);
+                if (!result.valid) {
+                    field.classList.add('error');
+                    return false;
+                } else {
+                    field.classList.remove('error');
+                    return true;
+                }
+            }
+
+            field.addEventListener('blur', validate);
+            field.addEventListener('input', () => {
+                if (field.classList.contains('error')) {
+                    validate();
+                }
+            });
+
+            return validate;
+        }
+
+        function validateDoctorForm() {
+            let isValid = true;
+            const errors = [];
+
+            const name = document.getElementById('doctorName')?.value || '';
+            const specialization = document.getElementById('doctorSpecialization')?.value || '';
+            const contact = document.getElementById('doctorContact')?.value || '';
+            const email = document.getElementById('doctorEmail')?.value || '';
+
+            const nameResult = validateName(name);
+            if (!nameResult.valid) {
+                errors.push(nameResult.message);
+                isValid = false;
+            }
+
+            const specializationResult = validateSpecialization(specialization);
+            if (!specializationResult.valid) {
+                errors.push(specializationResult.message);
+                isValid = false;
+            }
+
+            const contactResult = validatePhone(contact);
+            if (!contactResult.valid) {
+                errors.push(contactResult.message);
+                isValid = false;
+            }
+
+            const emailResult = validateEmail(email);
+            if (!emailResult.valid) {
+                errors.push(emailResult.message);
+                isValid = false;
+            }
+
+            if (!isValid && errors.length > 0) {
+                showToast(errors[0], 'error');
+            }
+
+            return isValid;
+        }
+
+        function initializeValidation() {
+            restrictNumericInput('doctorName');
+            restrictNumericInput('doctorSpecialization');
+
+            addFieldValidation('doctorName', validateName);
+            addFieldValidation('doctorEmail', validateEmail);
+            addFieldValidation('doctorContact', validatePhone);
+            addFieldValidation('doctorSpecialization', validateSpecialization);
+        }
+
+        async function loadDoctors() { 
+            showLoading('doctors');
+
+            const userRole = localStorage.getItem('userRole');
+            const addButton = document.querySelector('button[onclick="showAddDoctorModal()"]');
+            if (addButton) {
+                if (userRole === 'Doctor') {
+                    addButton.style.display = 'none';
+                } else {
+                    addButton.style.display = 'inline-block';
+                }
+            }
+
+            try {
+                const response = await makeApiRequest('/doctor');
+                if (response && response.success) {
+                    currentData.doctors = response.data || [];
+                    renderDoctorsTable();
+                } else {
+                    showToast('Failed to load doctors', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading doctors:', error);
+                showToast('Error loading doctors', 'error');
+            } finally {
+                hideLoading('doctors');
+            }
+        }
+
+        function renderDoctorsTable() {
+            const tbody = document.querySelector('#doctorsTable tbody');
+            if (!tbody) return;
+            const userRole = localStorage.getItem('userRole');
+            tbody.innerHTML = currentData.doctors.map(doctor => `
+                <tr>
+                    <td>${doctor.doctorId}</td>
+                    <td>${doctor.doctorName}</td>
+                    <td>${doctor.specialization || 'N/A'}</td>
+                    <td>${doctor.contactNumber || 'N/A'}</td>
+                    <td>${doctor.email || 'N/A'}</td>
+                    <td class="table-actions">
+                        ${userRole === 'Admin' ? `<button class="btn btn-small" onclick="editDoctor(${doctor.doctorId})">Edit</button>` : ''}
+                        ${userRole === 'Receptionist' ? `<button class="btn btn-small" onclick="editDoctor(${doctor.doctorId})">Add</button>` : ''}
+                        ${userRole === 'Admin' ? `<button class="btn btn-danger btn-small" onclick="deleteDoctor(${doctor.doctorId})">Delete</button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function showAddDoctorModal() {
+            const userRole = localStorage.getItem('userRole');
+            if (userRole === 'Doctor') {
+                showToast('Doctors can only view doctor information', 'error');
+                return;
+            }
+
+            const title = document.getElementById('doctorModalTitle');
+            const form = document.getElementById('doctorForm');
+            const id = document.getElementById('doctorId');
+            if (!form || !title || !id) return;
+            title.textContent = 'Add Doctor';
+            form.reset();
+            id.value = '';
+            document.getElementById('doctorModal').style.display = 'block';
+        }
+
+        function editDoctor(id) {
+            const userRole = localStorage.getItem('userRole');
+
+            if (userRole === 'Doctor') {
+                showToast('Doctors can only view doctor information', 'error');
+                return;
+            }
+
+            if (userRole === 'Receptionist') {
+                showToast('Receptionists cannot edit doctors', 'error');
+                return;
+            }
+
+            const doctor = currentData.doctors.find(d => d.doctorId === id);
+            if (doctor) {
+                document.getElementById('doctorModalTitle').textContent = 'Edit Doctor';
+                document.getElementById('doctorId').value = doctor.doctorId;
+                document.getElementById('doctorName').value = doctor.doctorName || '';
+                document.getElementById('doctorSpecialization').value = doctor.specialization || '';
+                document.getElementById('doctorContact').value = doctor.contactNumber || '';
+                document.getElementById('doctorEmail').value = doctor.email || '';
+                document.getElementById('doctorModal').style.display = 'block';
+            }
+        }
+
+        async function deleteDoctor(id) {
+
+            const userRole = localStorage.getItem('userRole');
+            if (userRole !== 'Admin') {
+                showToast('Only Admins can delete doctors', 'error');
+                return;
+            }
+
+            if (confirm('Are you sure you want to delete this doctor?')) {
+                try {
+                    const response = await makeApiRequest(`/doctor/${id}`, { method: 'DELETE' });
+                    if (response && response.success) {
+                        showToast('Doctor deleted successfully', 'success');
+                        loadDoctors();
+                    } else {
+                        showToast((response && response.message) || 'Failed to delete doctor', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error deleting doctor:', error);
+                    showToast('Error deleting doctor', 'error');
+                }
+            }
+        }
+
+        function wireDoctorForm() {
+            const form = document.getElementById('doctorForm');
+            if (!form) return;
+
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                if (!validateDoctorForm()) {
+                    return;
+                }
+
+                const doctorId = document.getElementById('doctorId').value;
+                const isEdit = !!doctorId;
+                const doctorData = {
+                    doctorName: document.getElementById('doctorName').value.trim(),
+                    specialization: document.getElementById('doctorSpecialization').value.trim() || null,
+                    contactNumber: document.getElementById('doctorContact').value.trim() || null,
+                    email: document.getElementById('doctorEmail').value.trim() || null
+                };
+
+                if (isEdit) {
+                    doctorData.doctorId = parseInt(doctorId);
+                }
+
+                try {
+                    const endpoint = isEdit ? `/doctor/${doctorId}` : '/doctor';
+                    const method = isEdit ? 'PUT' : 'POST';
+                    const response = await makeApiRequest(endpoint, {
+                        method,
+                        body: JSON.stringify(doctorData)
+                    });
+
+                    if (response && response.success) {
+                        showToast(`Doctor ${isEdit ? 'updated' : 'created'} successfully`, 'success');
+                        closeModal('doctorModal');
+                        loadDoctors();
+                    } else {
+                        showToast((response && response.message) || `Failed to ${isEdit ? 'update' : 'create'} doctor`, 'error');
+                    }
+                } catch (error) {
+                    console.error(`Error ${isEdit ? 'updating' : 'creating'} doctor:`, error);
+                    showToast(`Error ${isEdit ? 'updating' : 'creating'} doctor`, 'error');
+                }
+            });
+        }
+        console.log("JS Script is working")
+    </script>
+</body>
+
+</html>
