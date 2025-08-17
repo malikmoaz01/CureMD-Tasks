@@ -130,10 +130,3 @@
 ```
 
 ```
-
----
-
-👉 Ye README tumhari **Swagger style API docs** ke liye ready hai.  
-
-Batao, kya tum chahte ho main isme **Setup guide (how to run API, DB config, migrations)** bhi add kar dun, ya sirf API section hi rakhna hai?
-```
