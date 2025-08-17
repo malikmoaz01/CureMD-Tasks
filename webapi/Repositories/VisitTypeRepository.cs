@@ -131,9 +131,8 @@ namespace webapi.Repositories
                 return Convert.ToInt32(result);
             }
             catch (SqlException ex)
-            {
-                // Log the full exception for debugging
-                Console.WriteLine($"SQL Exception: Number={ex.Number}, Message={ex.Message}");
+            { 
+                // Console.WriteLine($"SQL Exception: Number={ex.Number}, Message={ex.Message}");
 
                 if (ex.Number == 50011)
                     throw new ArgumentException("Visit type name is required.");
@@ -145,9 +144,8 @@ namespace webapi.Repositories
                 throw new InvalidOperationException($"Database error adding visit type: {ex.Message}", ex);
             }
             catch (Exception ex)
-            {
-                // Log the full exception for debugging
-                Console.WriteLine($"General Exception: {ex.Message}");
+            { 
+                // Console.WriteLine($"General Exception: {ex.Message}");
                 Console.WriteLine($"Stack Trace: {ex.StackTrace}");
                 throw new InvalidOperationException($"Error adding visit type: {ex.Message}", ex);
             }

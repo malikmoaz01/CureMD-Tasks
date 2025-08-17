@@ -120,8 +120,8 @@
         }
 
         #visitTypesTable th {
-            background-color: #ffffff; 
-            color: #000000; 
+            background-color: #ffffff;
+            color: #000000;
             font-weight: 600;
         }
 
@@ -905,6 +905,15 @@
 
         async function loadVisitTypes() {
             showLoading('visitTypes');
+            const userRole = localStorage.getItem('userRole');
+            const addButton = document.querySelector('button[onclick="showAddFeeRateModal()"]');
+            if (addButton) {
+                if (userRole === 'Doctor') {
+                    addButton.style.display = 'none';
+                } else {
+                    addButton.style.display = 'inline-block';
+                }
+            }
             try {
                 const response = await makeApiRequest('/visittype');
                 if (response && response.success) {
@@ -932,7 +941,9 @@
                     <td>Rs ${parseFloat(visitType.baseRate).toFixed(2)}</td>
                     <td>${visitType.description || 'N/A'}</td>
                     <td class="table-actions">
-                        <button class="btn btn-small" onclick="editVisitType(${visitType.visitTypeId})">Edit</button>
+                        ${userRole === 'Admin' ? `<button class="btn btn-small" onclick="editVisitType(${visitType.visitTypeId})">Edit</button>` : ''}
+                        ${userRole === 'Admin' ? `<button class="btn btn-small" onclick="editVisitType(${visitType.visitTypeId})">Add</button>` : ''}
+                        ${userRole === 'Receptionist' ? `<button class="btn btn-small" onclick="editVisitType(${visitType.visitTypeId})">Add</button>` : ''}
                         ${userRole === 'Admin' ? `<button class="btn btn-danger btn-small" onclick="deleteVisitType(${visitType.visitTypeId})">Delete</button>` : ''}
                     </td>
                 </tr>
@@ -940,6 +951,11 @@
         }
 
         function showAddVisitTypeModal() {
+            const userRole = localStorage.getItem('userRole');
+            if (userRole === 'Doctor') {
+                showToast('Doctors can only view fee rate information', 'error');
+                return;
+            }
             const title = document.getElementById('visitTypeModalTitle');
             const form = document.getElementById('visitTypeForm');
             const id = document.getElementById('visitTypeId');
@@ -951,6 +967,18 @@
         }
 
         function editVisitType(id) {
+            const userRole = localStorage.getItem('userRole');
+
+            if (userRole === 'Doctor') {
+                showToast('Doctors can only view fee rate information', 'error');
+                return;
+            }
+
+            if (userRole === 'Receptionist') {
+                showToast('Receptionists cannot edit fee rates', 'error');
+                return;
+            }
+
             const visitType = currentData.visitTypes.find(v => v.visitTypeId === id);
             if (visitType) {
                 document.getElementById('visitTypeModalTitle').textContent = 'Edit Visit Type';
@@ -963,6 +991,13 @@
         }
 
         async function deleteVisitType(id) {
+
+            const userRole = localStorage.getItem('userRole');
+            if (userRole !== 'Admin') {
+                showToast('Only Admins can delete fee rates', 'error');
+                return;
+            }
+
             if (confirm('Are you sure you want to delete this visit type?')) {
                 try {
                     const response = await makeApiRequest(`/visittype/${id}`, { method: 'DELETE' });
@@ -992,7 +1027,7 @@
 
                 const visitTypeId = document.getElementById('visitTypeId').value;
                 const isEdit = !!visitTypeId;
-                
+
                 let visitTypeData;
                 if (isEdit) {
                     visitTypeData = {

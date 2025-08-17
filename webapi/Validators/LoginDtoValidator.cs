@@ -1,6 +1,6 @@
 using FluentValidation;
 using webapi.Models;
- 
+  
 namespace webapi.Validators
 {
     public class LoginDtoValidator : AbstractValidator<LoginDto>

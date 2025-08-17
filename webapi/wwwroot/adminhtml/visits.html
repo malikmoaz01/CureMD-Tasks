@@ -1132,6 +1132,15 @@
 
         async function loadVisits() {
             showLoading('visits');
+            const userRole = localStorage.getItem('userRole');
+            const addButton = document.querySelector('button[onclick="showAddVisitModal()"]');
+            if (addButton) {
+                if (userRole === 'Doctor') {
+                    addButton.style.display = 'none';
+                } else {
+                    addButton.style.display = 'inline-block';
+                }
+            }
             try {
                 const response = await makeApiRequest('/patientvisit');
                 if (response && response.success && Array.isArray(response.data)) {
@@ -1178,7 +1187,8 @@
                         <td>${visit.durationInMinutes || 0} mins</td>
                         <td>${parseFloat(visit.fee || 0).toFixed(2)}</td>
                         <td class="table-actions">
-                            <button class="btn btn-small" onclick="editVisit(${visit.id})">Edit</button>
+                            ${userRole === 'Admin' ? `<button class="btn btn-small" onclick="editVisit(${visit.id})">Edit</button>` : ''}
+                            ${userRole === 'Receptionist' ? `<button class="btn btn-small" onclick="editVisit(${visit.id})">Add</button>` : ''}
                             ${userRole === 'Admin' ? `<button class="btn btn-danger btn-small" onclick="deleteVisit(${visit.id})">Delete</button>` : ''}
                         </td>
                     </tr>
@@ -1187,6 +1197,11 @@
         }
 
         async function showAddVisitModal() {
+            const userRole = localStorage.getItem('userRole');
+            if (userRole === 'Doctor') {
+                showToast('Doctors can only view visit information', 'error');
+                return;
+            }
             await loadData();
             const form = document.getElementById('visitForm');
             if (!form) return;
@@ -1206,6 +1221,17 @@
         }
 
         async function editVisit(id) {
+            const userRole = localStorage.getItem('userRole');
+
+            if (userRole === 'Doctor') {
+                showToast('Doctors can only view visit information', 'error');
+                return;
+            }
+
+            if (userRole === 'Receptionist') {
+                showToast('Receptionists cannot edit visits', 'error');
+                return;
+            }
             const visit = currentData.visits.find(v => v.id === id);
             if (!visit) {
                 showToast('Visit not found', 'error');
@@ -1237,6 +1263,11 @@
         }
 
         async function deleteVisit(id) {
+            const userRole = localStorage.getItem('userRole');
+            if (userRole !== 'Admin') {
+                showToast('Only Admins can delete visits', 'error');
+                return;
+            }
             if (!confirm('Are you sure you want to delete this visit?')) return;
 
             try {

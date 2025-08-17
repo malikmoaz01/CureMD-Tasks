@@ -411,6 +411,14 @@
                 window.location.href = '../login.html';
                 return;
             }
+            const userRole = localStorage.getItem('userRole');
+            if (userRole === 'Doctor' || userRole === 'Receptionist') {
+                showToast('You do not have permission to view activity logs', 'error');
+                setTimeout(() => {
+                    window.location.href = 'patient.html';
+                }, 2000);
+                return;
+            }
         }
 
         function initializeUserInfo() {
@@ -517,6 +525,11 @@
         }
 
         async function loadActivityLogs() {
+            const userRole = localStorage.getItem('userRole');
+            if (userRole === 'Doctor' || userRole === 'Receptionist') {
+                showToast('Only Admin see activity logs', 'error');
+                return;
+            }
             showLoading();
             try {
                 const response = await makeApiRequest('/activitylog');

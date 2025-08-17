@@ -121,8 +121,8 @@
         }
 
         #patientsTable th {
-            background-color: #ffffff; 
-            color: #000000; 
+            background-color: #ffffff;
+            color: #000000;
             font-weight: 600;
         }
 
@@ -680,7 +680,8 @@
         </div>
     </div>
 
-    <script>
+    <script>  
+
         const API_BASE_URL = '/api';
         let currentData = { patients: [] };
 
@@ -691,7 +692,29 @@
             initializeValidation();
             await loadPatients();
             wirePatientForm();
+
+            adjustUIForRole();
         });
+
+
+        function adjustUIForRole() {
+            const userRole = localStorage.getItem('userRole');
+            const addButton = document.querySelector('button[onclick="showAddPatientModal()"]');
+            const searchBox = document.getElementById('patientSearch');
+
+            if (userRole === 'Doctor') {
+                if (addButton) addButton.style.display = 'none';
+
+                if (searchBox) searchBox.placeholder = 'Search patients... (View Only)';
+
+            } else if (userRole === 'Receptionist') {
+                if (addButton) addButton.style.display = 'inline-block';
+
+            } else if (userRole === 'Admin') {
+                if (addButton) addButton.style.display = 'inline-block';
+            }
+        }
+
 
         function checkAuth() {
             const token = localStorage.getItem('token');
@@ -1032,27 +1055,60 @@
             }
         }
 
+        // function renderPatientsTable() {
+        //     const tbody = document.querySelector('#patientsTable tbody');
+        //     if (!tbody) return;
+        //     const userRole = localStorage.getItem('userRole');
+        //     tbody.innerHTML = currentData.patients.map(patient => `
+        //         <tr>
+        //             <td>${patient.patientId}</td>
+        //             <td>${patient.patientName}</td>
+        //             <td>${patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
+        //             <td>${patient.gender || 'N/A'}</td>
+        //             <td>${patient.contactNumber || 'N/A'}</td>
+        //             <td>${patient.email || 'N/A'}</td>
+        //             <td class="table-actions">
+        //                 <button class="btn btn-small" onclick="editPatient(${patient.patientId})">Edit</button>
+        //                 ${userRole === 'Admin' ? `<button class="btn btn-danger btn-small" onclick="deletePatient(${patient.patientId})">Delete</button>` : ''}
+        //             </td>
+        //         </tr>
+        //     `).join('');
+        // }
+
         function renderPatientsTable() {
             const tbody = document.querySelector('#patientsTable tbody');
             if (!tbody) return;
             const userRole = localStorage.getItem('userRole');
+
             tbody.innerHTML = currentData.patients.map(patient => `
-                <tr>
-                    <td>${patient.patientId}</td>
-                    <td>${patient.patientName}</td>
-                    <td>${patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
-                    <td>${patient.gender || 'N/A'}</td>
-                    <td>${patient.contactNumber || 'N/A'}</td>
-                    <td>${patient.email || 'N/A'}</td>
-                    <td class="table-actions">
-                        <button class="btn btn-small" onclick="editPatient(${patient.patientId})">Edit</button>
-                        ${userRole === 'Admin' ? `<button class="btn btn-danger btn-small" onclick="deletePatient(${patient.patientId})">Delete</button>` : ''}
-                    </td>
-                </tr>
-            `).join('');
+        <tr>
+            <td>${patient.patientId}</td>
+            <td>${patient.patientName}</td>
+            <td>${patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
+            <td>${patient.gender || 'N/A'}</td>
+            <td>${patient.contactNumber || 'N/A'}</td>
+            <td>${patient.email || 'N/A'}</td>
+            <td class="table-actions">
+                ${userRole === 'Admin' ?
+                    `<button class="btn btn-small" onclick="editPatient(${patient.patientId})">Edit</button>
+                     <button class="btn btn-danger btn-small" onclick="deletePatient(${patient.patientId})">Delete</button>`
+                    : userRole === 'Receptionist' ?
+                        `<button class="btn btn-small" onclick="editPatient(${patient.patientId})">Edit</button>`
+                        : ''
+                }
+            </td>
+        </tr>
+    `).join('');
         }
 
         function showAddPatientModal() {
+            const userRole = localStorage.getItem('userRole');
+
+            if (userRole === 'Doctor') {
+                showToast('You do not have permission to add patients', 'error');
+                return;
+            }
+
             const title = document.getElementById('patientModalTitle');
             const form = document.getElementById('patientForm');
             const id = document.getElementById('patientId');
@@ -1064,6 +1120,18 @@
         }
 
         function editPatient(id) {
+            const userRole = localStorage.getItem('userRole');
+
+            if (userRole === 'Doctor' ) {
+                showToast('Doctors can not have permission to edit patients', 'error');
+                return;
+            }
+            
+            if (userRole === 'Receptionist') {
+                showToast('Receptionist can not have permission to edit patients', 'error');
+                return;
+            }
+
             const patient = currentData.patients.find(p => p.patientId === id);
             if (patient) {
                 document.getElementById('patientModalTitle').textContent = 'Edit Patient';

@@ -413,7 +413,6 @@
 
     <script>
         const API_BASE_URL = '/api';
-
         document.addEventListener('DOMContentLoaded', function () {
             const formGroups = document.querySelectorAll('.form-group');
             formGroups.forEach((group, index) => {
@@ -422,76 +421,66 @@
                 }, index * 150);
             });
         });
-
-        document.getElementById('registerForm').addEventListener('submit', async function (e) {
+        document.getElementById('registerForm').addEventListener('submit', function (e) {
             e.preventDefault();
-
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value.trim();
             const userRole = document.getElementById('userRole').value;
             const registerBtn = document.getElementById('registerBtn');
-
             if (!email || !password || !userRole) {
                 showToast('Please fill in all fields.', 'error');
                 return;
             }
-
             if (password.length < 6) {
                 showToast('Password must be at least 6 characters long.', 'error');
                 return;
             }
-
             registerBtn.disabled = true;
             registerBtn.textContent = 'Registering...';
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/auth/register`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        email: email,
-                        password: password,
-                        userRole: userRole
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    showToast('Registration successful! Redirecting to login...', 'success');
-
-                    setTimeout(() => {
-                        window.location.href = 'login.html';
-                    }, 2000);
-                } else {
-                    showToast(data.message || 'Registration failed. Please try again.', 'error');
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `${API_BASE_URL}/auth/register`, true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    registerBtn.disabled = false;
+                    registerBtn.textContent = 'Register';
+                    if (xhr.status === 200) {
+                        try {
+                            const data = JSON.parse(xhr.responseText);
+                            if (data.success) {
+                                showToast('Registration successful! Redirecting to login...', 'success');
+                                setTimeout(() => {
+                                    window.location.href = 'login.html';
+                                }, 2000);
+                            } else {
+                                showToast(data.message || 'Registration failed. Please try again.', 'error');
+                            }
+                        } catch (error) {
+                            showToast('Invalid response from server.', 'error');
+                        }
+                    } else {
+                        showToast('Network error. Please try again.', 'error');
+                    }
                 }
-            } catch (error) {
-                showToast('Network error. Please try again.', 'error');
-            } finally {
-                registerBtn.disabled = false;
-                registerBtn.textContent = 'Register';
-            }
+            };
+            xhr.send(JSON.stringify({
+                email: email,
+                password: password,
+                userRole: userRole
+            }));
         });
-
         function showToast(message, type) {
             const existingToast = document.querySelector('.toast');
             if (existingToast) {
                 existingToast.remove();
             }
-
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
             toast.textContent = message;
-
             document.body.appendChild(toast);
-
             setTimeout(() => {
                 toast.classList.add('show');
             }, 100);
-
             setTimeout(() => {
                 toast.classList.remove('show');
                 setTimeout(() => {
