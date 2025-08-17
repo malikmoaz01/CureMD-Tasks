@@ -42,7 +42,7 @@ namespace webapi.Repositories
 
                 if (await reader.ReadAsync())
                 {
-                    var patientVisit = new PatientVisit
+                    return new PatientVisit
                     {
                         Id = reader.GetInt32("Id"),
                         PatientId = reader.GetInt32("PatientId"),
@@ -57,16 +57,12 @@ namespace webapi.Repositories
                         ModifiedDate = reader.IsDBNull("ModifiedDate") ? null : reader.GetDateTime("ModifiedDate"),
                         ModifiedBy = reader.IsDBNull("ModifiedBy") ? null : reader.GetInt32("ModifiedBy")
                     };
-
-                    await LogActivity("View Patient Visit", true, $"Viewed patient visit ID: {id}", patientVisit.CreatedBy, id);
-                    return patientVisit;
                 }
 
                 return null;
             }
             catch (Exception ex)
             {
-                await LogActivity("View Patient Visit", false, $"Failed to view patient visit ID: {id}. Error: {ex.Message}", null, id);
                 throw new InvalidOperationException($"Error retrieving patient visit: {ex.Message}", ex);
             }
         }
@@ -105,18 +101,17 @@ namespace webapi.Repositories
                     });
                 }
 
-                await LogActivity("View All Patient Visits", true, $"Retrieved {patientVisits.Count} patient visits", null, null);
                 return patientVisits;
             }
             catch (Exception ex)
             {
-                await LogActivity("View All Patient Visits", false, $"Failed to retrieve patient visits. Error: {ex.Message}", null, null);
                 throw new InvalidOperationException($"Error retrieving all patient visits: {ex.Message}", ex);
             }
         }
 
         public async Task<int> AddAsync(PatientVisit patientVisit)
         {
+            int newVisitId = 0;
             try
             {
                 using var connection = _connectionFactory.CreateConnection();
@@ -167,7 +162,7 @@ namespace webapi.Repositories
                 });
 
                 var result = await command.ExecuteScalarAsync();
-                int newVisitId = Convert.ToInt32(result);
+                newVisitId = Convert.ToInt32(result);
 
                 await LogActivity("Add Patient Visit", true, 
                     $"Added new patient visit for Patient ID: {patientVisit.PatientId}, Visit Date: {patientVisit.VisitDate:yyyy-MM-dd}", 
@@ -384,9 +379,8 @@ namespace webapi.Repositories
 
                 await _activityLogRepository.AddAsync(activityLog);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine($"Failed to log activity: {ex.Message}");
             }
         }
     }

@@ -95,7 +95,6 @@
             font-weight: 600;
             transition: all 0.3s ease;
             white-space: nowrap;
-
             position: relative;
         }
 
@@ -153,64 +152,6 @@
             background: white;
         }
 
-        .btn {
-            padding: 0.8rem 2rem;
-            border: none;
-            border-radius: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.95rem;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .btn:hover::before {
-            left: 100%;
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
-        }
-
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
-            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
-        }
-
-        .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(239, 68, 68, 0.4);
-        }
-
-        .btn-small {
-            padding: 0.5rem 1.2rem;
-            font-size: 0.85rem;
-            border-radius: 12px;
-        }
-
         .table {
             width: 100%;
             border-collapse: collapse;
@@ -251,147 +192,6 @@
 
         .table tbody tr:last-child td {
             border-bottom: none;
-        }
-
-        .table-actions {
-            display: flex;
-            gap: 0.5rem;
-            justify-content: flex-end;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(8px);
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        .modal-content {
-            background: white;
-            margin: 2% auto;
-            padding: 0;
-            border-radius: 24px;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
-            animation: slideIn 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-50px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .modal-header {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 1.5rem 2rem;
-            border-radius: 24px 24px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-header h2 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin: 0;
-        }
-
-        .close {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 2rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            line-height: 1;
-            padding: 0.5rem;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .close:hover {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            transform: scale(1.1);
-        }
-
-        form {
-            padding: 2rem;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: #374151;
-            font-size: 0.95rem;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 0.8rem 1.2rem;
-            border: 2px solid rgba(102, 126, 234, 0.2);
-            border-radius: 12px;
-            font-size: 1rem;
-            background: rgba(255, 255, 255, 0.8);
-            transition: all 0.3s ease;
-            outline: none;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-            background: white;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
         }
 
         .loading {
@@ -481,14 +281,6 @@
             font-size: 0.95rem;
         }
 
-        input.error,
-        select.error,
-        textarea.error {
-            border-color: #ef4444 !important;
-            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15) !important;
-            background: rgba(239, 68, 68, 0.05) !important;
-        }
-
         @media (max-width: 768px) {
             .container {
                 padding: 1rem;
@@ -517,21 +309,6 @@
 
             .search-box {
                 min-width: 100%;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-
-            .table-actions {
-                flex-direction: column;
-                gap: 0.25rem;
-            }
-
-            .modal-content {
-                margin: 5% auto;
-                max-width: 95%;
             }
 
             .table {
@@ -564,20 +341,6 @@
                 padding: 1rem;
                 border-radius: 16px;
             }
-
-            .btn {
-                padding: 0.7rem 1.5rem;
-                font-size: 0.9rem;
-            }
-
-            .btn-small {
-                padding: 0.4rem 1rem;
-                font-size: 0.8rem;
-            }
-
-            form {
-                padding: 1rem;
-            }
         }
     </style>
 </head>
@@ -608,7 +371,6 @@
                         <input type="text" class="search-box" id="activitySearch" placeholder="Search activity logs..."
                             onkeyup="filterTable('activityTable', this.value)">
                     </div>
-                    <button class="btn btn-success" onclick="showAddActivityModal()">Add Activity Log</button>
                 </div>
 
                 <div id="activityAlert"></div>
@@ -624,44 +386,11 @@
                             <th>Details</th>
                             <th>User ID</th>
                             <th>Visit ID</th>
-                            <th class="admin-only">Actions</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
                 </table>
             </div>
-        </div>
-    </div>
-
-    <div id="activityModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Add Activity Log</h2>
-                <span class="close" onclick="closeModal('activityModal')">&times;</span>
-            </div>
-            <form id="activityForm">
-                <div class="form-group">
-                    <label for="activityAction">Action:</label>
-                    <input type="text" id="activityAction" maxlength="100" required>
-                </div>
-                <div class="form-group">
-                    <label for="activitySuccess">Success:</label>
-                    <select id="activitySuccess" required>
-                        <option value="">Select Status</option>
-                        <option value="true">Success</option>
-                        <option value="false">Failed</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="activityDetails">Details:</label>
-                    <textarea id="activityDetails" rows="3" maxlength="500"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="activityVisitId">Visit ID (Optional):</label>
-                    <input type="number" id="activityVisitId" min="1">
-                </div>
-                <button type="submit" class="btn">Save Activity Log</button>
-            </form>
         </div>
     </div>
 
@@ -679,7 +408,7 @@
         function checkAuth() {
             const token = localStorage.getItem('token');
             if (!token) {
-                window.location.href = 'login.html';
+                window.location.href = '../login.html';
                 return;
             }
         }
@@ -690,13 +419,6 @@
             const userInfo = document.getElementById('userInfo');
             if (userInfo) {
                 userInfo.textContent = `Welcome, ${username} (${userRole})`;
-            }
-
-            if (userRole === 'Admin') {
-                document.querySelectorAll('.admin-only').forEach(el => {
-                    el.classList.add('show');
-                    el.style.display = 'table-cell';
-                });
             }
         }
 
@@ -813,7 +535,6 @@
 
         function renderActivityTable() {
             const tbody = document.querySelector('#activityTable tbody');
-            const userRole = localStorage.getItem('userRole');
 
             tbody.innerHTML = currentData.map(log => `
                 <tr>
@@ -824,64 +545,8 @@
                     <td>${log.details || 'N/A'}</td>
                     <td>${log.userId || 'N/A'}</td>
                     <td>${log.visitId || 'N/A'}</td>
-                    <td class="admin-only table-actions" style="display: ${userRole === 'Admin' ? 'table-cell' : 'none'}">
-                        <button class="btn btn-danger btn-small" onclick="deleteActivityLog(${log.logId})">Delete</button>
-                    </td>
                 </tr>
             `).join('');
-        }
-
-        function showAddActivityModal() {
-            document.getElementById('activityForm').reset();
-            document.getElementById('activityModal').style.display = 'block';
-        }
-
-        async function deleteActivityLog(id) {
-            if (confirm('Are you sure you want to delete this activity log?')) {
-                try {
-                    const response = await makeApiRequest(`/activitylog/${id}`, { method: 'DELETE' });
-                    if (response && response.success) {
-                        showToast('Activity log deleted successfully', 'success');
-                        loadActivityLogs();
-                    } else {
-                        showToast(response?.message || 'Failed to delete activity log', 'error');
-                    }
-                } catch (error) {
-                    showToast('Error deleting activity log', 'error');
-                }
-            }
-        }
-
-        document.getElementById('activityForm').addEventListener('submit', async function (e) {
-            e.preventDefault();
-
-            const activityData = {
-                action: document.getElementById('activityAction').value.trim(),
-                success: document.getElementById('activitySuccess').value === 'true',
-                details: document.getElementById('activityDetails').value.trim() || null,
-                visitId: document.getElementById('activityVisitId').value ? parseInt(document.getElementById('activityVisitId').value) : null
-            };
-
-            try {
-                const response = await makeApiRequest('/activitylog', {
-                    method: 'POST',
-                    body: JSON.stringify(activityData)
-                });
-
-                if (response && response.success) {
-                    showToast('Activity log created successfully', 'success');
-                    closeModal('activityModal');
-                    loadActivityLogs();
-                } else {
-                    showToast(response?.message || 'Failed to create activity log', 'error');
-                }
-            } catch (error) {
-                showToast('Error creating activity log', 'error');
-            }
-        });
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
         }
 
         function showLoading() {
@@ -906,12 +571,6 @@
                     row.style.display = 'none';
                 }
             });
-        }
-
-        window.onclick = function (event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = 'none';
-            }
         }
     </script>
 </body>

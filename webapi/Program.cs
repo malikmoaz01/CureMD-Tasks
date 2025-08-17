@@ -32,7 +32,7 @@ builder.Services.AddScoped<IForgotPasswordRepository, ForgotPasswordRepository>(
 builder.Services.AddScoped<IForgotPasswordService, ForgotPasswordService>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IPatientVisitService, PatientVisitService>();
+// builder.Services.AddScoped<IPatientVisitService, PatientVisitService>();
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["SecretKey"];

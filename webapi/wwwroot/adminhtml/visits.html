@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Visit MS - Visits</title>
-    <link rel="stylesheet" href="../css/style.css">
     <style>
         * {
             margin: 0;
@@ -95,7 +94,6 @@
             font-weight: 600;
             transition: all 0.3s ease;
             white-space: nowrap;
-
             position: relative;
         }
 
@@ -394,6 +392,11 @@
             min-height: 80px;
         }
 
+        .form-group input[readonly] {
+            background-color: #f8f9fa !important;
+            cursor: not-allowed;
+        }
+
         .loading {
             text-align: center;
             padding: 3rem;
@@ -672,14 +675,14 @@
                     </div>
                     <div class="form-group">
                         <label for="visitFee">Fee:</label>
-                        <input type="number" id="visitFee" step="0.01" min="0" required>
+                        <input type="number" id="visitFee" step="0.01" min="0" required readonly>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="visitNote">Note:</label>
                     <textarea id="visitNote" rows="3" maxlength="500"></textarea>
                 </div>
-                <button type="submit" class="btn">Save Visit</button>
+                <button type="submit" class="btn btn-success">Save Visit</button>
             </form>
         </div>
     </div>
@@ -698,10 +701,7 @@
             initializeUserInfo();
             highlightActiveTab();
             initializeValidation();
-            await loadPatients();
-            await loadDoctors();
-            await loadVisitTypes();
-            await loadVisits();
+            await loadData();
             wireVisitForm();
         });
 
@@ -855,6 +855,35 @@
             }, 4000);
         }
 
+        function calculateFee(visitTypeId, durationInMinutes) {
+            const visitType = currentData.visitTypes.find(vt => vt.visitTypeId == visitTypeId);
+            if (!visitType) return 0;
+
+            const baseAmount = parseFloat(visitType.baseRate) || 0;
+            const extraTimeThreshold = parseInt(visitType.extraTimeThreshold) || 30;
+            const extraTimeRate = parseFloat(visitType.extraTimeRate) || 0.1;
+
+            if (durationInMinutes > extraTimeThreshold) {
+                const extraMinutes = durationInMinutes - extraTimeThreshold;
+                const extraFee = baseAmount * extraMinutes * extraTimeRate;
+                return baseAmount + extraFee;
+            }
+
+            return baseAmount;
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
         function validateSelect(value, fieldName) {
             if (!value) return { valid: false, message: `${fieldName} is required` };
             return { valid: true };
@@ -873,15 +902,6 @@
             if (isNaN(duration)) return { valid: false, message: 'Duration must be a number' };
             if (duration <= 0) return { valid: false, message: 'Duration must be greater than 0' };
             if (duration > 1440) return { valid: false, message: 'Duration cannot exceed 1440 minutes' };
-            return { valid: true };
-        }
-
-        function validateFee(value) {
-            if (!value || value.trim() === '') return { valid: false, message: 'Fee is required' };
-            const fee = parseFloat(value);
-            if (isNaN(fee)) return { valid: false, message: 'Fee must be a number' };
-            if (fee < 0) return { valid: false, message: 'Fee cannot be negative' };
-            if (fee > 999999) return { valid: false, message: 'Fee cannot exceed 999999' };
             return { valid: true };
         }
 
@@ -942,43 +962,51 @@
             const visitType = document.getElementById('visitType')?.value || '';
             const visitDate = document.getElementById('visitDate')?.value || '';
             const duration = document.getElementById('visitDuration')?.value || '';
-            const fee = document.getElementById('visitFee')?.value || '';
             const note = document.getElementById('visitNote')?.value || '';
 
             const patientResult = validateSelect(patient, 'Patient');
             if (!patientResult.valid) {
                 errors.push(patientResult.message);
+                document.getElementById('visitPatient').classList.add('error');
                 isValid = false;
+            } else {
+                document.getElementById('visitPatient').classList.remove('error');
             }
 
             const visitTypeResult = validateSelect(visitType, 'Visit Type');
             if (!visitTypeResult.valid) {
                 errors.push(visitTypeResult.message);
+                document.getElementById('visitType').classList.add('error');
                 isValid = false;
+            } else {
+                document.getElementById('visitType').classList.remove('error');
             }
 
             const dateResult = validateDateTime(visitDate);
             if (!dateResult.valid) {
                 errors.push(dateResult.message);
+                document.getElementById('visitDate').classList.add('error');
                 isValid = false;
+            } else {
+                document.getElementById('visitDate').classList.remove('error');
             }
 
             const durationResult = validateDuration(duration);
             if (!durationResult.valid) {
                 errors.push(durationResult.message);
+                document.getElementById('visitDuration').classList.add('error');
                 isValid = false;
-            }
-
-            const feeResult = validateFee(fee);
-            if (!feeResult.valid) {
-                errors.push(feeResult.message);
-                isValid = false;
+            } else {
+                document.getElementById('visitDuration').classList.remove('error');
             }
 
             const noteResult = validateNote(note);
             if (!noteResult.valid) {
                 errors.push(noteResult.message);
+                document.getElementById('visitNote').classList.add('error');
                 isValid = false;
+            } else {
+                document.getElementById('visitNote').classList.remove('error');
             }
 
             if (!isValid && errors.length > 0) {
@@ -990,9 +1018,7 @@
 
         function initializeValidation() {
             restrictToNumbers('visitDuration');
-            restrictToNumbers('visitFee', true);
 
-            addFieldValidation('visitFee', validateFee);
             addFieldValidation('visitDuration', validateDuration);
             addFieldValidation('visitNote', validateNote);
             addFieldValidation('visitDate', validateDateTime);
@@ -1014,60 +1040,93 @@
             const visitTypeSelect = document.getElementById('visitType');
             if (visitTypeSelect && currentData.visitTypes) {
                 visitTypeSelect.innerHTML = '<option value="">Select Visit Type</option>' +
-                    currentData.visitTypes.map(vt => `<option value="${vt.visitTypeId}">${vt.visitTypeName} - ${vt.baseRate.toFixed(2)}</option>`).join('');
+                    currentData.visitTypes.map(vt => `<option value="${vt.visitTypeId}">${vt.visitTypeName} - ${parseFloat(vt.baseRate || 0).toFixed(2)}</option>`).join('');
             }
         }
 
         function wireVisitTypeSelectFeeAutofill() {
             const visitTypeSelect = document.getElementById('visitType');
             const visitFee = document.getElementById('visitFee');
-            if (visitTypeSelect && visitFee) {
-                visitTypeSelect.addEventListener('change', function () {
-                    const visitTypeId = this.value;
-                    if (visitTypeId) {
-                        const visitType = currentData.visitTypes.find(vt => vt.visitTypeId == visitTypeId);
-                        if (visitType) {
-                            visitFee.value = visitType.baseRate.toFixed(2);
-                        }
-                    }
-                });
+            const durationInput = document.getElementById('visitDuration');
+
+            if (!visitTypeSelect || !visitFee || !durationInput) return;
+
+            function updateFee() {
+                const visitTypeId = visitTypeSelect.value;
+                const duration = parseInt(durationInput.value) || 30;
+
+                if (visitTypeId) {
+                    const calculatedFee = calculateFee(visitTypeId, duration);
+                    visitFee.value = calculatedFee.toFixed(2);
+                } else {
+                    visitFee.value = '';
+                }
+            }
+
+            visitTypeSelect.addEventListener('change', updateFee);
+            durationInput.addEventListener('input', debounce(updateFee, 300));
+            durationInput.addEventListener('blur', updateFee);
+        }
+
+        async function loadData() {
+            try {
+                await Promise.all([
+                    loadPatients(),
+                    loadDoctors(),
+                    loadVisitTypes()
+                ]);
+
+                await loadVisits();
+
+                wireVisitTypeSelectFeeAutofill();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showToast('Error loading data', 'error');
             }
         }
 
         async function loadPatients() {
             try {
                 const response = await makeApiRequest('/patient');
-                if (response && response.success) {
-                    currentData.patients = response.data || [];
+                if (response && response.success && Array.isArray(response.data)) {
+                    currentData.patients = response.data;
                     populateSelectOptions();
+                } else {
+                    currentData.patients = [];
                 }
             } catch (error) {
                 console.error('Error loading patients:', error);
+                currentData.patients = [];
             }
         }
 
         async function loadDoctors() {
             try {
                 const response = await makeApiRequest('/doctor');
-                if (response && response.success) {
-                    currentData.doctors = response.data || [];
+                if (response && response.success && Array.isArray(response.data)) {
+                    currentData.doctors = response.data;
                     populateSelectOptions();
+                } else {
+                    currentData.doctors = [];
                 }
             } catch (error) {
                 console.error('Error loading doctors:', error);
+                currentData.doctors = [];
             }
         }
 
         async function loadVisitTypes() {
             try {
                 const response = await makeApiRequest('/visittype');
-                if (response && response.success) {
-                    currentData.visitTypes = response.data || [];
+                if (response && response.success && Array.isArray(response.data)) {
+                    currentData.visitTypes = response.data;
                     populateSelectOptions();
-                    wireVisitTypeSelectFeeAutofill();
+                } else {
+                    currentData.visitTypes = [];
                 }
             } catch (error) {
                 console.error('Error loading visit types:', error);
+                currentData.visitTypes = [];
             }
         }
 
@@ -1075,14 +1134,18 @@
             showLoading('visits');
             try {
                 const response = await makeApiRequest('/patientvisit');
-                if (response && response.success) {
-                    currentData.visits = response.data || [];
+                if (response && response.success && Array.isArray(response.data)) {
+                    currentData.visits = response.data;
                     renderVisitsTable();
                 } else {
-                    showToast('Failed to load visits', 'error');
+                    currentData.visits = [];
+                    renderVisitsTable();
+                    showToast('No visits found or failed to load visits', 'warning');
                 }
             } catch (error) {
                 console.error('Error loading visits:', error);
+                currentData.visits = [];
+                renderVisitsTable();
                 showToast('Error loading visits', 'error');
             } finally {
                 hideLoading('visits');
@@ -1092,20 +1155,28 @@
         function renderVisitsTable() {
             const tbody = document.querySelector('#visitsTable tbody');
             if (!tbody) return;
+
             const userRole = localStorage.getItem('userRole');
+
+            if (currentData.visits.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem; color: #666;">No visits found</td></tr>';
+                return;
+            }
+
             tbody.innerHTML = currentData.visits.map(visit => {
                 const patient = currentData.patients.find(p => p.patientId === visit.patientId);
                 const doctor = currentData.doctors.find(d => d.doctorId === visit.doctorId);
                 const visitType = currentData.visitTypes.find(vt => vt.visitTypeId === visit.visitTypeId);
+
                 return `
                     <tr>
-                        <td>${visit.id}</td>
-                        <td>${patient ? patient.patientName : 'Unknown'}</td>
-                        <td>${doctor ? doctor.doctorName : 'N/A'}</td>
-                        <td>${visitType ? visitType.visitTypeName : 'Unknown'}</td>
-                        <td>${new Date(visit.visitDate).toLocaleString()}</td>
-                        <td>${visit.durationInMinutes} mins</td>
-                        <td>${Number(visit.fee).toFixed(2)}</td>
+                        <td>${visit.id || 'N/A'}</td>
+                        <td>${patient ? patient.patientName : 'Unknown Patient'}</td>
+                        <td>${doctor ? doctor.doctorName : 'No Doctor Assigned'}</td>
+                        <td>${visitType ? visitType.visitTypeName : 'Unknown Type'}</td>
+                        <td>${visit.visitDate ? new Date(visit.visitDate).toLocaleString() : 'N/A'}</td>
+                        <td>${visit.durationInMinutes || 0} mins</td>
+                        <td>${parseFloat(visit.fee || 0).toFixed(2)}</td>
                         <td class="table-actions">
                             <button class="btn btn-small" onclick="editVisit(${visit.id})">Edit</button>
                             ${userRole === 'Admin' ? `<button class="btn btn-danger btn-small" onclick="deleteVisit(${visit.id})">Delete</button>` : ''}
@@ -1116,50 +1187,69 @@
         }
 
         async function showAddVisitModal() {
-            await loadPatients();
-            await loadDoctors();
-            await loadVisitTypes();
-            populateSelectOptions();
+            await loadData();
             const form = document.getElementById('visitForm');
             if (!form) return;
+
             document.getElementById('visitModalTitle').textContent = 'Add Visit';
             form.reset();
             document.getElementById('visitId').value = '';
             document.getElementById('visitDuration').value = '30';
+            document.getElementById('visitFee').value = '';
+
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('visitDate').value = now.toISOString().slice(0, 16);
+
+            document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
             document.getElementById('visitModal').style.display = 'block';
         }
 
-        function editVisit(id) {
+        async function editVisit(id) {
             const visit = currentData.visits.find(v => v.id === id);
-            if (visit) {
-                populateSelectOptions();
-                document.getElementById('visitModalTitle').textContent = 'Edit Visit';
-                document.getElementById('visitId').value = visit.id;
-                document.getElementById('visitPatient').value = visit.patientId;
-                document.getElementById('visitDoctor').value = visit.doctorId || '';
-                document.getElementById('visitType').value = visit.visitTypeId;
-                document.getElementById('visitDate').value = String(visit.visitDate).slice(0, 16);
-                document.getElementById('visitDuration').value = visit.durationInMinutes;
-                document.getElementById('visitFee').value = visit.fee;
-                document.getElementById('visitNote').value = visit.note || '';
-                document.getElementById('visitModal').style.display = 'block';
+            if (!visit) {
+                showToast('Visit not found', 'error');
+                return;
             }
+
+            await loadData();
+
+            document.getElementById('visitModalTitle').textContent = 'Edit Visit';
+            document.getElementById('visitId').value = visit.id;
+            document.getElementById('visitPatient').value = visit.patientId || '';
+            document.getElementById('visitDoctor').value = visit.doctorId || '';
+            document.getElementById('visitType').value = visit.visitTypeId || '';
+
+            if (visit.visitDate) {
+                const visitDate = new Date(visit.visitDate);
+                visitDate.setMinutes(visitDate.getMinutes() - visitDate.getTimezoneOffset());
+                document.getElementById('visitDate').value = visitDate.toISOString().slice(0, 16);
+            }
+
+            document.getElementById('visitDuration').value = visit.durationInMinutes || 30;
+            document.getElementById('visitNote').value = visit.note || '';
+
+            const calculatedFee = calculateFee(visit.visitTypeId, visit.durationInMinutes || 30);
+            document.getElementById('visitFee').value = calculatedFee.toFixed(2);
+
+            document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
+            document.getElementById('visitModal').style.display = 'block';
         }
 
         async function deleteVisit(id) {
-            if (confirm('Are you sure you want to delete this visit?')) {
-                try {
-                    const response = await makeApiRequest(`/patientvisit/${id}`, { method: 'DELETE' });
-                    if (response && response.success) {
-                        showToast('Visit deleted successfully', 'success');
-                        loadVisits();
-                    } else {
-                        showToast((response && response.message) || 'Failed to delete visit', 'error');
-                    }
-                } catch (error) {
-                    console.error('Error deleting visit:', error);
-                    showToast('Error deleting visit', 'error');
+            if (!confirm('Are you sure you want to delete this visit?')) return;
+
+            try {
+                const response = await makeApiRequest(`/patientvisit/${id}`, { method: 'DELETE' });
+                if (response && response.success) {
+                    showToast('Visit deleted successfully', 'success');
+                    await loadVisits();
+                } else {
+                    showToast(response?.message || 'Failed to delete visit', 'error');
                 }
+            } catch (error) {
+                console.error('Error deleting visit:', error);
+                showToast('Error deleting visit', 'error');
             }
         }
 
@@ -1174,25 +1264,32 @@
                     return;
                 }
 
-                const visitId = document.getElementById('visitId').value;
-                const isEdit = !!visitId;
-                const visitData = {
-                    patientId: parseInt(document.getElementById('visitPatient').value),
-                    doctorId: document.getElementById('visitDoctor').value ? parseInt(document.getElementById('visitDoctor').value) : null,
-                    visitTypeId: parseInt(document.getElementById('visitType').value),
-                    visitDate: document.getElementById('visitDate').value,
-                    durationInMinutes: parseInt(document.getElementById('visitDuration').value),
-                    fee: parseFloat(document.getElementById('visitFee').value),
-                    note: document.getElementById('visitNote').value.trim() || null
-                };
-
-                if (isEdit) {
-                    visitData.id = parseInt(visitId);
-                }
+                const submitButton = form.querySelector('button[type="submit"]');
+                const originalText = submitButton.textContent;
+                submitButton.textContent = 'Saving...';
+                submitButton.disabled = true;
 
                 try {
+                    const visitId = document.getElementById('visitId').value;
+                    const isEdit = !!visitId;
+
+                    const visitData = {
+                        patientId: parseInt(document.getElementById('visitPatient').value),
+                        doctorId: document.getElementById('visitDoctor').value ? parseInt(document.getElementById('visitDoctor').value) : null,
+                        visitTypeId: parseInt(document.getElementById('visitType').value),
+                        visitDate: document.getElementById('visitDate').value,
+                        durationInMinutes: parseInt(document.getElementById('visitDuration').value),
+                        fee: parseFloat(document.getElementById('visitFee').value),
+                        note: document.getElementById('visitNote').value.trim() || null
+                    };
+
+                    if (isEdit) {
+                        visitData.id = parseInt(visitId);
+                    }
+
                     const endpoint = isEdit ? `/patientvisit/${visitId}` : '/patientvisit';
                     const method = isEdit ? 'PUT' : 'POST';
+
                     const response = await makeApiRequest(endpoint, {
                         method,
                         body: JSON.stringify(visitData)
@@ -1201,13 +1298,17 @@
                     if (response && response.success) {
                         showToast(`Visit ${isEdit ? 'updated' : 'created'} successfully`, 'success');
                         closeModal('visitModal');
-                        loadVisits();
+                        await loadVisits();
                     } else {
-                        showToast((response && response.message) || `Failed to ${isEdit ? 'update' : 'create'} visit`, 'error');
+                        const errorMessage = response?.message || `Failed to ${isEdit ? 'update' : 'create'} visit`;
+                        showToast(errorMessage, 'error');
                     }
                 } catch (error) {
-                    console.error(`Error ${isEdit ? 'updating' : 'creating'} visit:`, error);
-                    showToast(`Error ${isEdit ? 'updating' : 'creating'} visit`, 'error');
+                    console.error('Error saving visit:', error);
+                    showToast('Network error occurred while saving visit', 'error');
+                } finally {
+                    submitButton.textContent = originalText;
+                    submitButton.disabled = false;
                 }
             });
         }

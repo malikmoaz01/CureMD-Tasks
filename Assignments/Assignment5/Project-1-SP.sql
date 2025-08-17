@@ -537,21 +537,18 @@ BEGIN
     END CATCH
 END;
 GO
-
--- Fixed Delete Patient Visit Procedure
+ 
 CREATE OR ALTER PROCEDURE stp_DeletePatientVisit 
     @Id INT
 AS
 BEGIN
     SET NOCOUNT ON;
-    BEGIN TRY
-        -- Check if patient visit exists
+    BEGIN TRY 
         IF NOT EXISTS (SELECT 1 FROM PatientVisits WHERE Id = @Id)
             THROW 50020, 'Patient visit not found', 1;
             
         DELETE FROM PatientVisits WHERE Id = @Id;
-        
-        -- Return the number of rows affected
+         
         SELECT @@ROWCOUNT as RowsAffected;
         
     END TRY 
@@ -562,8 +559,7 @@ BEGIN
     END CATCH
 END;
 GO
-
--- Get procedures remain the same
+ 
 CREATE OR ALTER PROCEDURE stp_GetPatientVisitById 
     @Id INT
 AS
