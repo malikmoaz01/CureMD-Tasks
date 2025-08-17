@@ -199,7 +199,7 @@ BEGIN
     END CATCH
 END;
 GO
- 
+  
 CREATE OR ALTER PROCEDURE stp_UpdatePatient
     @PatientId INT, 
     @PatientName NVARCHAR(100), 
@@ -231,6 +231,8 @@ BEGIN
             Address = @Address, 
             EmergencyContact = @EmergencyContact
         WHERE PatientId = @PatientId;
+         
+        SELECT @@ROWCOUNT as RowsAffected;
         
     END TRY 
     BEGIN CATCH 
@@ -250,7 +252,10 @@ BEGIN
         IF NOT EXISTS (SELECT 1 FROM Patients WHERE PatientId = @PatientId)
             THROW 50010, 'Patient not found', 1;
             
-        DELETE FROM Patients WHERE PatientId = @PatientId; 
+        DELETE FROM Patients WHERE PatientId = @PatientId;
+         
+        SELECT @@ROWCOUNT as RowsAffected;
+        
     END TRY 
     BEGIN CATCH 
         DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
