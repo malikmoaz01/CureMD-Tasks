@@ -94,3 +94,6 @@ D:\CureMD-Tasks\webapi\obj\Debug\net8.0\webapi.pdb
 D:\CureMD-Tasks\webapi\obj\Debug\net8.0\webapi.genruntimeconfig.cache
 D:\CureMD-Tasks\webapi\obj\Debug\net8.0\ref\webapi.dll
 D:\CureMD-Tasks\webapi\bin\Debug\net8.0\appsettings.json
+D:\CureMD-Tasks\webapi\bin\Debug\net8.0\FluentValidation.dll
+D:\CureMD-Tasks\webapi\bin\Debug\net8.0\FluentValidation.AspNetCore.dll
+D:\CureMD-Tasks\webapi\bin\Debug\net8.0\FluentValidation.DependencyInjectionExtensions.dll
