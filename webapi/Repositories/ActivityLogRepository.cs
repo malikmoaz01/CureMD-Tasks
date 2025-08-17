@@ -132,33 +132,49 @@ namespace webapi.Repositories
         }
 
         public async Task<bool> DeleteAsync(int logId)
+{
+    try
+    {
+        Console.WriteLine($"Repository: Attempting to delete activity log ID: {logId}");
+        
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+        Console.WriteLine("Repository: Database connection opened");
+
+        using var command = connection.CreateCommand();
+        command.CommandType = CommandType.StoredProcedure;
+        command.CommandText = "stp_DeleteActivityLog";
+
+        command.Parameters.Add(new SqlParameter("@LogId", SqlDbType.Int) { Value = logId });
+        Console.WriteLine($"Repository: Executing delete for LogId: {logId}");
+ 
+        var result = await command.ExecuteScalarAsync();
+        Console.WriteLine($"Repository: Result from stored procedure: {result}");
+        
+        if (result != null && result != DBNull.Value)
         {
-            try
-            {
-                Console.WriteLine($"Repository: Attempting to delete activity log ID: {logId}");
-                
-                using var connection = _connectionFactory.CreateConnection();
-                await connection.OpenAsync();
-                Console.WriteLine("Repository: Database connection opened");
-
-                using var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "stp_DeleteActivityLog";
-
-                command.Parameters.Add(new SqlParameter("@LogId", SqlDbType.Int) { Value = logId });
-                Console.WriteLine($"Repository: Executing delete for LogId: {logId}");
-
-                var rowsAffected = await command.ExecuteNonQueryAsync();
-                Console.WriteLine($"Repository: Rows affected: {rowsAffected}");
-                
-                return rowsAffected > 0;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Repository Error in DeleteAsync: {ex.Message}");
-                Console.WriteLine($"Repository Stack trace: {ex.StackTrace}");
-                throw new InvalidOperationException($"Error deleting activity log: {ex.Message}", ex);
-            }
+            int rowsAffected = Convert.ToInt32(result);
+            Console.WriteLine($"Repository: Rows affected: {rowsAffected}");
+            return rowsAffected > 0;
         }
+        
+        return false;
+    }
+    catch (SqlException ex)
+    {
+        Console.WriteLine($"Repository SQL Error in DeleteAsync: {ex.Message}");
+        
+        if (ex.Number == 50022)
+            throw new ArgumentException("Activity log not found.");
+            
+        throw new InvalidOperationException($"Database error deleting activity log: {ex.Message}", ex);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Repository Error in DeleteAsync: {ex.Message}");
+        Console.WriteLine($"Repository Stack trace: {ex.StackTrace}");
+        throw new InvalidOperationException($"Error deleting activity log: {ex.Message}", ex);
+    }
+}
     }
 }

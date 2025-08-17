@@ -418,45 +418,166 @@ END;
 -- =================  Patient Visit ======== 
 -- ===================================
 
+-- Fixed Add Patient Visit Procedure
 CREATE OR ALTER PROCEDURE stp_AddPatientVisit
-    @PatientId INT, @DoctorId INT, @VisitTypeId INT, @VisitDate DATETIME2, @Note NVARCHAR(500),
-    @DurationInMinutes INT, @Fee DECIMAL(10,2), @CreatedBy INT
+    @PatientId INT, 
+    @DoctorId INT, 
+    @VisitTypeId INT, 
+    @VisitDate DATETIME2, 
+    @Note NVARCHAR(500),
+    @DurationInMinutes INT, 
+    @Fee DECIMAL(10,2), 
+    @CreatedBy INT
 AS
 BEGIN
     SET NOCOUNT ON;
     BEGIN TRY
+        -- Add validation if needed
+        IF @PatientId IS NULL OR @PatientId <= 0
+            THROW 50013, 'Valid PatientId is required', 1;
+            
+        IF @VisitTypeId IS NULL OR @VisitTypeId <= 0
+            THROW 50014, 'Valid VisitTypeId is required', 1;
+            
+        IF @VisitDate IS NULL
+            THROW 50015, 'VisitDate is required', 1;
+            
+        IF @DurationInMinutes IS NULL OR @DurationInMinutes <= 0
+            THROW 50016, 'Valid DurationInMinutes is required', 1;
+            
+        IF @Fee IS NULL OR @Fee < 0
+            THROW 50017, 'Valid Fee is required', 1;
+            
+        -- Check if patient exists
+        IF NOT EXISTS (SELECT 1 FROM Patients WHERE PatientId = @PatientId)
+            THROW 50018, 'Patient not found', 1;
+            
+        -- Check if doctor exists (if provided)
+        IF @DoctorId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Doctors WHERE DoctorId = @DoctorId)
+            THROW 50019, 'Doctor not found', 1;
+
         INSERT INTO PatientVisits (PatientId, DoctorId, VisitTypeId, VisitDate, Note, DurationInMinutes, Fee, CreatedBy)
         VALUES (@PatientId, @DoctorId, @VisitTypeId, @VisitDate, @Note, @DurationInMinutes, @Fee, @CreatedBy);
-    END TRY BEGIN CATCH THROW; END CATCH
+        
+        -- Return the new ID
+        SELECT SCOPE_IDENTITY() as NewPatientVisitId;
+        
+    END TRY 
+    BEGIN CATCH 
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+        THROW @ErrorNumber, @ErrorMessage, 1;
+    END CATCH
 END;
 GO
 
+-- Fixed Update Patient Visit Procedure
 CREATE OR ALTER PROCEDURE stp_UpdatePatientVisit
-    @Id INT, @PatientId INT, @DoctorId INT, @VisitTypeId INT, @VisitDate DATETIME2, @Note NVARCHAR(500),
-    @DurationInMinutes INT, @Fee DECIMAL(10,2), @ModifiedBy INT
+    @Id INT, 
+    @PatientId INT, 
+    @DoctorId INT, 
+    @VisitTypeId INT, 
+    @VisitDate DATETIME2, 
+    @Note NVARCHAR(500),
+    @DurationInMinutes INT, 
+    @Fee DECIMAL(10,2), 
+    @ModifiedBy INT
 AS
 BEGIN
     SET NOCOUNT ON;
     BEGIN TRY
-        UPDATE PatientVisits SET PatientId=@PatientId, DoctorId=@DoctorId, VisitTypeId=@VisitTypeId,
-        VisitDate=@VisitDate, Note=@Note, DurationInMinutes=@DurationInMinutes, Fee=@Fee,
-        ModifiedBy=@ModifiedBy, ModifiedDate=GETDATE()
-        WHERE Id=@Id;
-    END TRY BEGIN CATCH THROW; END CATCH
+        -- Check if patient visit exists
+        IF NOT EXISTS (SELECT 1 FROM PatientVisits WHERE Id = @Id)
+            THROW 50020, 'Patient visit not found', 1;
+            
+        -- Add validation if needed
+        IF @PatientId IS NULL OR @PatientId <= 0
+            THROW 50013, 'Valid PatientId is required', 1;
+            
+        IF @VisitTypeId IS NULL OR @VisitTypeId <= 0
+            THROW 50014, 'Valid VisitTypeId is required', 1;
+            
+        IF @VisitDate IS NULL
+            THROW 50015, 'VisitDate is required', 1;
+            
+        IF @DurationInMinutes IS NULL OR @DurationInMinutes <= 0
+            THROW 50016, 'Valid DurationInMinutes is required', 1;
+            
+        IF @Fee IS NULL OR @Fee < 0
+            THROW 50017, 'Valid Fee is required', 1;
+            
+        -- Check if patient exists
+        IF NOT EXISTS (SELECT 1 FROM Patients WHERE PatientId = @PatientId)
+            THROW 50018, 'Patient not found', 1;
+            
+        -- Check if doctor exists (if provided)
+        IF @DoctorId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Doctors WHERE DoctorId = @DoctorId)
+            THROW 50019, 'Doctor not found', 1;
+
+        UPDATE PatientVisits 
+        SET PatientId = @PatientId, 
+            DoctorId = @DoctorId, 
+            VisitTypeId = @VisitTypeId,
+            VisitDate = @VisitDate, 
+            Note = @Note, 
+            DurationInMinutes = @DurationInMinutes, 
+            Fee = @Fee,
+            ModifiedBy = @ModifiedBy, 
+            ModifiedDate = GETDATE()
+        WHERE Id = @Id;
+        
+        -- Return the number of rows affected
+        SELECT @@ROWCOUNT as RowsAffected;
+        
+    END TRY 
+    BEGIN CATCH 
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+        THROW @ErrorNumber, @ErrorMessage, 1;
+    END CATCH
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp_DeletePatientVisit @Id INT
+-- Fixed Delete Patient Visit Procedure
+CREATE OR ALTER PROCEDURE stp_DeletePatientVisit 
+    @Id INT
 AS
 BEGIN
-    SET NOCOUNT ON; BEGIN TRY DELETE FROM PatientVisits WHERE Id=@Id; END TRY BEGIN CATCH THROW; END CATCH
+    SET NOCOUNT ON;
+    BEGIN TRY
+        -- Check if patient visit exists
+        IF NOT EXISTS (SELECT 1 FROM PatientVisits WHERE Id = @Id)
+            THROW 50020, 'Patient visit not found', 1;
+            
+        DELETE FROM PatientVisits WHERE Id = @Id;
+        
+        -- Return the number of rows affected
+        SELECT @@ROWCOUNT as RowsAffected;
+        
+    END TRY 
+    BEGIN CATCH 
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+        THROW @ErrorNumber, @ErrorMessage, 1;
+    END CATCH
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp_GetPatientVisitById @Id INT
+-- Get procedures remain the same
+CREATE OR ALTER PROCEDURE stp_GetPatientVisitById 
+    @Id INT
 AS
 BEGIN
-    SET NOCOUNT ON; SELECT * FROM PatientVisits WHERE Id=@Id;
+    SET NOCOUNT ON; 
+    SELECT * FROM PatientVisits WHERE Id = @Id;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE stp_GetAllPatientVisits
+AS
+BEGIN
+    SET NOCOUNT ON; 
+    SELECT * FROM PatientVisits ORDER BY CreatedDate DESC;
 END;
 GO
 
@@ -595,51 +716,62 @@ BEGIN
 END;
 GO
 
+
+
+
 -- =========================
--- Activity Log Procedures
--- =========================
+-- ==== Activity Log =======
+-- ========================= 
 
 CREATE OR ALTER PROCEDURE stp_AddActivityLog
     @Action NVARCHAR(100),
     @Success BIT,
     @Details NVARCHAR(500) = NULL,
     @UserId INT = NULL,
-    @VisitId INT = NULL,
-    @NewLogId INT OUTPUT
+    @VisitId INT = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
-    BEGIN TRY
+    BEGIN TRY 
+        IF @Action IS NULL OR LTRIM(RTRIM(@Action)) = ''
+            THROW 50021, 'Action is required', 1;
+            
         INSERT INTO ActivityLog (LogDateTime, Action, Success, Details, UserId, VisitId)
         VALUES (GETUTCDATE(), @Action, @Success, @Details, @UserId, @VisitId);
+         
+        SELECT SCOPE_IDENTITY() AS NewLogId;
         
-        SET @NewLogId = SCOPE_IDENTITY();
     END TRY
     BEGIN CATCH
-        THROW;
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+        THROW @ErrorNumber, @ErrorMessage, 1;
     END CATCH
 END;
 GO
-
+ 
 CREATE OR ALTER PROCEDURE stp_DeleteActivityLog 
     @LogId INT
 AS
 BEGIN
     SET NOCOUNT ON;
-    BEGIN TRY
+    BEGIN TRY 
+        IF NOT EXISTS (SELECT 1 FROM ActivityLog WHERE LogId = @LogId)
+            THROW 50022, 'Activity log not found', 1;
+            
         DELETE FROM ActivityLog WHERE LogId = @LogId;
+         
+        SELECT @@ROWCOUNT AS RowsAffected;
         
-        IF @@ROWCOUNT = 0
-        BEGIN
-            THROW 50001, 'Activity log not found or already deleted', 1;
-        END
     END TRY
     BEGIN CATCH
-        THROW;
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+        THROW @ErrorNumber, @ErrorMessage, 1;
     END CATCH
 END;
 GO
-
+ 
 CREATE OR ALTER PROCEDURE stp_GetActivityLogById 
     @LogId INT
 AS
@@ -660,8 +792,7 @@ BEGIN
     ORDER BY LogDateTime DESC;
 END;
 GO
-
--- Stored Procedure to check if email exists
+ 
 -- USE PVMS6606
 CREATE OR ALTER PROCEDURE stp_CheckEmailExists
     @Email NVARCHAR(100)

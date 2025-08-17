@@ -103,7 +103,7 @@ namespace webapi.Controllers
         }
 
         [HttpDelete("{id}")]
-        // [Authorize(Roles = "Admin")] // Temporarily remove to test
+        [Authorize(Roles = "Admin")] 
         public async Task<IActionResult> DeleteActivityLog(int id)
         {
             try
