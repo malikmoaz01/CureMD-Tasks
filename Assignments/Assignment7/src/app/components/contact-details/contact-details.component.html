@@ -1,0 +1,49 @@
+@if (contact(); as currentContact) {
+  <div class="contact-details">
+    <div class="contact-header">
+      <h2>{{currentContact.name}}</h2>
+      <div class="contact-badges">
+        @for (group of currentContact.groups; track group) {
+          <span 
+            class="badge"
+            [class]="'badge-' + group.toLowerCase()">
+            {{group}}
+          </span>
+        }
+      </div>
+    </div>
+    
+    <div class="contact-info">
+      <div class="info-row">
+        <strong>Phone:</strong> {{currentContact.phone}}
+      </div>
+      <div class="info-row">
+        <strong>Email:</strong> {{currentContact.email}}
+      </div>
+      <div class="info-row">
+        <strong>Gender:</strong> {{currentContact.gender}}
+      </div>
+      <div class="info-row">
+        <strong>Address:</strong> {{currentContact.address}}
+      </div>
+    </div>
+    
+    <div class="group-toggles">
+      <h3>Groups</h3>
+      <div class="toggle-buttons">
+        @for (group of availableGroups; track group) {
+          <button 
+            class="toggle-btn"
+            [class.active]="isInGroup(group)"
+            (click)="toggleGroup(group)">
+            {{isInGroup(group) ? 'Remove from' : 'Add to'}} {{group}}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="no-selection">
+    <p>Select a contact to view details</p>
+  </div>
+}

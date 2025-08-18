@@ -1,0 +1,27 @@
+<div class="container">
+  <header>
+    <h1>{{title}}</h1>
+  </header>
+  
+  <main class="dashboard">
+    <div class="left-panel">
+      <app-contact-filter 
+        [currentFilter]="currentFilter()"
+        (filterChange)="onFilterChange($event)">
+      </app-contact-filter>
+      
+      <app-contact-list 
+        [contacts]="filteredContacts()"
+        [selectedContact]="selectedContact()"
+        (contactSelect)="onContactSelect($event)">
+      </app-contact-list>
+    </div>
+    
+    <div class="right-panel">
+      <app-contact-details 
+        [contact]="selectedContact()"
+        (contactUpdate)="onContactUpdate($event)">
+      </app-contact-details>
+    </div>
+  </main>
+</div>

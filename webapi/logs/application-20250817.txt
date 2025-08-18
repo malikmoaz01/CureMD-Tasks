@@ -101,3 +101,29 @@
 [2025-08-17 21:55:24.754 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request completed: GET /api/patient | Status: 200 | User: Anonymous | Duration: 26ms | TraceId: 00-991b6e2b8ca44a3ae164e4c39d097a81-63224858fea54ce4-00
 [2025-08-17 21:55:24.762 +05:00] [INF] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP GET /api/patient responded 200 in 55.1693 ms
 [2025-08-17 21:56:43.002 +05:00] [INF] [Microsoft.Hosting.Lifetime] Application is shutting down...
+[2025-08-17 21:59:50.949 +05:00] [INF] [] Starting web application
+[2025-08-17 21:59:51.610 +05:00] [INF] [] Database connection successful
+[2025-08-17 21:59:51.803 +05:00] [INF] [Microsoft.Hosting.Lifetime] Now listening on: http://localhost:5000
+[2025-08-17 21:59:51.814 +05:00] [INF] [Microsoft.Hosting.Lifetime] Application started. Press Ctrl+C to shut down.
+[2025-08-17 21:59:51.820 +05:00] [INF] [Microsoft.Hosting.Lifetime] Hosting environment: Production
+[2025-08-17 21:59:51.822 +05:00] [INF] [Microsoft.Hosting.Lifetime] Content root path: D:\CureMD-Tasks\webapi
+[2025-08-17 21:59:53.055 +05:00] [INF] [] Request started: GET /swagger/index.html | User: Anonymous | TraceId: 00-72bf0470ef2744e54388d5b28790e190-b0ebac96b8b38501-00 | RemoteIP: ::1
+[2025-08-17 21:59:53.065 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request started: GET /swagger/index.html | User: Anonymous | TraceId: 00-72bf0470ef2744e54388d5b28790e190-b0ebac96b8b38501-00
+[2025-08-17 21:59:53.305 +05:00] [INF] [] Request completed: GET /swagger/index.html | Status: 200 | User: Anonymous | Duration: 270ms | TraceId: 00-72bf0470ef2744e54388d5b28790e190-b0ebac96b8b38501-00 | RemoteIP: ::1
+[2025-08-17 21:59:53.316 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request completed: GET /swagger/index.html | Status: 200 | User: Anonymous | Duration: 270ms | TraceId: 00-72bf0470ef2744e54388d5b28790e190-b0ebac96b8b38501-00
+[2025-08-17 21:59:53.331 +05:00] [INF] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP GET /swagger/index.html responded 200 in 289.5050 ms
+[2025-08-17 21:59:53.944 +05:00] [INF] [] Request started: GET /swagger/v1/swagger.json | User: Anonymous | TraceId: 00-820284148fc3edf9003110aafe228f45-38e553a5ea5a566a-00 | RemoteIP: ::1
+[2025-08-17 21:59:53.949 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request started: GET /swagger/v1/swagger.json | User: Anonymous | TraceId: 00-820284148fc3edf9003110aafe228f45-38e553a5ea5a566a-00
+[2025-08-17 21:59:54.308 +05:00] [INF] [] Request completed: GET /swagger/v1/swagger.json | Status: 200 | User: Anonymous | Duration: 364ms | TraceId: 00-820284148fc3edf9003110aafe228f45-38e553a5ea5a566a-00 | RemoteIP: ::1
+[2025-08-17 21:59:54.384 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request completed: GET /swagger/v1/swagger.json | Status: 200 | User: Anonymous | Duration: 364ms | TraceId: 00-820284148fc3edf9003110aafe228f45-38e553a5ea5a566a-00
+[2025-08-17 21:59:54.392 +05:00] [INF] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP GET /swagger/v1/swagger.json responded 200 in 448.1058 ms
+[2025-08-17 22:09:22.624 +05:00] [INF] [] Request started: GET /swagger/v1/swagger.json | User: Anonymous | TraceId: 00-fa3ec6ee9d90ef0fe99ae180489882da-060a67e862481564-00 | RemoteIP: ::1
+[2025-08-17 22:09:22.637 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request started: GET /swagger/v1/swagger.json | User: Anonymous | TraceId: 00-fa3ec6ee9d90ef0fe99ae180489882da-060a67e862481564-00
+[2025-08-17 22:09:22.658 +05:00] [INF] [] Request completed: GET /swagger/v1/swagger.json | Status: 200 | User: Anonymous | Duration: 33ms | TraceId: 00-fa3ec6ee9d90ef0fe99ae180489882da-060a67e862481564-00 | RemoteIP: ::1
+[2025-08-17 22:09:22.668 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request completed: GET /swagger/v1/swagger.json | Status: 200 | User: Anonymous | Duration: 33ms | TraceId: 00-fa3ec6ee9d90ef0fe99ae180489882da-060a67e862481564-00
+[2025-08-17 22:09:22.673 +05:00] [INF] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP GET /swagger/v1/swagger.json responded 200 in 49.4888 ms
+[2025-08-17 22:09:23.614 +05:00] [INF] [] Request started: GET /swagger/v1/swagger.json | User: Anonymous | TraceId: 00-9c258a2bedcc46e3da3e2c28ce0596e8-cd95207230309e42-00 | RemoteIP: ::1
+[2025-08-17 22:09:23.631 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request started: GET /swagger/v1/swagger.json | User: Anonymous | TraceId: 00-9c258a2bedcc46e3da3e2c28ce0596e8-cd95207230309e42-00
+[2025-08-17 22:09:23.651 +05:00] [INF] [] Request completed: GET /swagger/v1/swagger.json | Status: 200 | User: Anonymous | Duration: 37ms | TraceId: 00-9c258a2bedcc46e3da3e2c28ce0596e8-cd95207230309e42-00 | RemoteIP: ::1
+[2025-08-17 22:09:23.656 +05:00] [INF] [webapi.Middleware.RequestLoggingMiddleware] Request completed: GET /swagger/v1/swagger.json | Status: 200 | User: Anonymous | Duration: 37ms | TraceId: 00-9c258a2bedcc46e3da3e2c28ce0596e8-cd95207230309e42-00
+[2025-08-17 22:09:23.667 +05:00] [INF] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP GET /swagger/v1/swagger.json responded 200 in 53.6147 ms

@@ -1,0 +1,78 @@
+.contact-list {
+  max-height: 60vh;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.contact-card {
+  padding: 15px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.contact-card:hover {
+  background-color: #f8f9fa;
+}
+
+.contact-card.selected {
+  background-color: #e3f2fd;
+  border-left: 4px solid #2196f3;
+}
+
+.contact-card:last-child {
+  border-bottom: none;
+}
+
+.contact-info h3 {
+  margin: 0 0 5px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.contact-info p {
+  margin: 0 0 10px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.contact-badges {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.badge-favourites {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.badge-family {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.badge-friends {
+  background: #d4edda;
+  color: #155724;
+}
+
+.badge-classmates {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.no-contacts {
+  padding: 40px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
