@@ -39,8 +39,7 @@ export class AppComponent implements OnInit {
 
   constructor(private contactService: ContactService) {}
 
-  ngOnInit(): void {
-    // No need to manually load contacts as they're already in the service signal
+  ngOnInit(): void { 
   }
 
   onFilterChange(filter: string): void {
