@@ -1,0 +1,15 @@
+D:\CureMD-Tasks\Assessments\Assessment8\obj\Debug\net8.0\Assessment8.GeneratedMSBuildEditorConfig.editorconfig
+D:\CureMD-Tasks\Assessments\Assessment8\obj\Debug\net8.0\Assessment8.AssemblyInfoInputs.cache
+D:\CureMD-Tasks\Assessments\Assessment8\obj\Debug\net8.0\Assessment8.AssemblyInfo.cs
+D:\CureMD-Tasks\Assessments\Assessment8\obj\Debug\net8.0\Assessment8.csproj.CoreCompileInputs.cache
+D:\CureMD-Tasks\Assessments\Assessment8\obj\Debug\net8.0\Assessment8.sourcelink.json
+D:\CureMD-Tasks\Assessments\Assessment8\bin\Debug\net8.0\Assessment8.exe
+D:\CureMD-Tasks\Assessments\Assessment8\bin\Debug\net8.0\Assessment8.deps.json
+D:\CureMD-Tasks\Assessments\Assessment8\bin\Debug\net8.0\Assessment8.runtimeconfig.json
+D:\CureMD-Tasks\Assessments\Assessment8\bin\Debug\net8.0\Assessment8.dll
+D:\CureMD-Tasks\Assessments\Assessment8\bin\Debug\net8.0\Assessment8.pdb
+D:\CureMD-Tasks\Assessments\Assessment8\obj\Debug\net8.0\Assessment8.dll
+D:\CureMD-Tasks\Assessments\Assessment8\obj\Debug\net8.0\refint\Assessment8.dll
+D:\CureMD-Tasks\Assessments\Assessment8\obj\Debug\net8.0\Assessment8.pdb
+D:\CureMD-Tasks\Assessments\Assessment8\obj\Debug\net8.0\Assessment8.genruntimeconfig.cache
+D:\CureMD-Tasks\Assessments\Assessment8\obj\Debug\net8.0\ref\Assessment8.dll

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace webapi.Authorization
+namespace webapi.Authorization 
 {
     public static class AuthorizationPolicies
     {
