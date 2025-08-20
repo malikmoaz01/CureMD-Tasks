@@ -61,6 +61,53 @@ public class Assessment8{
         }
         return maxarea;
     }
+    
+    static bool HasAllChars(string s, string p)
+    {
+        int[] count = new int[256];
+        foreach (char ch in p)
+            count[ch]++;
+
+        foreach (char ch in s)
+        {
+            if (count[ch] > 0)
+                count[ch]--;
+        }
+
+        for (int i = 0; i < 256; i++)
+        {
+            if (count[i] > 0)
+                return false;
+        }
+
+        return true;
+    }
+
+    string Task3(string s, string p)
+    {
+        int n = s.Length;
+        int minLen = int.MaxValue;
+        string result = "";
+
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = i; j < n; j++)
+            {
+                string sub = s.Substring(i, j - i + 1);
+
+                if (HasAllChars(sub, p))
+                {
+                    int currLen = sub.Length;
+                    if (currLen < minLen)
+                    {
+                        minLen = currLen;
+                        result = sub;
+                    }
+                }
+            }
+        }
+        return result;
+    }
 
 
     public static void Main(string[] args)
@@ -72,5 +119,15 @@ public class Assessment8{
         // Task 2
         int[] arr = {2,1,3,4,1};
         Console.WriteLine(a.Task2(arr));
+        // Task 3
+        string s = "timetopractice";
+        string p = "toc";
+
+        string res = a.Task3(s, p);
+
+        if (!string.IsNullOrEmpty(res))
+            Console.WriteLine(res);
+        else
+            Console.WriteLine("");
     }
 }
