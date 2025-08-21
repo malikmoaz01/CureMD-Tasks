@@ -422,11 +422,11 @@
         }
 
         function initializeUserInfo() {
-            const username = localStorage.getItem('username') || 'User';
+            const email = localStorage.getItem('email') || 'User';
             const userRole = localStorage.getItem('userRole') || 'User';
             const userInfo = document.getElementById('userInfo');
             if (userInfo) {
-                userInfo.textContent = `Welcome, ${username} (${userRole})`;
+                userInfo.textContent = `Welcome, ${email} (${userRole})`;
             }
         }
 
