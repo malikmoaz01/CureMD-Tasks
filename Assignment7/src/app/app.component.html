@@ -1,0 +1,23 @@
+<div class="app-container">
+  <nav class="navbar">
+    <div class="nav-brand">
+      <h2>Contact App</h2>
+    </div>
+    <div class="nav-links">
+      <a routerLink="/dashboard" 
+         routerLinkActive="active" 
+         class="nav-link">
+        Dashboard
+      </a>
+      <a routerLink="/add-contact" 
+         routerLinkActive="active" 
+         class="nav-link">
+        Add Contact
+      </a>
+    </div>
+  </nav>
+  
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

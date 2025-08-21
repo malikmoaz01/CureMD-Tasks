@@ -1,0 +1,27 @@
+<div class="contact-list">
+  @for (contact of contacts(); track contact.id) {
+    <div 
+      class="contact-card"
+      [class.selected]="selectedContact()?.id === contact.id"
+      (click)="onContactClick(contact)">
+      
+      <div class="contact-info">
+        <h3>{{contact.name}}</h3>
+        <p>{{contact.phone}}</p>
+        <div class="contact-badges">
+          @for (group of contact.groups; track group) {
+            <span 
+              class="badge"
+              [class]="'badge-' + group.toLowerCase()">
+              {{group}}
+            </span>
+          }
+        </div>
+      </div>
+    </div>
+  } @empty {
+    <div class="no-contacts">
+      No contacts found for this filter.
+    </div>
+  }
+</div>

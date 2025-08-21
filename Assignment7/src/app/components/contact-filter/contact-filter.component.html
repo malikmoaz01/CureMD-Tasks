@@ -1,0 +1,10 @@
+<div class="filter-container">
+  @for (filter of filters; track filter) {
+    <button 
+      class="filter-btn"
+      [class.active]="currentFilter() === filter"
+      (click)="onFilterClick(filter)">
+      {{filter}}
+    </button>
+  }
+</div>

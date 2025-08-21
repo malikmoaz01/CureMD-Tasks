@@ -1,0 +1,612 @@
+// src/app/models/contact.model.ts
+export interface Contact {
+  id: number;
+  name: string;
+  phone: string;
+  email: string;
+  gender: string;
+  address: string;
+  groups: string[];
+}
+
+// src/app/services/contact.service.ts
+import { Injectable } from '@angular/core';
+import { Contact } from '../models/contact.model';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ContactService {
+  private contacts: Contact[] = [
+    { id: 1, name: 'John Smith', phone: '+1-555-0101', email: 'john.smith@email.com', gender: 'Male', address: '123 Main St, New York, NY 10001', groups: ['Favourites', 'Friends'] },
+    { id: 2, name: 'Sarah Johnson', phone: '+1-555-0102', email: 'sarah.johnson@email.com', gender: 'Female', address: '456 Oak Ave, Los Angeles, CA 90210', groups: ['Family', 'Favourites'] },
+    { id: 3, name: 'Mike Wilson', phone: '+1-555-0103', email: 'mike.wilson@email.com', gender: 'Male', address: '789 Pine St, Chicago, IL 60601', groups: ['Classmates'] },
+    { id: 4, name: 'Emma Davis', phone: '+1-555-0104', email: 'emma.davis@email.com', gender: 'Female', address: '321 Elm Dr, Houston, TX 77001', groups: ['Friends', 'Classmates'] },
+    { id: 5, name: 'David Brown', phone: '+1-555-0105', email: 'david.brown@email.com', gender: 'Male', address: '654 Maple Ln, Phoenix, AZ 85001', groups: ['Family'] },
+    { id: 6, name: 'Lisa Anderson', phone: '+1-555-0106', email: 'lisa.anderson@email.com', gender: 'Female', address: '987 Cedar St, Philadelphia, PA 19101', groups: ['Favourites', 'Family'] },
+    { id: 7, name: 'James Taylor', phone: '+1-555-0107', email: 'james.taylor@email.com', gender: 'Male', address: '147 Birch Ave, San Antonio, TX 78201', groups: ['Friends'] },
+    { id: 8, name: 'Jennifer Martinez', phone: '+1-555-0108', email: 'jennifer.martinez@email.com', gender: 'Female', address: '258 Spruce St, San Diego, CA 92101', groups: ['Classmates', 'Friends'] },
+    { id: 9, name: 'Robert Garcia', phone: '+1-555-0109', email: 'robert.garcia@email.com', gender: 'Male', address: '369 Willow Dr, Dallas, TX 75201', groups: ['Family', 'Favourites'] },
+    { id: 10, name: 'Michelle Rodriguez', phone: '+1-555-0110', email: 'michelle.rodriguez@email.com', gender: 'Female', address: '741 Ash St, San Jose, CA 95101', groups: ['Friends'] },
+    { id: 11, name: 'Christopher Lee', phone: '+1-555-0111', email: 'christopher.lee@email.com', gender: 'Male', address: '852 Poplar Ave, Austin, TX 78701', groups: ['Classmates'] },
+    { id: 12, name: 'Amanda White', phone: '+1-555-0112', email: 'amanda.white@email.com', gender: 'Female', address: '963 Hickory Ln, Jacksonville, FL 32201', groups: ['Favourites'] },
+    { id: 13, name: 'Daniel Harris', phone: '+1-555-0113', email: 'daniel.harris@email.com', gender: 'Male', address: '159 Walnut St, Fort Worth, TX 76101', groups: ['Family', 'Friends'] },
+    { id: 14, name: 'Jessica Clark', phone: '+1-555-0114', email: 'jessica.clark@email.com', gender: 'Female', address: '357 Cherry Dr, Columbus, OH 43201', groups: ['Classmates', 'Favourites'] },
+    { id: 15, name: 'Matthew Lewis', phone: '+1-555-0115', email: 'matthew.lewis@email.com', gender: 'Male', address: '468 Sycamore St, Charlotte, NC 28201', groups: ['Friends'] },
+    { id: 16, name: 'Ashley Walker', phone: '+1-555-0116', email: 'ashley.walker@email.com', gender: 'Female', address: '579 Magnolia Ave, San Francisco, CA 94101', groups: ['Family'] },
+    { id: 17, name: 'Ryan Hall', phone: '+1-555-0117', email: 'ryan.hall@email.com', gender: 'Male', address: '681 Dogwood Ln, Indianapolis, IN 46201', groups: ['Classmates', 'Friends'] },
+    { id: 18, name: 'Stephanie Allen', phone: '+1-555-0118', email: 'stephanie.allen@email.com', gender: 'Female', address: '792 Redwood Dr, Seattle, WA 98101', groups: ['Favourites'] },
+    { id: 19, name: 'Kevin Young', phone: '+1-555-0119', email: 'kevin.young@email.com', gender: 'Male', address: '813 Cypress St, Denver, CO 80201', groups: ['Family', 'Favourites'] },
+    { id: 20, name: 'Nicole King', phone: '+1-555-0120', email: 'nicole.king@email.com', gender: 'Female', address: '924 Fir Ave, Washington, DC 20001', groups: ['Friends'] },
+    { id: 21, name: 'Brandon Wright', phone: '+1-555-0121', email: 'brandon.wright@email.com', gender: 'Male', address: '135 Linden St, Boston, MA 02101', groups: ['Classmates'] },
+    { id: 22, name: 'Rachel Scott', phone: '+1-555-0122', email: 'rachel.scott@email.com', gender: 'Female', address: '246 Beech Dr, El Paso, TX 79901', groups: ['Family', 'Friends'] },
+    { id: 23, name: 'Justin Green', phone: '+1-555-0123', email: 'justin.green@email.com', gender: 'Male', address: '357 Palm Ave, Detroit, MI 48201', groups: ['Favourites'] },
+    { id: 24, name: 'Megan Adams', phone: '+1-555-0124', email: 'megan.adams@email.com', gender: 'Female', address: '468 Juniper Ln, Nashville, TN 37201', groups: ['Classmates', 'Friends'] },
+    { id: 25, name: 'Tyler Baker', phone: '+1-555-0125', email: 'tyler.baker@email.com', gender: 'Male', address: '579 Hawthorn St, Memphis, TN 38101', groups: ['Friends'] },
+    { id: 26, name: 'Lauren Gonzalez', phone: '+1-555-0126', email: 'lauren.gonzalez@email.com', gender: 'Female', address: '681 Locust Ave, Portland, OR 97201', groups: ['Family'] },
+    { id: 27, name: 'Jonathan Nelson', phone: '+1-555-0127', email: 'jonathan.nelson@email.com', gender: 'Male', address: '792 Chestnut Dr, Oklahoma City, OK 73101', groups: ['Classmates', 'Favourites'] },
+    { id: 28, name: 'Samantha Carter', phone: '+1-555-0128', email: 'samantha.carter@email.com', gender: 'Female', address: '813 Pecan St, Las Vegas, NV 89101', groups: ['Friends'] },
+    { id: 29, name: 'Nicholas Mitchell', phone: '+1-555-0129', email: 'nicholas.mitchell@email.com', gender: 'Male', address: '924 Acacia Ave, Louisville, KY 40201', groups: ['Family', 'Friends'] },
+    { id: 30, name: 'Brittany Perez', phone: '+1-555-0130', email: 'brittany.perez@email.com', gender: 'Female', address: '135 Mulberry Ln, Baltimore, MD 21201', groups: ['Classmates'] },
+    { id: 31, name: 'Andrew Roberts', phone: '+1-555-0131', email: 'andrew.roberts@email.com', gender: 'Male', address: '246 Cottonwood Dr, Milwaukee, WI 53201', groups: ['Favourites'] },
+    { id: 32, name: 'Kimberly Turner', phone: '+1-555-0132', email: 'kimberly.turner@email.com', gender: 'Female', address: '357 Basswood St, Albuquerque, NM 87101', groups: ['Family', 'Friends'] },
+    { id: 33, name: 'Joshua Phillips', phone: '+1-555-0133', email: 'joshua.phillips@email.com', gender: 'Male', address: '468 Buttonwood Ave, Tucson, AZ 85701', groups: ['Classmates'] },
+    { id: 34, name: 'Heather Campbell', phone: '+1-555-0134', email: 'heather.campbell@email.com', gender: 'Female', address: '579 Buckeye Ln, Fresno, CA 93701', groups: ['Friends', 'Favourites'] },
+    { id: 35, name: 'Brian Parker', phone: '+1-555-0135', email: 'brian.parker@email.com', gender: 'Male', address: '681 Catalpa St, Sacramento, CA 95801', groups: ['Family'] },
+    { id: 36, name: 'Crystal Evans', phone: '+1-555-0136', email: 'crystal.evans@email.com', gender: 'Female', address: '792 Dogwood Dr, Long Beach, CA 90801', groups: ['Classmates', 'Friends'] },
+    { id: 37, name: 'Gregory Edwards', phone: '+1-555-0137', email: 'gregory.edwards@email.com', gender: 'Male', address: '813 Elderberry Ave, Kansas City, MO 64101', groups: ['Friends'] },
+    { id: 38, name: 'Tiffany Collins', phone: '+1-555-0138', email: 'tiffany.collins@email.com', gender: 'Female', address: '924 Fig St, Mesa, AZ 85201', groups: ['Family', 'Favourites'] },
+    { id: 39, name: 'Jacob Stewart', phone: '+1-555-0139', email: 'jacob.stewart@email.com', gender: 'Male', address: '135 Gum Dr, Virginia Beach, VA 23451', groups: ['Classmates'] },
+    { id: 40, name: 'Vanessa Sanchez', phone: '+1-555-0140', email: 'vanessa.sanchez@email.com', gender: 'Female', address: '246 Holly Ave, Atlanta, GA 30301', groups: ['Friends'] },
+    { id: 41, name: 'Aaron Morris', phone: '+1-555-0141', email: 'aaron.morris@email.com', gender: 'Male', address: '357 Ironwood Ln, Colorado Springs, CO 80901', groups: ['Family', 'Friends'] },
+    { id: 42, name: 'Courtney Reed', phone: '+1-555-0142', email: 'courtney.reed@email.com', gender: 'Female', address: '468 Jacaranda St, Omaha, NE 68101', groups: ['Favourites'] },
+    { id: 43, name: 'Sean Cook', phone: '+1-555-0143', email: 'sean.cook@email.com', gender: 'Male', address: '579 Kinnikinnic Ave, Raleigh, NC 27601', groups: ['Classmates', 'Friends'] },
+    { id: 44, name: 'Miranda Bailey', phone: '+1-555-0144', email: 'miranda.bailey@email.com', gender: 'Female', address: '681 Larch Dr, Miami, FL 33101', groups: ['Family'] },
+    { id: 45, name: 'Eric Rivera', phone: '+1-555-0145', email: 'eric.rivera@email.com', gender: 'Male', address: '792 Mahogany St, Oakland, CA 94601', groups: ['Friends', 'Favourites'] },
+    { id: 46, name: 'Danielle Cooper', phone: '+1-555-0146', email: 'danielle.cooper@email.com', gender: 'Female', address: '813 Nutwood Ave, Minneapolis, MN 55401', groups: ['Classmates'] },
+    { id: 47, name: 'Marcus Richardson', phone: '+1-555-0147', email: 'marcus.richardson@email.com', gender: 'Male', address: '924 Oak Ln, Tulsa, OK 74101', groups: ['Family', 'Friends'] },
+    { id: 48, name: 'Alexis Ward', phone: '+1-555-0148', email: 'alexis.ward@email.com', gender: 'Female', address: '135 Persimmon Dr, Cleveland, OH 44101', groups: ['Favourites'] },
+    { id: 49, name: 'Carl Torres', phone: '+1-555-0149', email: 'carl.torres@email.com', gender: 'Male', address: '246 Quaking Aspen St, Wichita, KS 67201', groups: ['Classmates', 'Friends'] },
+    { id: 50, name: 'Monica Peterson', phone: '+1-555-0150', email: 'monica.peterson@email.com', gender: 'Female', address: '357 Redbud Ave, Arlington, TX 76001', groups: ['Family'] }
+  ];
+
+  getContacts(): Contact[] {
+    return this.contacts;
+  }
+
+  updateContact(contact: Contact): void {
+    const index = this.contacts.findIndex(c => c.id === contact.id);
+    if (index !== -1) {
+      this.contacts[index] = { ...contact };
+    }
+  }
+}
+
+// src/app/components/contact-filter/contact-filter.component.ts
+import { Component, Input, Output, EventEmitter } from '@angular/core';
+
+@Component({
+  selector: 'app-contact-filter',
+  templateUrl: './contact-filter.component.html',
+  styleUrls: ['./contact-filter.component.css']
+})
+export class ContactFilterComponent {
+  @Input() currentFilter: string = 'All';
+  @Output() filterChange = new EventEmitter<string>();
+
+  filters = ['All', 'Favourites', 'Family', 'Friends', 'Classmates'];
+
+  onFilterClick(filter: string): void {
+    this.filterChange.emit(filter);
+  }
+}
+
+// src/app/components/contact-list/contact-list.component.ts
+import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Contact } from '../../models/contact.model';
+
+@Component({
+  selector: 'app-contact-list',
+  templateUrl: './contact-list.component.html',
+  styleUrls: ['./contact-list.component.css']
+})
+export class ContactListComponent {
+  @Input() contacts: Contact[] = [];
+  @Input() selectedContact: Contact | null = null;
+  @Output() contactSelect = new EventEmitter<Contact>();
+
+  onContactClick(contact: Contact): void {
+    this.contactSelect.emit(contact);
+  }
+}
+
+// src/app/components/contact-details/contact-details.component.ts
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy } from '@angular/core';
+import { Contact } from '../../models/contact.model';
+
+@Component({
+  selector: 'app-contact-details',
+  templateUrl: './contact-details.component.html',
+  styleUrls: ['./contact-details.component.css']
+})
+export class ContactDetailsComponent implements OnInit, OnChanges, OnDestroy {
+  @Input() contact: Contact | null = null;
+  @Output() contactUpdate = new EventEmitter<Contact>();
+
+  availableGroups = ['Favourites', 'Family', 'Friends', 'Classmates'];
+
+  ngOnInit(): void {
+    console.log('ContactDetailsComponent initialized');
+  }
+
+  ngOnChanges(): void {
+    console.log('ContactDetailsComponent input changed', this.contact);
+  }
+
+  ngOnDestroy(): void {
+    console.log('ContactDetailsComponent destroyed');
+  }
+
+  toggleGroup(group: string): void {
+    if (!this.contact) return;
+
+    const updatedContact = { ...this.contact };
+    const groupIndex = updatedContact.groups.indexOf(group);
+
+    if (groupIndex > -1) {
+      updatedContact.groups = updatedContact.groups.filter(g => g !== group);
+    } else {
+      updatedContact.groups = [...updatedContact.groups, group];
+    }
+
+    this.contactUpdate.emit(updatedContact);
+  }
+
+  isInGroup(group: string): boolean {
+    return this.contact?.groups.includes(group) || false;
+  }
+}
+
+// src/app/app.component.ts
+import { Component, OnInit } from '@angular/core';
+import { Contact } from './models/contact.model';
+import { ContactService } from './services/contact.service';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent implements OnInit {
+  title = 'Contact Dashboard';
+  contacts: Contact[] = [];
+  filteredContacts: Contact[] = [];
+  selectedContact: Contact | null = null;
+  currentFilter: string = 'All';
+
+  constructor(private contactService: ContactService) {}
+
+  ngOnInit(): void {
+    this.contacts = this.contactService.getContacts();
+    this.filteredContacts = this.contacts;
+  }
+
+  onFilterChange(filter: string): void {
+    this.currentFilter = filter;
+    this.applyFilter();
+  }
+
+  onContactSelect(contact: Contact): void {
+    this.selectedContact = contact;
+  }
+
+  onContactUpdate(updatedContact: Contact): void {
+    this.contactService.updateContact(updatedContact);
+    this.contacts = this.contactService.getContacts();
+    this.selectedContact = updatedContact;
+    this.applyFilter();
+  }
+
+  private applyFilter(): void {
+    if (this.currentFilter === 'All') {
+      this.filteredContacts = this.contacts;
+    } else {
+      this.filteredContacts = this.contacts.filter(contact => 
+        contact.groups.includes(this.currentFilter)
+      );
+    }
+  }
+}
+
+// src/app/app.module.ts
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+
+import { AppComponent } from './app.component';
+import { ContactFilterComponent } from './components/contact-filter/contact-filter.component';
+import { ContactListComponent } from './components/contact-list/contact-list.component';
+import { ContactDetailsComponent } from './components/contact-details/contact-details.component';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    ContactFilterComponent,
+    ContactListComponent,
+    ContactDetailsComponent
+  ],
+  imports: [
+    BrowserModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+
+// src/app/app.component.html
+<div class="container">
+  <header>
+    <h1>{{title}}</h1>
+  </header>
+  
+  <main class="dashboard">
+    <div class="left-panel">
+      <app-contact-filter 
+        [currentFilter]="currentFilter"
+        (filterChange)="onFilterChange($event)">
+      </app-contact-filter>
+      
+      <app-contact-list 
+        [contacts]="filteredContacts"
+        [selectedContact]="selectedContact"
+        (contactSelect)="onContactSelect($event)">
+      </app-contact-list>
+    </div>
+    
+    <div class="right-panel">
+      <app-contact-details 
+        [contact]="selectedContact"
+        (contactUpdate)="onContactUpdate($event)">
+      </app-contact-details>
+    </div>
+  </main>
+</div>
+
+// src/app/components/contact-filter/contact-filter.component.html
+<div class="filter-container">
+  <button 
+    *ngFor="let filter of filters"
+    class="filter-btn"
+    [class.active]="currentFilter === filter"
+    (click)="onFilterClick(filter)">
+    {{filter}}
+  </button>
+</div>
+
+// src/app/components/contact-list/contact-list.component.html
+<div class="contact-list">
+  <div 
+    *ngFor="let contact of contacts"
+    class="contact-card"
+    [class.selected]="selectedContact?.id === contact.id"
+    (click)="onContactClick(contact)">
+    
+    <div class="contact-info">
+      <h3>{{contact.name}}</h3>
+      <p>{{contact.phone}}</p>
+      <div class="contact-badges">
+        <span 
+          *ngFor="let group of contact.groups"
+          class="badge"
+          [class]="'badge-' + group.toLowerCase()">
+          {{group}}
+        </span>
+      </div>
+    </div>
+  </div>
+  
+  <div *ngIf="contacts.length === 0" class="no-contacts">
+    No contacts found for this filter.
+  </div>
+</div>
+
+// src/app/components/contact-details/contact-details.component.html
+<div class="contact-details" *ngIf="contact">
+  <div class="contact-header">
+    <h2>{{contact.name}}</h2>
+    <div class="contact-badges">
+      <span 
+        *ngFor="let group of contact.groups"
+        class="badge"
+        [class]="'badge-' + group.toLowerCase()">
+        {{group}}
+      </span>
+    </div>
+  </div>
+  
+  <div class="contact-info">
+    <div class="info-row">
+      <strong>Phone:</strong> {{contact.phone}}
+    </div>
+    <div class="info-row">
+      <strong>Email:</strong> {{contact.email}}
+    </div>
+    <div class="info-row">
+      <strong>Gender:</strong> {{contact.gender}}
+    </div>
+    <div class="info-row">
+      <strong>Address:</strong> {{contact.address}}
+    </div>
+  </div>
+  
+  <div class="group-toggles">
+    <h3>Groups</h3>
+    <div class="toggle-buttons">
+      <button 
+        *ngFor="let group of availableGroups"
+        class="toggle-btn"
+        [class.active]="isInGroup(group)"
+        (click)="toggleGroup(group)">
+        {{isInGroup(group) ? 'Remove from' : 'Add to'}} {{group}}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="no-selection" *ngIf="!contact">
+  <p>Select a contact to view details</p>
+</div>
+
+// src/app/app.component.css
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+header h1 {
+  color: #333;
+  margin: 0;
+}
+
+.dashboard {
+  display: flex;
+  gap: 20px;
+  height: 70vh;
+}
+
+.left-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.right-panel {
+  flex: 1;
+  border-left: 2px solid #e0e0e0;
+  padding-left: 20px;
+}
+
+// src/app/components/contact-filter/contact-filter.component.css
+.filter-container {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 10px 20px;
+  border: 2px solid #ddd;
+  background: white;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+  background: #f5f5f5;
+  border-color: #999;
+}
+
+.filter-btn.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+// src/app/components/contact-list/contact-list.component.css
+.contact-list {
+  max-height: 60vh;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.contact-card {
+  padding: 15px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.contact-card:hover {
+  background-color: #f8f9fa;
+}
+
+.contact-card.selected {
+  background-color: #e3f2fd;
+  border-left: 4px solid #2196f3;
+}
+
+.contact-card:last-child {
+  border-bottom: none;
+}
+
+.contact-info h3 {
+  margin: 0 0 5px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.contact-info p {
+  margin: 0 0 10px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.contact-badges {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.badge-favourites {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.badge-family {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.badge-friends {
+  background: #d4edda;
+  color: #155724;
+}
+
+.badge-classmates {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.no-contacts {
+  padding: 40px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+// src/app/components/contact-details/contact-details.component.css
+.contact-details {
+  height: 100%;
+}
+
+.contact-header {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.contact-header h2 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 24px;
+}
+
+.contact-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge-favourites {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.badge-family {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.badge-friends {
+  background: #d4edda;
+  color: #155724;
+}
+
+.badge-classmates {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.contact-info {
+  margin-bottom: 30px;
+}
+
+.info-row {
+  margin-bottom: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.info-row strong {
+  display: inline-block;
+  width: 80px;
+  color: #555;
+}
+
+.group-toggles h3 {
+  margin-bottom: 15px;
+  color: #333;
+  font-size: 18px;
+}
+
+.toggle-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toggle-btn {
+  padding: 12px 20px;
+  border: 2px solid #ddd;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.toggle-btn:hover {
+  background: #f8f9fa;
+  border-color: #aaa;
+}
+
+.toggle-btn.active {
+  background: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+.no-selection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #666;
+  font-size: 18px;
+  font-style: italic;
+}

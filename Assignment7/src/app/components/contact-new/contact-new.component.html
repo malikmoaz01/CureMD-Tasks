@@ -1,0 +1,45 @@
+<h2>Add New Contact Form</h2>
+
+<form [formGroup]="contactForm" (ngSubmit)="addcontact()">
+
+  <label for="name">Name:</label><br>
+  <input id="name" type="text" formControlName="name"><br><br>
+
+  <label for="phone">Phone:</label><br>
+  <input id="phone" type="text" formControlName="phone"><br><br>
+
+  <label for="email">Email:</label><br>
+  <input id="email" type="email" formControlName="email"><br><br>
+
+  <label for="gender">Gender:</label><br>
+  <input id="gender" type="text" formControlName="gender"><br><br>
+
+  <label for="address">Address:</label><br>
+  <input id="address" type="text" formControlName="address"><br><br>
+
+<div formGroupName="groups">
+  <label>
+    <input type="checkbox" formControlName="favourites">
+    Favourites
+  </label><br>
+
+  <label>
+    <input type="checkbox" formControlName="family">
+    Family
+  </label><br>
+
+  <label>
+    <input type="checkbox" formControlName="friends">
+    Friends
+  </label><br>
+
+  <label>
+    <input type="checkbox" formControlName="classmates">
+    Classmates
+  </label><br><br>
+</div>
+
+
+  <button type="submit">Add Contact</button>
+</form>
+ 

@@ -1,0 +1,22 @@
+<div class="dashboard-container">
+  <h1>{{title}}</h1>
+  
+  <app-contact-filter 
+    [currentFilter]="currentFilter()" 
+    (filterChange)="onFilterChange($event)">
+  </app-contact-filter>
+  
+  <div class="dashboard-content">
+    <app-contact-list 
+      [contacts]="filteredContacts()" 
+      [selectedContact]="selectedContact()"
+      (contactSelect)="onContactSelect($event)">
+    </app-contact-list>
+    
+    <app-contact-details 
+      *ngIf="selectedContact()" 
+      [contact]="selectedContact()!"
+      (contactUpdate)="onContactUpdate($event)">
+    </app-contact-details>
+  </div>
+</div>
