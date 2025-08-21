@@ -5,6 +5,7 @@ import { ContactService } from '../../services/contact.service';
 import { ContactFilterComponent } from '../contact-filter/contact-filter.component';
 import { ContactListComponent } from '../contact-list/contact-list.component';
 import { ContactDetailsComponent } from '../contact-details/contact-details.component';
+import { LettersSpacesDirective } from '../../directives/letters-spaces.directive';
 
 @Component({
   selector: 'app-dashboard',
@@ -13,33 +14,46 @@ import { ContactDetailsComponent } from '../contact-details/contact-details.comp
     CommonModule,
     ContactFilterComponent,
     ContactListComponent,
-    ContactDetailsComponent
+    ContactDetailsComponent,
+    LettersSpacesDirective
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
   title = 'Contact Dashboard';
-  
   selectedContact = signal<Contact | null>(null);
   currentFilter = signal<string>('All');
- 
+  searchTerm = signal<string>('');
   contacts = this.contactService.contacts;
   
   filteredContacts = computed(() => {
-    const contacts = this.contacts();
+    let contacts = this.contacts();
     const filter = this.currentFilter();
-    
-    if (filter === 'All') {
-      return contacts;
-    } else {
-      return contacts.filter(contact => contact.groups.includes(filter));
+    const search = this.searchTerm().trim().toLowerCase();
+
+    if (filter !== 'All') {
+      contacts = contacts.filter(contact => contact.groups.includes(filter));
     }
+    if (search) {
+      contacts = contacts.filter(contact =>
+        contact.name.toLowerCase().includes(search)   
+      );
+    }
+    return contacts;
   });
 
   constructor(private contactService: ContactService) {}
 
-  ngOnInit(): void { 
+  ngOnInit(): void {}
+
+  onSearchInput(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.searchTerm.set(target.value);
+  }
+
+  clearSearch(): void {
+    this.searchTerm.set('');
   }
 
   onFilterChange(filter: string): void {

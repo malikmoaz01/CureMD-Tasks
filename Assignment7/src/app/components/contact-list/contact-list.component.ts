@@ -12,6 +12,8 @@ import { Contact } from '../../models/contact.model';
 export class ContactListComponent {
   contacts = input<Contact[]>([]);
   selectedContact = input<Contact | null>(null);
+  searchTerm = input<string>('');   
+
   contactSelect = output<Contact>();
 
   onContactClick(contact: Contact): void {

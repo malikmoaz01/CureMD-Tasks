@@ -1,6 +1,30 @@
 <div class="dashboard-container">
-  <h1>{{title}}</h1>
+  <h1>{{ title }}</h1>
   
+  <div class="search-section">
+    <div class="search-input-container">
+      <input 
+        type="text" 
+        placeholder="Search contacts by name..."
+        class="search-input"
+        appLettersSpaces
+        (input)="onSearchInput($event)"
+        [value]="searchTerm()"
+      >
+      <button 
+        *ngIf="searchTerm()" 
+        class="clear-search-btn"
+        (click)="clearSearch()"
+        title="Clear search"
+      >
+        ✕
+      </button>
+    </div>
+    <div class="search-info" *ngIf="searchTerm()">
+      Found {{ filteredContacts().length }} contact(s) matching "{{ searchTerm() }}"
+    </div>
+  </div>
+
   <app-contact-filter 
     [currentFilter]="currentFilter()" 
     (filterChange)="onFilterChange($event)">
@@ -10,6 +34,7 @@
     <app-contact-list 
       [contacts]="filteredContacts()" 
       [selectedContact]="selectedContact()"
+      [searchTerm]="searchTerm()"
       (contactSelect)="onContactSelect($event)">
     </app-contact-list>
     
